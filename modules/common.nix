@@ -25,4 +25,6 @@
   };
 
   services.libinput.enable = true;
+
+  services.tailscale.enable = true;
 }
