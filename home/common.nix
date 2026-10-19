@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 {
+  imports = [ ./hyprland.nix ];
+
   home.username = "isaiah";
   home.homeDirectory = "/home/isaiah";
   home.stateVersion = "26.05";
