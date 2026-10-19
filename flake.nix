@@ -13,7 +13,17 @@
       system = "x86_64-linux";
     in {
       nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
-        modules = [ ./hosts/laptop/configuration.nix ./modules/common.nix ];
+        modules = [
+	  ./hosts/laptop/configuration.nix
+	  ./modules/common.nix
+          home-manager.nixosModules.home-manager {
+	    home-manager.useGlobalPkgs = true;
+	    home-manager.useUserPackages = true;
+	    home-manager.backupFileExtension = "backup";
+	    home-manager.extraSpecialArgs = { inherit inputs; };
+	    home-manager.users.${username} = import ./home/common.nix;
+	  }
+	];
       };
 
       homeConfigurations."${username}@${hostname}" =

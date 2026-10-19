@@ -1,13 +1,16 @@
 { config, lib, pkgs, ... }:
 
 {
+  nixpkgs.config.allowUnfree = true;
+
   networking.networkmanager.enable = true;
 
   environment.systemPackages = with pkgs; [
     vim
-    emacs
+    emacs-pgtk
     git
     wget
+    kitty
   ];
 
   # Select internationalisation properties.
@@ -19,12 +22,48 @@
     packages = with pkgs; [ terminus_font ];
   };
 
+  services.xserver.xkb.options = "ctrl:nocaps";
+
   services.pipewire = {
     enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
     pulse.enable = true;
   };
+
+  fonts.packages = with pkgs; [
+    liberation_ttf
+    font-awesome
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-color-emoji
+#    google-fonts
+    corefonts
+  ];
 
   services.libinput.enable = true;
 
   services.tailscale.enable = true;
+
+  services.fwupd.enable = true;
+
+  programs.steam.enable = true;
+
+  programs.kdeconnect.enable = true;
+
+  services.flatpak.enable = true;
+
+  programs.hyprland.enable = true;
+  programs.firefox.enable = true;
+
+  programs.nix-ld = {
+    enable = true;
+    libraries = with pkgs; [
+      stdenv.cc.cc.lib   # libstdc++, libgcc_s
+      zlib
+      openssl
+    ];
+  };
+
+  environment.localBinInPath = true;
 }

@@ -19,6 +19,28 @@
     allowDiscards = true;
   };
 
+  fileSystems."/".options = [ "noatime" "nodiratime" ];
+
+  hardware.cpu.intel.updateMicrocode = true;
+
+  services.libinput = {
+    enable = true;
+    touchpad = {
+      tapping = false;
+      naturalScrolling = true;
+      accelSpeed = "0.5";
+      clickMethod = "clickfinger";
+    };
+  };
+
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+    extraPackages = with pkgs; [
+      intel-media-driver
+    ];
+  };
+
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
