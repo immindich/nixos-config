@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 
 {
   programs.waybar = {
@@ -26,11 +26,33 @@
         persistent-workspaces."*" = 5;
       };
 
+      network = {
+        format = "{icon}";
+        # Left click toggles showing the Wi-Fi network name
+        format-alt = "{icon} {essid}";
+        format-icons = {
+          wifi = "";
+          ethernet = "";
+          disconnected = "";
+        };
+      };
+
       pulseaudio = {
         format = "{icon} {volume}%";
         format-muted = " muted";
         format-icons.default = [ "" "" "" ];
       };
     };
+
+    # The default stylesheet asks for "FontAwesome", which doesn't match Font
+    # Awesome 7, so icons fell back to corefonts (blank volume icons). Put a text
+    # font first since Font Awesome also has digit glyphs.
+    style = ''
+      @import "${config.programs.waybar.package}/etc/xdg/waybar/style.css";
+
+      * {
+        font-family: "DejaVu Sans", "Font Awesome 7 Free Solid", sans-serif;
+      }
+    '';
   };
 }
