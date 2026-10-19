@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 let
   inline = lib.generators.mkLuaInline;
 
@@ -29,6 +29,8 @@ let
   ) (lib.range 1 10);
 in
 {
+  home.packages = [ pkgs.rose-pine-hyprcursor ];
+
   wayland.windowManager.hyprland = {
     enable = true;
     # Installed by programs.hyprland in the NixOS config
@@ -47,13 +49,14 @@ in
       env = [
         { _args = [ "XCURSOR_SIZE" "24" ]; }
         { _args = [ "HYPRCURSOR_SIZE" "24" ]; }
+        { _args = [ "HYPRCURSOR_THEME" "rose-pine-hyprcursor" ]; }
       ];
 
       config = {
         general = {
-          gaps_in = 5;
-          gaps_out = 10;
-          border_size = 2;
+          gaps_in = 3;
+          gaps_out = 6;
+          border_size = 1;
           col = {
             active_border = {
               colors = [ "rgba(33ccffee)" "rgba(00ff99ee)" ];
@@ -67,7 +70,7 @@ in
         };
 
         decoration = {
-          rounding = 10;
+          rounding = 5;
           rounding_power = 2;
           active_opacity = 1.0;
           inactive_opacity = 1.0;
@@ -86,9 +89,11 @@ in
         };
 
         animations.enabled = true;
+        binds.movefocus_cycles_groupfirst = true;
         dwindle.preserve_split = true;
         master.new_status = "master";
         scrolling.fullscreen_on_one_column = true;
+        xwayland.force_zero_scaling = true;
 
         misc = {
           force_default_wallpaper = -1;
@@ -103,7 +108,11 @@ in
           kb_rules = "";
           follow_mouse = 1;
           sensitivity = 0;
-          touchpad.natural_scroll = true;
+          touchpad = {
+	          natural_scroll = true;
+	          tap_to_click = false;
+            clickfinger_behavior = true;
+          };
         };
       };
 
@@ -147,7 +156,7 @@ in
       ];
 
       gesture = {
-        fingers = 3;
+        fingers = 4;
         direction = "horizontal";
         action = "workspace";
       };
@@ -158,7 +167,7 @@ in
         (bind "${mainMod} + M" (exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
         (bind "${mainMod} + E" (exec fileManager))
         (bind "${mainMod} + V" ''hl.dsp.window.float({ action = "toggle" })'')
-        (bind "${mainMod} + D" (exec menu))
+        (bind "${mainMod} + R" (exec menu))
         (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
         (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
 
@@ -166,12 +175,21 @@ in
         (bind "${mainMod} + L" ''hl.dsp.focus({ direction = "right" })'')
         (bind "${mainMod} + K" ''hl.dsp.focus({ direction = "up" })'')
         (bind "${mainMod} + J" ''hl.dsp.focus({ direction = "down" })'')
+
+        (bind "${mainMod} + SHIFT + H" ''hl.dsp.window.move({ direction = "left", group_aware = true })'')
+        (bind "${mainMod} + SHIFT + L" ''hl.dsp.window.move({ direction = "right", group_aware = true })'')
+        (bind "${mainMod} + SHIFT + K" ''hl.dsp.window.move({ direction = "up", group_aware = true })'')
+        (bind "${mainMod} + SHIFT + J" ''hl.dsp.window.move({ direction = "down", group_aware = true })'')
+
+        (bind "${mainMod} + W" ''hl.dsp.group.toggle()'')
+        (bind "${mainMod} + TAB" "hl.dsp.group.next()")
+        (bind "${mainMod} + SHIFT + TAB" "hl.dsp.group.prev()")
       ]
       ++ workspaceBinds
       ++ [
         # Scratchpad
         (bind "${mainMod} + S" ''hl.dsp.workspace.toggle_special("magic")'')
-        (bind "${mainMod} + SHIFT + S" ''hl.dsp.window.move({ workspace = "special:magic" })'')
+        (bind "${mainMod} + SHIFT + S" ''hl.dsp.window.move({ workspace = "special:magic silent" })'')
 
         # Scroll through existing workspaces
         (bind "${mainMod} + mouse_down" ''hl.dsp.focus({ workspace = "e+1" })'')
@@ -221,6 +239,11 @@ in
           match.class = "hyprland-run";
           move = "20 monitor_h-120";
           float = true;
+        }
+        {
+          name = "claude-desktop-magic";
+          match.class = "com.anthropic.Claude";
+          workspace = "special:magic silent";
         }
       ];
     };

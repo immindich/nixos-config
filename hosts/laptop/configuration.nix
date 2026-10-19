@@ -47,7 +47,7 @@
   networking.hostName = "laptop";
 
   # Set your time zone.
-  time.timeZone = "America/Chicago";
+  time.timeZone = null;
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -59,6 +59,8 @@
       tree
     ];
   };
+
+  services.power-profiles-daemon.enable = true;
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.

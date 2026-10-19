@@ -5,13 +5,19 @@
 
   networking.networkmanager.enable = true;
 
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = false;
+  };
+
   environment.systemPackages = with pkgs; [
     vim
-    emacs-pgtk
     git
     wget
     kitty
     brightnessctl
+    nvd
+    bluetui
   ];
 
   # Select internationalisation properties.
