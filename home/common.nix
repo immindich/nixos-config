@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 {
-  imports = [ ./hyprland.nix ];
+  imports = [ ./hyprland.nix ./waybar.nix ];
 
   home.username = "isaiah";
   home.homeDirectory = "/home/isaiah";
