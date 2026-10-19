@@ -15,7 +15,7 @@ let
   bezier = name: p1: p2: { _args = [ name { type = "bezier"; points = [ p1 p2 ]; } ]; };
   anim = leaf: speed: extra: { inherit leaf speed; enabled = true; } // extra;
 
-  # SUPER + [0-9] switches workspace, SUPER + SHIFT + [0-9] moves the window
+  # SUPER + [0-9] switches workspace, SUPER + SHIFT + [0-9] moves the window without following it
   workspaceBinds = lib.concatMap (
     i:
     let
@@ -24,7 +24,7 @@ let
     in
     [
       (bind "${mainMod} + ${key}" "hl.dsp.focus({ workspace = ${ws} })")
-      (bind "${mainMod} + SHIFT + ${key}" "hl.dsp.window.move({ workspace = ${ws} })")
+      (bind "${mainMod} + SHIFT + ${key}" "hl.dsp.window.move({ workspace = ${ws}, follow = false })")
     ]
   ) (lib.range 1 10);
 in
@@ -52,7 +52,7 @@ in
       config = {
         general = {
           gaps_in = 5;
-          gaps_out = 20;
+          gaps_out = 10;
           border_size = 2;
           col = {
             active_border = {
@@ -153,19 +153,19 @@ in
       };
 
       bind = [
-        (bind "${mainMod} + Q" (exec terminal))
+        (bind "${mainMod} + Return" (exec terminal))
         (bind "${mainMod} + C" "hl.dsp.window.close()")
         (bind "${mainMod} + M" (exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
         (bind "${mainMod} + E" (exec fileManager))
         (bind "${mainMod} + V" ''hl.dsp.window.float({ action = "toggle" })'')
         (bind "${mainMod} + R" (exec menu))
         (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
-        (bind "${mainMod} + J" ''hl.dsp.layout("togglesplit")'') # dwindle only
+        (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
 
-        (bind "${mainMod} + left" ''hl.dsp.focus({ direction = "left" })'')
-        (bind "${mainMod} + right" ''hl.dsp.focus({ direction = "right" })'')
-        (bind "${mainMod} + up" ''hl.dsp.focus({ direction = "up" })'')
-        (bind "${mainMod} + down" ''hl.dsp.focus({ direction = "down" })'')
+        (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
+        (bind "${mainMod} + L" ''hl.dsp.focus({ direction = "right" })'')
+        (bind "${mainMod} + K" ''hl.dsp.focus({ direction = "up" })'')
+        (bind "${mainMod} + J" ''hl.dsp.focus({ direction = "down" })'')
       ]
       ++ workspaceBinds
       ++ [
