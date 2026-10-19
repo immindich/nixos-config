@@ -158,7 +158,7 @@ in
         (bind "${mainMod} + M" (exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
         (bind "${mainMod} + E" (exec fileManager))
         (bind "${mainMod} + V" ''hl.dsp.window.float({ action = "toggle" })'')
-        (bind "${mainMod} + R" (exec menu))
+        (bind "${mainMod} + D" (exec menu))
         (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
         (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
 

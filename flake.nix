@@ -4,6 +4,11 @@
 
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    claude-desktop = {
+      url = "github:danielbodart/claude-desktop";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
@@ -13,9 +18,11 @@
       system = "x86_64-linux";
     in {
       nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };
         modules = [
 	  ./hosts/laptop/configuration.nix
 	  ./modules/common.nix
+	  ./modules/claude-desktop.nix
           home-manager.nixosModules.home-manager {
 	    home-manager.useGlobalPkgs = true;
 	    home-manager.useUserPackages = true;

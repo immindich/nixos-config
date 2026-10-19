@@ -13,5 +13,10 @@
 
   programs.foot.enable = true;
 
+  # Runs hyprlauncher as a daemon so the launcher opens instantly
+  services.hyprlauncher.enable = true;
+
   home.sessionPath = [ "$HOME/.local/bin" ];
+
+  dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
 }

@@ -42,6 +42,9 @@
     corefonts
   ];
 
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  programs.dconf.enable = true;
+
   services.libinput.enable = true;
 
   services.tailscale.enable = true;

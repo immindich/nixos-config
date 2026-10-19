@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "claude-desktop": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792134631,
+        "narHash": "sha256-NRyyr5+DD0YZqDkJE/o3jyES5/Pyas23msm8IprmRjI=",
+        "owner": "danielbodart",
+        "repo": "claude-desktop",
+        "rev": "007fb5c763a3962d370ebf599f3069df8088b670",
+        "type": "github"
+      },
+      "original": {
+        "owner": "danielbodart",
+        "repo": "claude-desktop",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -39,6 +59,7 @@
     },
     "root": {
       "inputs": {
+        "claude-desktop": "claude-desktop",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs"
       }
