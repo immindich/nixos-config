@@ -11,6 +11,7 @@
     git
     wget
     kitty
+    brightnessctl
   ];
 
   # Select internationalisation properties.

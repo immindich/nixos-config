@@ -11,9 +11,13 @@
       position = "top";
       modules-left = [ "hyprland/workspaces" ];
       modules-center = [ "hyprland/window" ];
-      modules-right = [ "pulseaudio" "network" "battery" "clock" "tray" ];
+      modules-right = [ "pulseaudio" "backlight" "network" "battery" "clock" "tray" ];
 
       # Icons are Font Awesome glyphs (font-awesome is in fonts.packages)
+      backlight = {
+        format = " {percent}%";
+      };
+
       battery = {
         format = "{icon} {capacity}%";
         format-charging = " {capacity}%";
