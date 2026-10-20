@@ -20,7 +20,7 @@ PopupWindow {
     anchor.gravity: Edges.Bottom | Edges.Right
 
     implicitWidth: 280
-    implicitHeight: column.implicitHeight + 2 * column.padding
+    implicitHeight: column.implicitHeight // includes the column's padding
     color: "transparent"
 
     function toggle() {

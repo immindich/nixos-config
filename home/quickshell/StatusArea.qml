@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
@@ -96,14 +97,30 @@ Rectangle {
         objects: Pipewire.nodes.values
     }
 
-    // sysfs doesn't send change notifications, so poll the backlight
     FileView { id: brightnessFile; path: "/sys/class/backlight/intel_backlight/brightness" }
     FileView { id: maxBrightnessFile; path: "/sys/class/backlight/intel_backlight/max_brightness" }
-    Timer {
-        interval: 500
+
+    // sysfs doesn't send file change notifications, but the kernel announces
+    // backlight changes as udev events (this is how ashell does it). Each line
+    // udevadm prints means something may have changed, so re-read the file.
+    Process {
+        id: backlightMonitor
         running: true
-        repeat: true
-        onTriggered: brightnessFile.reload()
+        command: ["udevadm", "monitor", "--udev", "--subsystem-match=backlight"]
+        stdout: SplitParser {
+            onRead: brightnessFile.reload()
+        }
+        // Restart it if it exits or fails to start, after a cooldown so a
+        // broken command doesn't run in a tight loop
+        onRunningChanged: if (!running) backlightRestart.start()
+    }
+    Timer {
+        id: backlightRestart
+        interval: 5000
+        onTriggered: {
+            brightnessFile.reload() // catch changes missed while it was down
+            backlightMonitor.running = true
+        }
     }
 
     Row {
@@ -162,10 +179,60 @@ Rectangle {
         }
 
         Indicator {
+            id: brightness
+            menu: DropdownMenu {
+                anchor.item: brightness
+                MenuHeading { text: "Brightness" }
+                MenuSlider {
+                    id: brightnessSlider
+                    from: 0
+                    to: brightness.max
+                    // value follows the real brightness via the Binding below
+                    live: true
+                    // start() is a no-op while the timer runs, so a drag sends
+                    // at most one update per interval
+                    onMoved: backlightApply.start()
+                }
+            }
             readonly property int max: parseInt(maxBrightnessFile.text())
+            readonly property int current: parseInt(brightnessFile.text())
+            readonly property int percent: Math.floor(current / max * 100)
             visible: max > 0
             icon: "" // sun
-            text: Math.floor(parseInt(brightnessFile.text()) / max * 100) + "%"
+            text: Math.floor(current / max * 100) + "%"
+
+            Process {
+                id: backlightSetter
+                running: false
+                command: ["brightnessctl", "set", Math.round(brightnessSlider.value)]
+            }
+
+            // Sends the slider's latest value shortly after it changes. If the
+            // previous brightnessctl is still running (so starting it again
+            // would do nothing), waits and tries again instead of dropping it.
+            Timer {
+                id: backlightApply
+                interval: 50
+                onTriggered: {
+                    if (backlightSetter.running)
+                        restart()
+                    else
+                        backlightSetter.running = true
+                }
+            }
+
+            // Follow outside changes (e.g. brightness keys), but not while
+            // dragging, when the real brightness lags behind the handle
+            Binding {
+                target: brightnessSlider
+                property: "value"
+                // Reapply once max is read too; before that `to` is 0 and the
+                // slider clamps the value to 0. Delayed so `to` has updated
+                // by the time the value is applied.
+                value: brightness.max > 0 ? brightness.current : 0
+                when: !brightnessSlider.pressed
+                delayed: true
+            }
         }
 
         Indicator {
