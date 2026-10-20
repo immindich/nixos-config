@@ -109,6 +109,17 @@ Rectangle {
         // 14px apart
         spacing: 2
 
+        // Notification count; bell-slash while do-not-disturb is on
+        Indicator {
+            id: notifications
+            menu: NotificationMenu { anchor.item: notifications }
+
+            readonly property int count: Notifications.history.length
+            icon: Notifications.dnd ? "" : "" // bell-slash : bell
+            contentColor: Notifications.dnd ? Theme.dimTextColor : Theme.textColor
+            text: count > 0 ? count : ""
+        }
+
         Label {
             text: Qt.formatDateTime(clock.date, "ddd d MMM hh:mm")
             leftPadding: 6
