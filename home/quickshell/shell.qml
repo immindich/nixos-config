@@ -32,7 +32,13 @@ Variants {
         anchors.centerIn: parent
       }
 
+      TrayArea {
+        anchors.right: statusArea.left
+        anchors.rightMargin: Theme.bubbleSpacing
+      }
+
       StatusArea {
+        id: statusArea
         anchors.right: parent.right
         anchors.rightMargin: Theme.barMargin
       }

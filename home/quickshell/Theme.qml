@@ -24,9 +24,10 @@ Singleton {
     readonly property int textOffset: 1
 
     // Sizes
-    readonly property int barHeight: 30
     readonly property int bubbleHeight: 26
-    readonly property int barMargin: 4      // gap between bubbles and screen edge
+    readonly property int barMargin: 4      // gap between bubbles and screen edges
+    // Same gap above and below the bubbles as at the sides
+    readonly property int barHeight: bubbleHeight + 2 * barMargin
     readonly property int bubbleSpacing: 4  // gap between bubbles
     readonly property int workspaceSize: 20 // height of a workspace circle
     readonly property int animationDuration: 150
