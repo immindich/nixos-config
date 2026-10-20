@@ -6,7 +6,7 @@ let
     config.allowUnfree = true;
   };
 in {
-  imports = [ ./hyprland.nix ./hyprlock.nix ./hypridle.nix ./ashell.nix ];
+  imports = [ ./hyprland.nix ./hyprlock.nix ./hypridle.nix ];
 
   home.username = "isaiah";
   home.homeDirectory = "/home/isaiah";
@@ -52,6 +52,13 @@ in {
 
   xdg.configFile."quickshell".source =
     config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos-config/home/quickshell";
+
+  # The bar. Started with the Hyprland session via graphical-session.target;
+  # uses the config linked above (no `configs`, so it doesn't conflict)
+  programs.quickshell = {
+    enable = true;
+    systemd.enable = true;
+  };
 
   programs.vscode = {
     enable = true;
