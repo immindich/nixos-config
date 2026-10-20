@@ -7,6 +7,20 @@ let
   fileManager = "dolphin";
   menu = "hyprlauncher";
 
+  # Drag to select a region; saves to ~/screenshots and copies to the clipboard
+  screenshot = pkgs.writeShellApplication {
+    name = "screenshot-region";
+    runtimeInputs = [ pkgs.grim pkgs.slurp pkgs.wl-clipboard ];
+    text = ''
+      dir="$HOME/screenshots"
+      mkdir -p "$dir"
+      file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+      region=$(slurp) || exit 0
+      grim -g "$region" "$file"
+      wl-copy --type image/png < "$file"
+    '';
+  };
+
   bind = key: dsp: { _args = [ key (inline dsp) ]; };
   bindWith = key: dsp: opts: { _args = [ key (inline dsp) opts ]; };
   exec = cmd: "hl.dsp.exec_cmd(${builtins.toJSON cmd})";
@@ -165,11 +179,14 @@ in
         (bind "${mainMod} + Return" (exec terminal))
         (bind "${mainMod} + C" "hl.dsp.window.close()")
         (bind "${mainMod} + M" (exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
+        (bind "${mainMod} + Escape" (exec "pidof hyprlock || hyprlock"))
         (bind "${mainMod} + E" (exec fileManager))
         (bind "${mainMod} + V" ''hl.dsp.window.float({ action = "toggle" })'')
         (bind "${mainMod} + R" (exec menu))
         (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
         (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
+        (bind "Print" (exec (lib.getExe screenshot)))
+        (bind "${mainMod} + SHIFT + P" (exec (lib.getExe screenshot)))
 
         (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
         (bind "${mainMod} + L" ''hl.dsp.focus({ direction = "right" })'')
