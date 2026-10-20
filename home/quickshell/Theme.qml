@@ -26,10 +26,15 @@ Singleton {
 
     // Sizes
     readonly property int bubbleHeight: 26
-    readonly property int barMargin: 4      // gap between bubbles and screen edges
+    // Gap between bubbles and screen edges; same as Hyprland's gaps_out
+    readonly property int barMargin: 6
     // Same gap above and below the bubbles as at the sides
     readonly property int barHeight: bubbleHeight + 2 * barMargin
     readonly property int bubbleSpacing: 4  // gap between bubbles
     readonly property int workspaceSize: 20 // height of a workspace circle
     readonly property int animationDuration: 150
+
+    // Wallpaper
+    readonly property string wallpaper: Quickshell.env("HOME") + "/Pictures/wallpaper.jpg"
+    readonly property real wallpaperDim: 0.45 // opacity of the shade over the top
 }

@@ -71,12 +71,10 @@ in
           gaps_in = 3;
           gaps_out = 6;
           border_size = 1;
+          # Tokyo Night, matching the bar's Theme.qml (accent, dimTextColor)
           col = {
-            active_border = {
-              colors = [ "rgba(33ccffee)" "rgba(00ff99ee)" ];
-              angle = 45;
-            };
-            inactive_border = "rgba(595959aa)";
+            active_border = "rgba(7aa2f7ee)";
+            inactive_border = "rgba(565f89aa)";
           };
           resize_on_border = false;
           allow_tearing = false;

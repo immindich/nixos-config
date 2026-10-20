@@ -4,6 +4,7 @@ import Quickshell.Bluetooth
 import Quickshell.Networking
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
+import Quickshell.Wayland
 
 // Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
 // clock, privacy indicators, then volume, brightness, network and battery
@@ -32,8 +33,8 @@ Rectangle {
     }
 
     // Icon followed by a value, e.g. "🔈 23%", in a pill. Clicking anywhere on
-    // the pill toggles `menu`, if set, and the pill is highlighted while the
-    // menu is open.
+    // the pill toggles `menu` if set, otherwise emits `clicked()`. The pill is
+    // highlighted while the menu is open or `active` is true.
     component Indicator: Rectangle {
         id: indicator
         property alias icon: icon.text
@@ -41,11 +42,13 @@ Rectangle {
         property alias text: label.text
         property color contentColor: Theme.textColor
         property DropdownMenu menu: null
+        property bool active: false
+        signal clicked()
 
         implicitWidth: content.implicitWidth + 12
         implicitHeight: Theme.workspaceSize
         radius: height / 2
-        color: menu?.visible ? Theme.highlight : "transparent"
+        color: menu?.visible || active ? Theme.highlight : "transparent"
         anchors.verticalCenter: parent.verticalCenter
 
         Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
@@ -60,8 +63,12 @@ Rectangle {
         }
 
         TapHandler {
-            enabled: indicator.menu !== null
-            onTapped: indicator.menu.toggle()
+            onTapped: {
+                if (indicator.menu)
+                    indicator.menu.toggle()
+                else
+                    indicator.clicked()
+            }
         }
     }
 
@@ -81,6 +88,23 @@ Rectangle {
         // Indicators are padded pills; this plus their padding spaces items
         // 14px apart
         spacing: 2
+
+        // Keep the screen awake: click to toggle. Highlighted and full color
+        // while on, dimmed while off.
+        Indicator {
+            id: idleInhibit
+            active: IdleInhibit.enabled
+            icon: "\uf7b6" // mug-hot
+            contentColor: IdleInhibit.enabled ? Theme.textColor : Theme.dimTextColor
+            text: ""
+            onClicked: IdleInhibit.enabled = !IdleInhibit.enabled
+
+            // Attached to this bar's window, which the compositor respects
+            IdleInhibitor {
+                window: idleInhibit.QsWindow.window
+                enabled: IdleInhibit.enabled
+            }
+        }
 
         // Notification count; bell-slash while do-not-disturb is on
         Indicator {

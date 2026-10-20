@@ -3,6 +3,12 @@ import Quickshell.Io
 import QtQuick
 
 ShellRoot {
+  // One wallpaper per screen
+  Variants {
+    model: Quickshell.screens
+    delegate: Wallpaper {}
+  }
+
   // One bar per screen
   Variants {
     model: Quickshell.screens;
@@ -23,6 +29,9 @@ ShellRoot {
         }
 
         implicitHeight: Theme.barHeight
+        // Reserve space only down to the bubbles; Hyprland's gaps_out supplies
+        // the gap below them, so it matches the gaps between windows
+        exclusiveZone: Theme.barHeight - Theme.barMargin
         color: "transparent"
 
         WorkspaceSwitcher {
