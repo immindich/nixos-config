@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
-import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
@@ -76,32 +75,6 @@ Rectangle {
         objects: Pipewire.nodes.values
     }
 
-    FileView { id: brightnessFile; path: "/sys/class/backlight/intel_backlight/brightness" }
-    FileView { id: maxBrightnessFile; path: "/sys/class/backlight/intel_backlight/max_brightness" }
-
-    // sysfs doesn't send file change notifications, but the kernel announces
-    // backlight changes as udev events (this is how ashell does it). Each line
-    // udevadm prints means something may have changed, so re-read the file.
-    Process {
-        id: backlightMonitor
-        running: true
-        command: ["udevadm", "monitor", "--udev", "--subsystem-match=backlight"]
-        stdout: SplitParser {
-            onRead: brightnessFile.reload()
-        }
-        // Restart it if it exits or fails to start, after a cooldown so a
-        // broken command doesn't run in a tight loop
-        onRunningChanged: if (!running) backlightRestart.start()
-    }
-    Timer {
-        id: backlightRestart
-        interval: 5000
-        onTriggered: {
-            brightnessFile.reload() // catch changes missed while it was down
-            backlightMonitor.running = true
-        }
-    }
-
     Row {
         id: row
         anchors.centerIn: parent
@@ -167,16 +140,13 @@ Rectangle {
             id: brightness
             menu: BrightnessMenu {
                 anchor.item: brightness
-                current: brightness.current
-                max: brightness.max
+                current: Brightness.current
+                max: Brightness.max
             }
 
-            readonly property int max: parseInt(maxBrightnessFile.text())
-            readonly property int current: parseInt(brightnessFile.text())
-            readonly property int percent: Math.floor(current / max * 100)
-            visible: max > 0
+            visible: Brightness.max > 0
             icon: "" // sun
-            text: Math.floor(current / max * 100) + "%"
+            text: Brightness.percent + "%"
         }
 
         Indicator {

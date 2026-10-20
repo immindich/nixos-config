@@ -77,4 +77,7 @@ ShellRoot {
 
   // One popup stack, on the focused screen
   NotificationPopups {}
+
+  // Volume/brightness OSD, on the focused screen
+  Osd {}
 }
