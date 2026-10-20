@@ -7,6 +7,11 @@
     package = null;
 
     settings = {
+      # Uses fprintd over D-Bus, in parallel with the password field
+      auth = {
+        fingerprint.enabled = true;
+      };
+
       general = {
         hide_cursor = true;
         ignore_empty_input = true;

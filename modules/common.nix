@@ -10,6 +10,9 @@
     powerOnBoot = false;
   };
 
+  # Battery info for the ashell bar
+  services.upower.enable = true;
+
   environment.systemPackages = with pkgs; [
     vim
     git
@@ -18,6 +21,10 @@
     brightnessctl
     nvd
     bluetui
+    wl-clipboard
+    quickshell
+    grim
+    python3
   ];
 
   # Select internationalisation properties.
@@ -64,6 +71,7 @@
   services.flatpak.enable = true;
 
   programs.hyprland.enable = true;
+  programs.hyprlock.enable = true;
   programs.firefox.enable = true;
 
   programs.nix-ld = {

@@ -8,6 +8,14 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      # Turn off fingerprint PAM auth for every service (see fprintd below)
+      {
+        options.security.pam.services = lib.mkOption {
+          type = lib.types.attrsOf (lib.types.submodule {
+            config.fprintAuth = lib.mkDefault false;
+          });
+        };
+      }
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -22,6 +30,11 @@
   fileSystems."/".options = [ "noatime" "nodiratime" ];
 
   hardware.cpu.intel.updateMicrocode = true;
+
+  # Only used by hyprlock, which talks to fprintd directly. fprintAuth
+  # defaults to true for every PAM service when fprintd is enabled, and
+  # pam_fprintd blocks password entry until the fingerprint times out.
+  services.fprintd.enable = true;
 
   services.libinput = {
     enable = true;
