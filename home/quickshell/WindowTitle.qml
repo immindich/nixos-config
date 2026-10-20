@@ -27,6 +27,9 @@ Rectangle {
     readonly property string title: onScreen ? toplevel.title : ""
 
     visible: title !== ""
+    // Widest the pill may get; longer titles are cut off with "…"
+    property real maxWidth: 600
+
     implicitWidth: label.width + 24
     implicitHeight: Theme.bubbleHeight
     radius: height / 2
@@ -36,7 +39,7 @@ Rectangle {
         id: label
         anchors.centerIn: parent
         anchors.verticalCenterOffset: Theme.textOffset
-        width: Math.min(implicitWidth, 600)
+        width: Math.max(0, Math.min(implicitWidth, parent.maxWidth - 24))
         text: parent.title
         elide: Text.ElideRight
         font.pixelSize: Theme.fontSize
