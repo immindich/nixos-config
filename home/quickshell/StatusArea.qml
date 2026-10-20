@@ -66,12 +66,6 @@ Rectangle {
     }
 
     // Placeholder menu contents; replace with real controls
-    component MenuHeading: Text {
-        font.pixelSize: Theme.fontSize
-        font.bold: true
-        color: Theme.textColor
-    }
-
     component MenuPlaceholder: Rectangle {
         property alias text: placeholderLabel.text
         width: parent.width - parent.leftPadding - parent.rightPadding
@@ -254,12 +248,7 @@ Rectangle {
 
         Indicator {
             id: power
-            menu: DropdownMenu {
-                anchor.item: power
-                MenuHeading { text: "Power" }
-                MenuPlaceholder { text: "Placeholder 1" }
-                MenuPlaceholder { text: "Placeholder 2" }
-            }
+            menu: PowerMenu { anchor.item: power }
 
             readonly property var battery: UPower.displayDevice
             readonly property int percent: Math.round(battery.percentage * 100)
