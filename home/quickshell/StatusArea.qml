@@ -66,22 +66,6 @@ Rectangle {
         }
     }
 
-    // Placeholder menu contents; replace with real controls
-    component MenuPlaceholder: Rectangle {
-        property alias text: placeholderLabel.text
-        width: parent.width - parent.leftPadding - parent.rightPadding
-        height: 32
-        radius: 8
-        color: Theme.surface
-
-        Text {
-            id: placeholderLabel
-            anchors.centerIn: parent
-            font.pixelSize: Theme.fontSize
-            color: Theme.dimTextColor
-        }
-    }
-
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
@@ -156,12 +140,7 @@ Rectangle {
 
         Indicator {
             id: volume
-            menu: DropdownMenu {
-                anchor.item: volume
-                MenuHeading { text: "Sound" }
-                MenuPlaceholder { text: "Placeholder 1" }
-                MenuPlaceholder { text: "Placeholder 2" }
-            }
+            menu: AudioMenu { anchor.item: volume }
 
             readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
             readonly property int percent: audio ? Math.round(audio.volume * 100) : 0
