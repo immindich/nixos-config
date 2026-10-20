@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Bluetooth
 import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Services.Pipewire
@@ -37,6 +38,7 @@ Rectangle {
     component Indicator: Rectangle {
         id: indicator
         property alias icon: icon.text
+        property alias iconFont: icon.font.family // Theme.brandIconFont for brand glyphs
         property alias text: label.text
         property color contentColor: Theme.textColor
         property DropdownMenu menu: null
@@ -189,18 +191,25 @@ Rectangle {
 
         Indicator {
             id: network
-            menu: DropdownMenu {
-                anchor.item: network
-                MenuHeading { text: "Network" }
-                MenuPlaceholder { text: "Placeholder 1" }
-                MenuPlaceholder { text: "Placeholder 2" }
-            }
+            menu: NetworkMenu { anchor.item: network }
 
             readonly property var devices: Networking.devices.values
             readonly property bool wired: devices.some(d => d.type === DeviceType.Wired && d.connected)
             readonly property bool wifi: devices.some(d => d.type === DeviceType.Wifi && d.connected)
             icon: wired ? "" : "" // network-wired : wifi
             contentColor: wired || wifi ? Theme.textColor : Theme.dimTextColor
+            text: ""
+        }
+
+        Indicator {
+            id: bluetooth
+            menu: BluetoothMenu { anchor.item: bluetooth }
+
+            readonly property var adapter: Bluetooth.defaultAdapter
+            visible: adapter !== null
+            icon: "" // bluetooth-b
+            iconFont: Theme.brandIconFont
+            contentColor: adapter?.enabled ? Theme.textColor : Theme.dimTextColor
             text: ""
         }
 

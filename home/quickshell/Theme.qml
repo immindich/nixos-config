@@ -19,6 +19,7 @@ Singleton {
     // Fonts
     readonly property int fontSize: 14
     readonly property string iconFont: "Font Awesome 7 Free"
+    readonly property string brandIconFont: "Font Awesome 7 Brands" // e.g. Bluetooth
     readonly property int iconSize: 12
     // Text is centered including descenders, which makes it look too high
     readonly property int textOffset: 1
