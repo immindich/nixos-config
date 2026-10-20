@@ -1,7 +1,12 @@
-{ pkgs, ... }:
+{ pkgs, config, inputs, ... }:
 
-{
-  imports = [ ./hyprland.nix ./waybar.nix ];
+let
+  unstable = import inputs.nixpkgs-unstable {
+    system = pkgs.stdenv.hostPlatform.system;
+    config.allowUnfree = true;
+  };
+in {
+  imports = [ ./hyprland.nix ./hyprlock.nix ./hypridle.nix ./ashell.nix ];
 
   home.username = "isaiah";
   home.homeDirectory = "/home/isaiah";
@@ -33,6 +38,7 @@
 
   # Runs hyprlauncher as a daemon so the launcher opens instantly
   services.hyprlauncher.enable = true;
+  services.hyprpolkitagent.enable = true;
 
   home.sessionPath = [ "$HOME/.local/bin" ];
 
@@ -43,4 +49,14 @@
   gtk.theme.package = pkgs.gnome-themes-extra;
 
   dconf.settings."org/gnome/desktop/interface".font-name = "Cantarell 9";
+
+  xdg.configFile."quickshell".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos-config/home/quickshell";
+
+  programs.vscode = {
+    enable = true;
+    package = unstable.vscode.override {
+      commandLineArgs = "--password-store=gnome-libsecret";
+    };
+  };
 }

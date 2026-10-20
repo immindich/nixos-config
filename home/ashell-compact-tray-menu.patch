@@ -1,0 +1,44 @@
+--- a/src/modules/tray.rs	2026-10-19 19:14:57.271699719 -0400
++++ b/src/modules/tray.rs	2026-10-19 19:14:57.275385098 -0400
+@@ -2,7 +2,7 @@
+     components::divider,
+     components::icons::{StaticIcon, icon},
+     components::{
+-        ButtonHierarchy, ButtonKind, ButtonUIRef, IconPosition, MenuSize, position_button,
++        ButtonHierarchy, ButtonKind, ButtonSize, ButtonUIRef, IconPosition, MenuSize, position_button,
+         styled_button,
+     },
+     components::{scrollable, toggler},
+@@ -199,6 +199,7 @@
+                     .width(Length::Fill)
+                     .into();
+                 styled_button(content)
++                    .size(ButtonSize::Small)
+                     .on_press(Message::MenuToggled(name.to_owned(), layout.0))
+                     .width(Length::Fill)
+                     .into()
+@@ -228,6 +229,7 @@
+                 Column::with_capacity(2)
+                     .push(
+                         styled_button(content)
++                            .size(ButtonSize::Small)
+                             .icon(
+                                 if is_open {
+                                     StaticIcon::MenuOpen
+@@ -256,6 +258,7 @@
+             LayoutProps {
+                 label: Some(label), ..
+             } if !label.is_empty() => styled_button(label.replace("_", ""))
++                .size(ButtonSize::Small)
+                 .on_press(Message::MenuSelected(name.to_owned(), layout.0))
+                 .width(Length::Fill)
+                 .into(),
+@@ -333,7 +336,7 @@
+             Some(item) => Column::with_children(
+                 renderable_children(&item.menu.2).map(|menu| self.menu_voice(name, menu)),
+             )
+-            .spacing(space.xs),
++            .spacing(space.xxs),
+             _ => Column::new(),
+         };
+ 
