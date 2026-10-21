@@ -48,6 +48,24 @@ in {
   gtk.theme.name = "Adwaita-dark";
   gtk.theme.package = pkgs.gnome-themes-extra;
 
+  # Qt apps: KDE's platform theme with the Breeze style
+  qt.enable = true;
+  qt.platformTheme.name = "kde";
+  qt.platformTheme.package = pkgs.kdePackages.plasma-integration;
+  qt.style.name = "breeze";
+  qt.style.package = pkgs.kdePackages.breeze;
+
+  home.packages = [
+    # Icon theme for the bar's app icons; selected in shell.qml
+    pkgs.papirus-icon-theme
+    # Breeze Dark colours as a system-wide kdeglobals. KDE apps merge it under
+    # ~/.config/kdeglobals, which stays writable for their own settings.
+    (pkgs.runCommand "breeze-dark-kdeglobals" { } ''
+      mkdir -p $out/etc/xdg
+      ln -s ${pkgs.kdePackages.breeze}/share/color-schemes/BreezeDark.colors $out/etc/xdg/kdeglobals
+    '')
+  ];
+
   dconf.settings."org/gnome/desktop/interface".font-name = "Cantarell 9";
 
   xdg.configFile."quickshell".source =
