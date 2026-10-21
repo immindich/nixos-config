@@ -7,6 +7,8 @@ import Quickshell.Networking
 // password NetworkManager doesn't have yet, a password field opens below it.
 DropdownMenu {
     id: networkMenu
+    // For the password field
+    takesKeyboard: true
 
     readonly property var wifiDevice: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
 
