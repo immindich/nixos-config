@@ -65,6 +65,9 @@ PopupWindow {
             anchors.fill: parent
             padding: 12
             spacing: 8
+
+            // Reached from any focused child that doesn't handle Escape itself
+            Keys.onEscapePressed: menu.visible = false
         }
     }
 }

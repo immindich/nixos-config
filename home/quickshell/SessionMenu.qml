@@ -7,7 +7,8 @@ import Quickshell.Widgets
 // Start menu, opened from the NixOS button: an application search field
 // (type, pick with Up/Down, launch with Enter) above a row of lock, sleep,
 // shut down and exit Hyprland buttons. Shut down and exit ask for
-// confirmation first. Set `anchor.item` to the button.
+// confirmation first. Tab cycles between the search field and the buttons.
+// Set `anchor.item` to the button.
 DropdownMenu {
     id: sessionMenu
     implicitWidth: 300
@@ -15,6 +16,8 @@ DropdownMenu {
 
     // Action awaiting confirmation, or null while showing the buttons
     property var pending: null
+    // Button that set `pending`, to give focus back to on Cancel
+    property Item pendingButton: null
 
     // Index of the highlighted search result
     property int selected: 0
@@ -79,11 +82,16 @@ DropdownMenu {
 
     function launch(entry) {
         sessionMenu.visible = false
-        entry.execute()
+        // execute() ignores Terminal=true, so wrap those in foot ourselves
+        Quickshell.execDetached({
+            command: entry.runInTerminal ? ["foot", "--"].concat(entry.command) : entry.command,
+            workingDirectory: entry.workingDirectory
+        })
     }
 
     // Rounded button with an optional Font Awesome icon before its label;
-    // content is left-aligned unless `centered`
+    // content is left-aligned unless `centered`. Reachable with Tab and
+    // pressed with Enter or Space.
     component MenuButton: Rectangle {
         id: button
         property alias icon: iconText.text
@@ -95,6 +103,13 @@ DropdownMenu {
         implicitHeight: 28
         radius: height / 2
         color: hover.hovered ? Theme.highlight : Theme.surface
+        border.width: activeFocus ? 1 : 0
+        border.color: Theme.accent
+
+        activeFocusOnTab: true
+        Keys.onReturnPressed: button.clicked()
+        Keys.onEnterPressed: button.clicked()
+        Keys.onSpacePressed: button.clicked()
 
         Row {
             anchors.verticalCenter: parent.verticalCenter
@@ -160,6 +175,7 @@ DropdownMenu {
             font.pixelSize: Theme.fontSize
             color: Theme.textColor
             selectionColor: Theme.accent
+            activeFocusOnTab: true
 
             onAccepted: {
                 const entry = sessionMenu.results[sessionMenu.selected]
@@ -168,7 +184,6 @@ DropdownMenu {
             }
             Keys.onUpPressed: sessionMenu.selected = Math.max(sessionMenu.selected - 1, 0)
             Keys.onDownPressed: sessionMenu.selected = Math.min(sessionMenu.selected + 1, sessionMenu.results.length - 1)
-            Keys.onEscapePressed: sessionMenu.visible = false
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -191,7 +206,8 @@ DropdownMenu {
             width: parent.width - parent.leftPadding - parent.rightPadding
             height: 32
             radius: 8
-            color: index === sessionMenu.selected ? Theme.highlight : "transparent"
+            // Only while Enter would launch it
+            color: index === sessionMenu.selected && searchInput.activeFocus ? Theme.highlight : "transparent"
 
             IconImage {
                 id: appIcon
@@ -230,15 +246,22 @@ DropdownMenu {
             model: sessionMenu.actions
 
             MenuButton {
+                id: actionButton
                 required property var modelData
                 width: (parent.width - 3 * parent.spacing) / 4
                 icon: modelData.icon
                 centered: true
                 onClicked: {
-                    if (modelData.confirm)
+                    if (modelData.confirm) {
+                        // This button is about to hide; keep keyboard focus in the menu
+                        const hadFocus = activeFocus
+                        sessionMenu.pendingButton = actionButton
                         sessionMenu.pending = modelData
-                    else
+                        if (hadFocus)
+                            cancelButton.forceActiveFocus()
+                    } else {
                         sessionMenu.run(modelData)
+                    }
                 }
             }
         }
@@ -255,10 +278,17 @@ DropdownMenu {
         spacing: 8
 
         MenuButton {
+            id: cancelButton
             width: (parent.width - parent.spacing) / 2
             text: "Cancel"
             centered: true
-            onClicked: sessionMenu.pending = null
+            onClicked: {
+                // Return focus to the button that asked for confirmation
+                const hadFocus = activeFocus
+                sessionMenu.pending = null
+                if (hadFocus)
+                    sessionMenu.pendingButton.forceActiveFocus()
+            }
         }
 
         MenuButton {
