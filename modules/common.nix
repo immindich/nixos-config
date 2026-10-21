@@ -14,6 +14,7 @@
   services.upower.enable = true;
 
   environment.systemPackages = with pkgs; [
+    jq
     vim
     git
     wget

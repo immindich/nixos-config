@@ -45,6 +45,9 @@ nix eval .#nixosConfigurations.<host>.config.<option.path>   # check a single op
 - Sections are written alphabetically, except `curve` goes first.
 - Output lands at `~/.config/hypr/hyprland.lua`. To check the rendering without switching:
   `nix eval --raw '.#nixosConfigurations.<host>.config.home-manager.users.isaiah.xdg.configFile."hypr/hyprland.lua".text'`
+- To screenshot an app window (e.g. to check theming), capture the window itself rather than a screen region: I may switch workspaces while you test, and a region grab then shows whatever is on screen. Find the window's `stableId`, then capture it; this works even when the window is on a workspace that isn't visible:
+  `grim -T "$(hyprctl clients -j | jq -r '.[] | select(.pid == <pid>) | .stableId')" <scratchpad>/window.png`
+  (or select on `.class`).
 
 ## Quickshell
 
