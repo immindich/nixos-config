@@ -5,8 +5,23 @@ import Quickshell.Hyprland
 // Styled after ashell's Workspaces module (Tokyo Night colors).
 // Regular workspaces in one bubble, special workspaces in a second one.
 Row {
+    id: switcher
     anchors.verticalCenter: parent.verticalCenter
     spacing: Theme.bubbleSpacing
+
+    // Names of the special workspaces open on any monitor, as in WindowTitle;
+    // HyprlandWorkspace.active doesn't cover them
+    readonly property var openSpecials: Hyprland.monitors.values
+        .map(m => m.lastIpcObject?.specialWorkspace?.name ?? "")
+        .filter(name => name !== "")
+
+    Connections {
+        target: Hyprland
+        function onRawEvent(event) {
+            if (event.name === "activespecial")
+                Hyprland.refreshMonitors()
+        }
+    }
 
     component Bubble: Rectangle {
         default property alias content: row.data
@@ -25,10 +40,13 @@ Row {
     component WorkspaceButton: Rectangle {
         required property var modelData
         readonly property var ws: typeof modelData === "number" ? null : modelData
-        readonly property bool active: ws !== null && ws.active
+        // Special workspaces show an icon instead of their name
+        readonly property bool special: ws !== null && ws.name.startsWith("special:")
+        readonly property bool active: ws !== null
+            && (special ? switcher.openSpecials.includes(ws.name) : ws.active)
         readonly property bool empty: ws === null || ws.toplevels.values.length === 0
 
-        width: active ? 2 * height : Math.max(height, label.implicitWidth + 12)
+        width: active ? 2 * height : special ? height : Math.max(height, label.implicitWidth + 12)
         height: Theme.workspaceSize
         radius: height / 2
         color: active ? Theme.accent : empty ? Theme.surface : Theme.occupied
@@ -40,9 +58,20 @@ Row {
             id: label
             anchors.centerIn: parent
             anchors.verticalCenterOffset: Theme.textOffset
-            text: ws ? ws.name.replace(/^special:/, "") : modelData
+            visible: !special
+            text: ws ? ws.name : modelData
             font.pixelSize: Theme.fontSize
             color: empty && !active ? Theme.textColor : Theme.background
+        }
+
+        Text {
+            anchors.centerIn: parent
+            visible: special
+            text: "\ue2ca" // wand-magic-sparkles
+            font.family: Theme.iconFont
+            font.weight: Font.Black
+            font.pixelSize: Theme.iconSize
+            color: Theme.background
         }
 
         MouseArea {

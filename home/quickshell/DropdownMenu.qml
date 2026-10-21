@@ -10,6 +10,12 @@ PopupWindow {
 
     default property alias content: column.data
 
+    // Take keyboard input, e.g. for a text field. Uses a Wayland popup grab
+    // instead of HyprlandFocusGrab, since a popup only gets the keyboard
+    // with the former; clicking anywhere outside the popup closes it.
+    property bool takesKeyboard: false
+    grabFocus: takesKeyboard
+
     // Hang below the bar, centered on the anchor item; slides back on screen
     // if it would go past the edge
     anchor.rect.x: anchor.item ? (anchor.item.width - width) / 2 : 0
@@ -39,7 +45,7 @@ PopupWindow {
 
     // Hyprland rejects a grab on a window that isn't mapped yet, so start it
     // once the popup is actually on screen
-    onBackingWindowVisibleChanged: grab.active = backingWindowVisible
+    onBackingWindowVisibleChanged: grab.active = backingWindowVisible && !takesKeyboard
 
     // Clicks on the bar don't clear the grab, so clicking another indicator
     // switches menus in one click. The bar closes the menu itself (shell.qml).
