@@ -24,7 +24,46 @@
     wl-clipboard
     quickshell
     grim
+    slurp
+    lf
     python3
+    pavucontrol
+    htop
+    acpi
+    acpilight
+    ncdu
+    screenfetch
+    powertop
+    efibootmgr
+    pciutils
+    usbutils
+    smartmontools
+    unzip
+    lm_sensors
+    lzip
+    restic
+    intel-gpu-tools
+    ffmpeg-full
+    tmux
+    tor-browser
+    chromium
+    networkmanagerapplet
+    sysstat
+    kdePackages.okular
+    sl
+    texliveMedium
+    yt-dlp
+    dosbox
+    transmission_4-qt6
+    imagemagick
+    p7zip
+    unrar
+    jellyfin-desktop
+    xeyes
+    wineWow64Packages.stable
+    signal-desktop
+    nix-tree
+    file
   ];
 
   # Select internationalisation properties.
@@ -51,7 +90,7 @@
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
-#    google-fonts
+    google-fonts
     corefonts
   ];
 
