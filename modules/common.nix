@@ -113,6 +113,9 @@
   programs.hyprland.enable = true;
   programs.hyprlock.enable = true;
   programs.firefox.enable = true;
+  # Open the camera through PipeWire instead of /dev/video directly, so the
+  # bar's privacy indicator can see it
+  programs.firefox.preferences."media.webrtc.camera.allow-pipewire" = true;
 
   programs.nix-ld = {
     enable = true;

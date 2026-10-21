@@ -134,16 +134,17 @@ Rectangle {
 
             readonly property bool micInUse: Pipewire.nodes.values.some(n => n.properties?.["media.class"] === "Stream/Input/Audio")
             // Video streams are split into screen sharing (fed by the Hyprland
-            // portal) and everything else (cameras)
+            // portal) and everything else (cameras). The portal's node is named
+            // after its binary, ".xdg-desktop-portal-hyprland-wrapped" on NixOS.
             readonly property var videoSources: Pipewire.links.values
                 .filter(l => l.target?.properties?.["media.class"] === "Stream/Input/Video")
                 .map(l => l.source?.name ?? "")
-            readonly property bool screenInUse: videoSources.some(n => n.startsWith("xdph"))
-            readonly property bool cameraInUse: videoSources.some(n => !n.startsWith("xdph"))
+            readonly property bool screenInUse: videoSources.some(n => n.includes("xdg-desktop-portal-hyprland"))
+            readonly property bool cameraInUse: videoSources.some(n => !n.includes("xdg-desktop-portal-hyprland"))
 
             Icon { text: ""; color: Theme.bad; visible: privacy.micInUse }    // microphone
             Icon { text: ""; color: Theme.bad; visible: privacy.cameraInUse } // video
-            Icon { text: ""; color: Theme.bad; visible: privacy.screenInUse } // display
+            Icon { text: ""; color: Theme.bad; visible: privacy.screenInUse } // circle-dot (recording)
         }
 
         Indicator {
