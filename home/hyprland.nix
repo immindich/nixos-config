@@ -7,17 +7,21 @@ let
   fileManager = "dolphin";
   menu = "hyprlauncher";
 
-  # Drag to select a region; saves to ~/screenshots and copies to the clipboard
+  # Drag to select a region; saves to ~/screenshots and copies to the clipboard.
+  # Does nothing if a selection is already in progress.
   screenshot = pkgs.writeShellApplication {
     name = "screenshot-region";
-    runtimeInputs = [ pkgs.grim pkgs.slurp pkgs.wl-clipboard ];
+    runtimeInputs = [ pkgs.grim pkgs.slurp pkgs.wl-clipboard pkgs.util-linux ];
     text = ''
+      exec 9>"$XDG_RUNTIME_DIR/screenshot-region.lock"
+      flock -n 9 || exit 0
       dir="$HOME/screenshots"
       mkdir -p "$dir"
       file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
       region=$(slurp) || exit 0
       grim -g "$region" "$file"
-      wl-copy --type image/png < "$file"
+      # wl-copy stays running to serve the clipboard; don't let it hold the lock
+      wl-copy --type image/png < "$file" 9>&-
     '';
   };
 
@@ -43,7 +47,8 @@ let
   ) (lib.range 1 10);
 in
 {
-  home.packages = [ pkgs.rose-pine-hyprcursor ];
+  # The XCursor version is for clients that draw their own cursor, like slurp
+  home.packages = [ pkgs.rose-pine-hyprcursor pkgs.rose-pine-cursor ];
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -61,6 +66,7 @@ in
       };
 
       env = [
+        { _args = [ "XCURSOR_THEME" "BreezeX-RosePine-Linux" ]; }
         { _args = [ "XCURSOR_SIZE" "24" ]; }
         { _args = [ "HYPRCURSOR_SIZE" "24" ]; }
         { _args = [ "HYPRCURSOR_THEME" "rose-pine-hyprcursor" ]; }
