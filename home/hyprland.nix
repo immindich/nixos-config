@@ -47,8 +47,9 @@ let
   ) (lib.range 1 10);
 in
 {
-  # The XCursor version is for clients that draw their own cursor, like slurp
-  home.packages = [ pkgs.rose-pine-hyprcursor pkgs.rose-pine-cursor ];
+  # The XCursor version is for clients that draw their own cursor, like slurp.
+  # playerctl is for the media key binds below.
+  home.packages = [ pkgs.rose-pine-hyprcursor pkgs.rose-pine-cursor pkgs.playerctl ];
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -230,7 +231,7 @@ in
         (bindWith "XF86MonBrightnessUp" (exec "brightnessctl -e4 -n2 set 5%+") mediaOpts)
         (bindWith "XF86MonBrightnessDown" (exec "brightnessctl -e4 -n2 set 5%-") mediaOpts)
 
-        # Media keys (requires playerctl)
+        # Media keys
         (bindWith "XF86AudioNext" (exec "playerctl next") { locked = true; })
         (bindWith "XF86AudioPause" (exec "playerctl play-pause") { locked = true; })
         (bindWith "XF86AudioPlay" (exec "playerctl play-pause") { locked = true; })

@@ -89,6 +89,20 @@ Rectangle {
         // 14px apart
         spacing: 2
 
+        // Media player: play icon while playing, dimmed pause icon while
+        // paused; hidden when no player is running
+        Indicator {
+            id: media
+            menu: MediaMenu { anchor.item: media }
+
+            readonly property var player: Media.player
+            readonly property bool playing: player?.isPlaying ?? false
+            visible: player !== null
+            icon: playing ? "\uf04b" : "\uf04c" // play : pause
+            contentColor: playing ? Theme.textColor : Theme.dimTextColor
+            text: ""
+        }
+
         // Keep the screen awake: click to toggle. Highlighted and full color
         // while on, dimmed while off.
         Indicator {
