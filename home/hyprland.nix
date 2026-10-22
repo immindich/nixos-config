@@ -25,6 +25,23 @@ let
     '';
   };
 
+  # Capture the focused window via the compositor (works even if it's partly
+  # covered); saves to ~/screenshots, copies to the clipboard, plays a sound.
+  screenshotWindow = pkgs.writeShellApplication {
+    name = "screenshot-window";
+    runtimeInputs = [ pkgs.grim pkgs.jq pkgs.wl-clipboard pkgs.pipewire ];
+    text = ''
+      id=$(hyprctl activewindow -j | jq -r '.stableId // empty')
+      [ -n "$id" ] || exit 0
+      dir="$HOME/screenshots"
+      mkdir -p "$dir"
+      file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+      grim -T "$id" "$file"
+      pw-play ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/screen-capture.oga &
+      wl-copy --type image/png < "$file"
+    '';
+  };
+
   bind = key: dsp: { _args = [ key (inline dsp) ]; };
   bindWith = key: dsp: opts: { _args = [ key (inline dsp) opts ]; };
   exec = cmd: "hl.dsp.exec_cmd(${builtins.toJSON cmd})";
@@ -194,6 +211,7 @@ in
         (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
         (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
         (bind "Print" (exec (lib.getExe screenshot)))
+        (bind "SHIFT + Print" (exec (lib.getExe screenshotWindow)))
         (bind "${mainMod} + SHIFT + P" (exec (lib.getExe screenshot)))
 
         (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
