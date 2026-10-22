@@ -5,7 +5,6 @@ let
   mainMod = "SUPER";
   terminal = "foot";
   fileManager = "dolphin";
-  menu = "hyprlauncher";
 
   # Drag to select a region; saves to ~/screenshots and copies to the clipboard.
   # Does nothing if a selection is already in progress.
@@ -204,7 +203,6 @@ in
         (bind "${mainMod} + Escape" (exec "pidof hyprlock || hyprlock"))
         (bind "${mainMod} + E" (exec fileManager))
         (bind "${mainMod} + V" ''hl.dsp.window.float({ action = "toggle" })'')
-        (bind "${mainMod} + R" (exec menu))
         # Tapping SUPER on its own toggles the Quickshell start menu
         (bindWith "${mainMod} + Super_L" (exec "qs ipc call startmenu toggle") { release = true; })
         (bind "${mainMod} + SHIFT + V" (exec "qs ipc call clipboard toggle"))
