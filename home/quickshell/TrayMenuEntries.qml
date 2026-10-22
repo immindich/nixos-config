@@ -41,15 +41,17 @@ Column {
                 }
             }
 
+            // Grows for labels that wrap or contain line breaks
             Rectangle {
                 visible: !entry.modelData.isSeparator
                 width: parent.width
-                height: 28
+                height: Math.max(28, row.implicitHeight + 10)
                 radius: 8
                 color: hover.hovered && entry.modelData.enabled ? Theme.highlight : "transparent"
                 opacity: entry.modelData.enabled ? 1 : 0.5
 
                 RowLayout {
+                    id: row
                     anchors.fill: parent
                     anchors.leftMargin: 8 + entries.depth * 12
                     anchors.rightMargin: 8
@@ -69,8 +71,11 @@ Column {
                             : "" // check
                     }
 
+                    // Hidden if the icon fails to load (e.g. Quickshell only
+                    // reads PNG icon data; Tailscale's tray sends JPEG)
                     IconImage {
-                        visible: entry.modelData.icon !== ""
+                        id: icon
+                        visible: entry.modelData.icon !== "" && status !== Image.Error
                         source: entry.modelData.icon
                         implicitSize: 16
                     }
@@ -80,6 +85,8 @@ Column {
                         Layout.alignment: Qt.AlignVCenter
                         Layout.topMargin: Theme.textOffset
                         text: entry.modelData.text
+                        wrapMode: Text.Wrap
+                        maximumLineCount: 4
                         elide: Text.ElideRight
                         font.pixelSize: Theme.fontSize
                         color: Theme.textColor
