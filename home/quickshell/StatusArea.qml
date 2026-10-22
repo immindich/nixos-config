@@ -58,7 +58,7 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 4
 
-            Icon { id: icon; color: indicator.contentColor }
+            Icon { id: icon; color: indicator.contentColor; visible: text !== "" }
             Label { id: label; color: indicator.contentColor; visible: text !== "" }
         }
 
@@ -131,10 +131,16 @@ Rectangle {
             text: count > 0 ? count : ""
         }
 
-        Label {
+        // Clock; opens the calendar
+        Indicator {
+            id: clockIndicator
+            menu: CalendarMenu {
+                anchor.item: clockIndicator
+                today: clock.date
+            }
+
+            icon: ""
             text: Qt.formatDateTime(clock.date, "ddd d MMM hh:mm")
-            leftPadding: 6
-            rightPadding: 6
         }
 
         // Privacy: shown only while something records the mic, camera or screen
