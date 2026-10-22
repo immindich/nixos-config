@@ -1,4 +1,4 @@
-{ pkgs, config, inputs, ... }:
+{ lib, pkgs, config, inputs, ... }:
 
 let
   unstable = import inputs.nixpkgs-unstable {
@@ -76,6 +76,22 @@ in {
   programs.quickshell = {
     enable = true;
     systemd.enable = true;
+  };
+
+  # Tailscale's tray applet. Started after the bar, whose tray it registers
+  # with; the daemon has isaiah set as operator so it can control it.
+  systemd.user.services.tailscale-systray = {
+    Unit = {
+      Description = "Tailscale system tray";
+      After = [ "quickshell.service" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${lib.getExe pkgs.tailscale} systray";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
   };
 
   programs.vscode = {
