@@ -119,8 +119,11 @@ Column {
                 }
             }
 
+            // Hidden while unloaded: a Loader keeps its last size after its
+            // item is destroyed, which would leave a gap in the column
             Loader {
                 active: entry.expanded
+                visible: active
                 width: parent.width
                 source: "TrayMenuEntries.qml"
                 onLoaded: {
