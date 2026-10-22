@@ -38,6 +38,8 @@ in {
 
   # Runs hyprlauncher as a daemon so the launcher opens instantly
   services.hyprlauncher.enable = true;
+  # Clipboard history, shown by the bar's clipboard menu
+  services.cliphist.enable = true;
   services.hyprpolkitagent.enable = true;
 
   home.sessionPath = [ "$HOME/.local/bin" ];

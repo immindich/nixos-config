@@ -190,6 +190,7 @@ in
         (bind "${mainMod} + R" (exec menu))
         # Tapping SUPER on its own toggles the Quickshell start menu
         (bindWith "${mainMod} + Super_L" (exec "qs ipc call startmenu toggle") { release = true; })
+        (bind "${mainMod} + SHIFT + V" (exec "qs ipc call clipboard toggle"))
         (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
         (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
         (bind "Print" (exec (lib.getExe screenshot)))

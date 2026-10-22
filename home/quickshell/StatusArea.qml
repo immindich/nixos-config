@@ -120,6 +120,15 @@ Rectangle {
             }
         }
 
+        // Clipboard history
+        Indicator {
+            id: clipboard
+            menu: ClipboardMenu { anchor.item: clipboard }
+
+            icon: "\uf328" // clipboard
+            text: ""
+        }
+
         // Notification count; bell-slash while do-not-disturb is on
         Indicator {
             id: notifications
