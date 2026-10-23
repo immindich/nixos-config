@@ -151,6 +151,17 @@ Rectangle {
             text: count > 0 ? count : ""
         }
 
+        // Weather: conditions icon and temperature; hidden until the first
+        // forecast arrives
+        Indicator {
+            id: weatherIndicator
+            menu: WeatherMenu { anchor.item: weatherIndicator }
+
+            visible: Weather.available
+            icon: Weather.icon
+            text: Weather.temperature + "°"
+        }
+
         // Clock; opens the calendar
         Indicator {
             id: clockIndicator

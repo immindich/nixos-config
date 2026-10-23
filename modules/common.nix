@@ -13,6 +13,8 @@
   # Battery info for the ashell bar
   services.upower.enable = true;
 
+  services.geoclue2.enable = true;
+
   environment.systemPackages = with pkgs; [
     jq
     vim
@@ -65,6 +67,7 @@
     signal-desktop
     nix-tree
     file
+    sox
   ];
 
   # Select internationalisation properties.
