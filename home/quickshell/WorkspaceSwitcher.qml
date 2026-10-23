@@ -4,10 +4,25 @@ import Quickshell.Hyprland
 
 // Styled after ashell's Workspaces module (Tokyo Night colors).
 // Regular workspaces in one bubble, special workspaces in a second one.
+// Scrolling on the regular bubble steps through the workspaces it shows.
 Row {
     id: switcher
     anchors.verticalCenter: parent.verticalCenter
     spacing: Theme.bubbleSpacing
+
+    // Focus the workspace `direction` places along the regular bubble from
+    // the active one (up = previous, down = next); stops at the ends
+    function step(direction) {
+        const shown = regularModel.values
+        const active = shown.find(w => typeof w !== "number" && w.active)
+        if (!active)
+            return
+        const index = shown.indexOf(active) - direction
+        if (index < 0 || index >= shown.length)
+            return
+        const target = shown[index]
+        Hyprland.dispatch("hl.dsp.focus({ workspace = " + (typeof target === "number" ? target : target.id) + " })")
+    }
 
     // Names of the special workspaces open on any monitor, as in WindowTitle;
     // HyprlandWorkspace.active doesn't cover them
@@ -25,6 +40,8 @@ Row {
 
     component Bubble: Rectangle {
         default property alias content: row.data
+        // Scroll wheel notches on the bubble (1 = up, -1 = down)
+        signal scrolled(int direction)
         implicitWidth: row.implicitWidth + 8
         implicitHeight: Theme.bubbleHeight
         radius: height / 2
@@ -35,6 +52,8 @@ Row {
             anchors.centerIn: parent
             spacing: Theme.bubbleSpacing
         }
+
+        WheelSteps { onStepped: direction => scrolled(direction) }
     }
 
     component WorkspaceButton: Rectangle {
@@ -88,10 +107,13 @@ Row {
     }
 
     Bubble {
+        onScrolled: direction => switcher.step(direction)
+
         Repeater {
             // Workspaces 1-5 always appear; ones that don't exist yet are
             // plain numbers instead of HyprlandWorkspace objects
             model: ScriptModel {
+                id: regularModel
                 values: {
                     const regular = Hyprland.workspaces.values.filter(ws => !ws.name.startsWith("special:"))
                     for (let id = 1; id <= 5; id++) {

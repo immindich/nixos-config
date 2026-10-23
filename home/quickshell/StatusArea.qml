@@ -199,6 +199,23 @@ Rectangle {
                 : percent < 50 ? ""            // volume-low
                 : ""                           // volume-high
             text: audio && !audio.muted ? percent + "%" : ""
+
+            // Middle click mutes and unmutes
+            TapHandler {
+                acceptedButtons: Qt.MiddleButton
+                onTapped: if (volume.audio) volume.audio.muted = !volume.audio.muted
+            }
+
+            // Scroll to change the volume in 5% steps, unmuting first, like
+            // the volume keys
+            WheelSteps {
+                onStepped: direction => {
+                    if (!volume.audio)
+                        return
+                    volume.audio.muted = false
+                    volume.audio.volume = Math.min(1, Math.max(0, Math.round(volume.audio.volume * 100 + 5 * direction) / 100))
+                }
+            }
         }
 
         Indicator {
@@ -212,6 +229,11 @@ Rectangle {
             visible: Brightness.max > 0
             icon: "" // sun
             text: Brightness.percent + "%"
+
+            // Scroll to change the brightness in 5% steps, like the brightness keys
+            WheelSteps {
+                onStepped: direction => Quickshell.execDetached(["brightnessctl", "-e4", "-n2", "set", direction > 0 ? "5%+" : "5%-"])
+            }
         }
 
         Indicator {

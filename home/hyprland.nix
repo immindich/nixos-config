@@ -241,8 +241,9 @@ in
         (bindWith "${mainMod} + mouse:273" "hl.dsp.window.resize()" { mouse = true; })
 
         # Volume and brightness keys
-        (bindWith "XF86AudioRaiseVolume" (exec "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+") mediaOpts)
-        (bindWith "XF86AudioLowerVolume" (exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-") mediaOpts)
+        # Changing the volume also unmutes (wpctl doesn't on its own)
+        (bindWith "XF86AudioRaiseVolume" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+") mediaOpts)
+        (bindWith "XF86AudioLowerVolume" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-") mediaOpts)
         (bindWith "XF86AudioMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle") mediaOpts)
         (bindWith "XF86AudioMicMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle") mediaOpts)
         (bindWith "XF86MonBrightnessUp" (exec "brightnessctl -e4 -n2 set 5%+") mediaOpts)
