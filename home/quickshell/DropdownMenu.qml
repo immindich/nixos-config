@@ -3,8 +3,8 @@ import Quickshell
 import Quickshell.Hyprland
 
 // Popup that opens below `anchor.item`, styled like the bar's bubbles.
-// Children are stacked vertically. Clicking outside the menu closes it, and
-// opening a menu closes any other open one.
+// Children are stacked vertically. Clicking outside the menu or right-clicking
+// inside it closes it, and opening a menu closes any other open one.
 PopupWindow {
     id: menu
 
@@ -92,6 +92,13 @@ PopupWindow {
         anchors.fill: parent
         radius: 12
         color: Theme.background
+
+        // Right-clicking anywhere on the menu closes it. Entries only handle
+        // the left button, so the press falls through to here.
+        TapHandler {
+            acceptedButtons: Qt.RightButton
+            onTapped: menu.visible = false
+        }
 
         Column {
             id: column
