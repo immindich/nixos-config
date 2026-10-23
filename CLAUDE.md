@@ -56,6 +56,7 @@ nix eval .#nixosConfigurations.<host>.config.<option.path>   # check a single op
 - The file watcher occasionally misses a change, especially when several files are written at once. The symptom is no new "Reloading configuration..." in `qs log`, or errors about properties that do exist. `touch` the changed file to force a reload.
 - Docs: https://quickshell.org/docs/v0.3.0/ (installed version is 0.3.0). Check property names there rather than guessing.
 - Styling (colors, font sizes, bar/bubble sizes) goes in the `Theme.qml` singleton; use `Theme.<name>` instead of hardcoding values.
+- Icons are Font Awesome glyphs, which are Unicode private-use characters (U+E000–U+F8FF). Always write them as `\uXXXX` escapes, e.g. `""`, with a comment naming the icon. Never put the raw character in a file: raw glyphs read back to you as empty strings, so retyping code drops them, and `\u` escapes you emit sometimes land on disk as the raw character without you noticing. Move existing icon code with a scripted copy (python/sed), not by retyping. After any edit that touches icons, `grep -rlP '[\x{E000}-\x{F8FF}]' home/quickshell` must print nothing; if it does, convert with `re.sub(r"[-]", lambda m: "\\u%04x" % ord(m.group()), text)`. The pre-commit hook in `.githooks/` rejects commits that contain raw glyphs.
 - Hyprland runs in Lua mode: `Hyprland.dispatch()` takes a Lua dispatcher expression such as `hl.dsp.focus({ workspace = 1 })`, not the old `workspace 1` string syntax. See `~/.config/hypr/hyprland.lua` for the dispatcher names.
 
 After each change, verify it:

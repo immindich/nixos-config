@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Rejects Quickshell QML containing raw Unicode private-use characters
+# (Font Awesome glyphs). Icons must be written as \uXXXX escapes; see CLAUDE.md.
+# Matches the UTF-8 encodings of U+E000..U+F8FF byte-wise, so it doesn't
+# depend on the locale.
+bad=()
+while IFS= read -r f; do
+    if git show ":$f" | LC_ALL=C grep -qP '\xEE[\x80-\xBF][\x80-\xBF]|\xEF[\x80-\xA3][\x80-\xBF]'; then
+        bad+=("$f")
+    fi
+done < <(git diff --cached --name-only --diff-filter=AM -- 'home/quickshell/*.qml' 'home/quickshell/**/*.qml')
+
+if [ ${#bad[@]} -gt 0 ]; then
+    echo "pre-commit: raw private-use characters (icon glyphs) in:" >&2
+    printf '  %s\n' "${bad[@]}" >&2
+    echo "Write icons as \\uXXXX escapes instead (see CLAUDE.md, Quickshell section)." >&2
+    exit 1
+fi
