@@ -61,9 +61,21 @@ Rectangle {
                     id: menu
                     anchor.item: trayItem
 
-                    TrayMenuEntries {
-                        handle: trayItem.modelData.menu
-                        menu: menu
+                    // Scrolls once the entries would run off the screen
+                    Flickable {
+                        id: list
+                        width: parent.width - parent.leftPadding - parent.rightPadding
+                        height: Math.min(entries.implicitHeight, menu.maxContentHeight)
+                        contentHeight: entries.implicitHeight
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        TrayMenuEntries {
+                            id: entries
+                            width: list.width
+                            handle: trayItem.modelData.menu
+                            menu: menu
+                        }
                     }
                 }
             }

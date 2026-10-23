@@ -119,17 +119,27 @@ Column {
                 }
             }
 
-            // Hidden while unloaded: a Loader keeps its last size after its
-            // item is destroyed, which would leave a gap in the column
-            Loader {
-                active: entry.expanded
-                visible: active
+            // Submenu, unfolding and folding over a short animation. Kept
+            // loaded until folded away, and only its height is shown, since
+            // a Loader keeps its last size after its item is destroyed.
+            Item {
+                id: submenu
                 width: parent.width
-                source: "TrayMenuEntries.qml"
-                onLoaded: {
-                    item.handle = entry.modelData
-                    item.menu = entries.menu
-                    item.depth = entries.depth + 1
+                height: entry.expanded ? submenuLoader.implicitHeight : 0
+                clip: true
+
+                Behavior on height { NumberAnimation { duration: Theme.animationDuration } }
+
+                Loader {
+                    id: submenuLoader
+                    active: entry.expanded || submenu.height > 0
+                    width: parent.width
+                    source: "TrayMenuEntries.qml"
+                    onLoaded: {
+                        item.handle = entry.modelData
+                        item.menu = entries.menu
+                        item.depth = entries.depth + 1
+                    }
                 }
             }
         }

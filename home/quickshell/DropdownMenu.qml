@@ -33,6 +33,12 @@ PopupWindow {
     implicitHeight: column.implicitHeight // includes the column's padding
     color: "transparent"
 
+    // Tallest the content can be before the menu runs off the bottom of the
+    // screen, for menus that scroll a long list. The menu hangs just below
+    // the bar and keeps the bar's margin from the bottom edge.
+    readonly property int maxContentHeight: (anchor.item?.QsWindow.window?.screen?.height ?? 0)
+        - Theme.barHeight - Theme.barMargin - 2 * column.padding
+
     function toggle() {
         menu.visible = !menu.visible
     }
