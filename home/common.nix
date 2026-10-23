@@ -101,7 +101,7 @@ in {
   systemd.user.services.tailscale-systray = {
     Unit = {
       Description = "Tailscale system tray";
-      After = [ "quickshell.service" ];
+      After = [ "graphical-session.target" "quickshell.service" ];
       PartOf = [ "graphical-session.target" ];
     };
     Service = {
