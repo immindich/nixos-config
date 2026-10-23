@@ -123,6 +123,7 @@ DropdownMenu {
             Text {
                 width: parent.width
                 text: mediaMenu.player?.trackTitle || "Nothing playing"
+                textFormat: Text.PlainText
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 elide: Text.ElideRight
@@ -135,6 +136,7 @@ DropdownMenu {
                 width: parent.width
                 visible: text !== ""
                 text: mediaMenu.player?.trackArtist ?? ""
+                textFormat: Text.PlainText
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 1
                 color: Theme.textColor
@@ -144,6 +146,7 @@ DropdownMenu {
                 width: parent.width
                 visible: text !== ""
                 text: mediaMenu.player?.trackAlbum ?? ""
+                textFormat: Text.PlainText
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dimTextColor

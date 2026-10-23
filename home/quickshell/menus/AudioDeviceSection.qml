@@ -124,6 +124,7 @@ Column {
                     anchors.verticalCenterOffset: Theme.textOffset
                     elide: Text.ElideRight
                     text: row.label
+                    textFormat: Text.PlainText
                     font.pixelSize: Theme.fontSize
                     font.bold: row.selected
                     color: row.selected ? Theme.accent : Theme.textColor

@@ -79,6 +79,7 @@ Rectangle {
                 anchors.verticalCenterOffset: Theme.textOffset
                 elide: Text.ElideRight
                 text: card.notification.appName
+                textFormat: Text.PlainText
                 font.pixelSize: Theme.fontSize - 2
                 color: Theme.dimTextColor
             }
@@ -163,6 +164,7 @@ Rectangle {
                         anchors.centerIn: parent
                         anchors.verticalCenterOffset: Theme.textOffset
                         text: actionButton.modelData.text
+                        textFormat: Text.PlainText
                         font.pixelSize: Theme.fontSize - 2
                         color: Theme.textColor
                     }

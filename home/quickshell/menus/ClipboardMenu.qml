@@ -275,6 +275,7 @@ DropdownMenu {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.verticalCenterOffset: Theme.textOffset
                         text: row.modelData.label
+                        textFormat: Text.PlainText
                         elide: Text.ElideRight
                         font.pixelSize: Theme.fontSize
                         color: Theme.textColor

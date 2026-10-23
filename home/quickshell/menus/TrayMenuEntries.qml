@@ -86,6 +86,7 @@ Column {
                         Layout.alignment: Qt.AlignVCenter
                         Layout.topMargin: Theme.textOffset
                         text: entry.modelData.text
+                        textFormat: Text.PlainText
                         wrapMode: Text.Wrap
                         maximumLineCount: 4
                         elide: Text.ElideRight

@@ -41,6 +41,7 @@ Rectangle {
         anchors.verticalCenterOffset: Theme.textOffset
         width: Math.max(0, Math.min(implicitWidth, parent.maxWidth - 24))
         text: parent.title
+        textFormat: Text.PlainText
         elide: Text.ElideRight
         font.pixelSize: Theme.fontSize
         color: Theme.textColor

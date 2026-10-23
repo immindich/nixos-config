@@ -40,6 +40,12 @@ Column {
             readonly property string media: props["media.name"] ?? ""
             readonly property string iconSource: Quickshell.iconPath(props["application.icon-name"] ?? "", true)
 
+            // The label below is StyledText, so markup in the names (a web
+            // page's title, say) must be escaped or it would be rendered
+            function escapeMarkup(s) {
+                return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            }
+
             width: parent.width
             spacing: 4
 
@@ -80,8 +86,8 @@ Column {
                     elide: Text.ElideRight
                     textFormat: Text.StyledText
                     text: stream.media !== "" && stream.media !== stream.label
-                        ? stream.label + " <font color=\"" + Theme.dimTextColor + "\">" + stream.media + "</font>"
-                        : stream.label
+                        ? stream.escapeMarkup(stream.label) + " <font color=\"" + Theme.dimTextColor + "\">" + stream.escapeMarkup(stream.media) + "</font>"
+                        : stream.escapeMarkup(stream.label)
                     font.pixelSize: Theme.fontSize
                     color: Theme.textColor
                 }

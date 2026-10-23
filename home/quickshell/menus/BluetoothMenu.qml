@@ -107,6 +107,7 @@ DropdownMenu {
                 width: Math.min(implicitWidth, entry.width - 8 - typeIcon.width - 8 - 12 - actions.width - 8)
                 elide: Text.ElideRight
                 text: entry.modelData.name
+                textFormat: Text.PlainText
                 font.pixelSize: Theme.fontSize
                 font.bold: entry.modelData.connected
                 color: entry.modelData.connected ? Theme.accent : Theme.textColor
