@@ -17,6 +17,9 @@ DropdownMenu {
 
     // Image entries are decoded here for their thumbnails, once per login
     readonly property string thumbDir: Quickshell.env("XDG_RUNTIME_DIR") + "/cliphist-thumbs"
+    // The history lives in the runtime dir too, so it doesn't outlive the
+    // login; must match the store service's -db-path in home/common.nix
+    readonly property string dbPath: Quickshell.env("XDG_RUNTIME_DIR") + "/cliphist/db"
 
     // {id, preview, image, label} per entry, newest first
     property var entries: []
@@ -32,13 +35,13 @@ DropdownMenu {
     }
 
     function copy(entry) {
-        Quickshell.execDetached(["sh", "-c", "cliphist decode \"$1\" | wl-copy", "_", entry.id])
+        Quickshell.execDetached(["sh", "-c", "cliphist -db-path \"$1\" decode \"$2\" | wl-copy", "_", clipboardMenu.dbPath, entry.id])
         clipboardMenu.visible = false
     }
 
     function remove(entry) {
         // `cliphist delete` takes list lines on stdin
-        deleter.command = ["sh", "-c", "printf '%s\\t%s\\n' \"$1\" \"$2\" | cliphist delete", "_", entry.id, entry.preview]
+        deleter.command = ["sh", "-c", "printf '%s\\t%s\\n' \"$2\" \"$3\" | cliphist -db-path \"$1\" delete", "_", clipboardMenu.dbPath, entry.id, entry.preview]
         deleter.running = true
     }
 
@@ -65,7 +68,7 @@ DropdownMenu {
     // "[[ binary data 315 B png 320x200 ]]".
     Process {
         id: lister
-        command: ["cliphist", "list"]
+        command: ["cliphist", "-db-path", clipboardMenu.dbPath, "list"]
         stdout: StdioCollector {
             onStreamFinished: {
                 clipboardMenu.entries = text.split("\n").filter(line => line.includes("\t")).map(line => {
@@ -90,7 +93,7 @@ DropdownMenu {
 
     Process {
         id: wiper
-        command: ["sh", "-c", "cliphist wipe && rm -rf \"$1\"", "_", clipboardMenu.thumbDir]
+        command: ["sh", "-c", "cliphist -db-path \"$1\" wipe && rm -rf \"$2\"", "_", clipboardMenu.dbPath, clipboardMenu.thumbDir]
         onExited: clipboardMenu.reload()
     }
 
@@ -232,8 +235,8 @@ DropdownMenu {
 
                     Process {
                         running: row.modelData.image
-                        command: ["sh", "-c", "mkdir -p \"$3\" && { test -s \"$2\" || cliphist decode \"$1\" > \"$2\"; }",
-                            "_", row.modelData.id, row.thumbPath, clipboardMenu.thumbDir]
+                        command: ["sh", "-c", "mkdir -p \"$4\" && { test -s \"$3\" || cliphist -db-path \"$1\" decode \"$2\" > \"$3\"; }",
+                            "_", clipboardMenu.dbPath, row.modelData.id, row.thumbPath, clipboardMenu.thumbDir]
                         onExited: code => row.thumbReady = code === 0
                     }
 

@@ -36,8 +36,13 @@ in {
     '';
   };
 
-  # Clipboard history, shown by the bar's clipboard menu
-  services.cliphist.enable = true;
+  # Clipboard history, shown by the bar's clipboard menu. Kept in the runtime
+  # dir (tmpfs, wiped at logout) rather than ~/.cache; %t is systemd's
+  # XDG_RUNTIME_DIR specifier. The menu passes the same path (ClipboardMenu.qml).
+  services.cliphist = {
+    enable = true;
+    extraOptions = [ "-db-path" "%t/cliphist/db" "-max-dedupe-search" "10" "-max-items" "500" ];
+  };
   services.hyprpolkitagent.enable = true;
 
   services.hyprsunset.enable = true;
