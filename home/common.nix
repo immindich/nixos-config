@@ -74,10 +74,12 @@ in {
     # Prints the current location as "<lat> <lon>" for the bar's weather
     # widget. Wraps GeoClue's where-am-i demo, which isn't on PATH and keeps
     # reporting fixes until its timeout: prints the first fix and stops it, or
-    # prints nothing if there's no fix within the timeout.
+    # prints nothing if there's no fix within the timeout. Rounded to two
+    # decimals (about 1 km): enough for a forecast, and the coordinates are
+    # sent to Open-Meteo.
     (pkgs.writeShellScriptBin "where-am-i" ''
       exec 3< <(${pkgs.geoclue2}/libexec/geoclue-2.0/demos/where-am-i -t 30 2>/dev/null)
-      ${pkgs.gawk}/bin/awk '/^Latitude:/ { lat = $2 + 0 } /^Longitude:/ { printf "%.5f %.5f\n", lat, $2 + 0; exit }' <&3
+      ${pkgs.gawk}/bin/awk '/^Latitude:/ { lat = $2 + 0 } /^Longitude:/ { printf "%.2f %.2f\n", lat, $2 + 0; exit }' <&3
       kill $! 2>/dev/null
     '')
   ];
