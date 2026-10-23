@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
+import qs.menus
 
 // System tray icons in a bubble, hidden when there are none. Left click
 // activates the app (or opens its menu if that's all it offers), right click

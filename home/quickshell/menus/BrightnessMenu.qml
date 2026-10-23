@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import qs
 
 // Brightness slider and night light controls, opened from the brightness
 // indicator. Set `anchor.item` to the indicator and pass in the backlight's

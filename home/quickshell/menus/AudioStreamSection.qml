@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
+import qs
 
 // Applications section of the audio menu: every program currently playing
 // audio, each with its own mute button and volume slider. Needs the nodes
@@ -61,7 +62,7 @@ Column {
                     visible: !appIcon.visible
                     width: 18
                     horizontalAlignment: Text.AlignHCenter
-                    text: "" // volume-high
+                    text: "\uf028" // volume-high
                     font.family: Theme.iconFont
                     font.weight: Font.Black
                     font.pixelSize: Theme.iconSize
@@ -99,7 +100,7 @@ Column {
 
                     Text {
                         anchors.centerIn: parent
-                        text: muteButton.muted ? "" : "" // volume-xmark : volume-high
+                        text: muteButton.muted ? "\uf6a9" : "\uf028" // volume-xmark : volume-high
                         font.family: Theme.iconFont
                         font.weight: Font.Black
                         font.pixelSize: Theme.iconSize

@@ -63,7 +63,7 @@ Rectangle {
                 visible: !appIcon.visible
                 width: 16
                 horizontalAlignment: Text.AlignHCenter
-                text: "" // bell
+                text: "\uf0f3" // bell
                 font.family: Theme.iconFont
                 font.weight: Font.Black
                 font.pixelSize: Theme.iconSize
@@ -94,7 +94,7 @@ Rectangle {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "" // xmark
+                    text: "\uf00d" // xmark
                     font.family: Theme.iconFont
                     font.weight: Font.Black
                     font.pixelSize: Theme.iconSize - 2

@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
+import qs
 
 // Bluetooth on/off switch and paired devices with connect/disconnect buttons
 // and battery levels, opened from the Bluetooth indicator. Set `anchor.item`

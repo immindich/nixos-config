@@ -1,4 +1,5 @@
 import QtQuick
+import qs
 
 // Current conditions, today's range and the next few hours, opened from the
 // weather indicator. Set `anchor.item` to the indicator; the data comes from

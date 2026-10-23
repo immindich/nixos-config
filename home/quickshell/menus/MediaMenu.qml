@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import qs
 
 // Now playing: album art, title, artist and album, a seek bar and
 // previous/play-pause/next buttons for the current media player (Media.player).

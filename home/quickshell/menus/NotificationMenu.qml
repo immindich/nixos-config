@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import qs
 
 // Notification history with a do-not-disturb switch and "Clear all", opened
 // from the bell indicator. Set `anchor.item` to the indicator.

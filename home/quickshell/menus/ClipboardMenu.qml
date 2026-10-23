@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import qs
 
 // Clipboard history from cliphist, opened from the clipboard indicator or
 // with `qs ipc call clipboard toggle` (SUPER+SHIFT+V). Type to filter, pick
@@ -140,7 +141,7 @@ DropdownMenu {
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            text: "" // magnifying-glass
+            text: "\uf002" // magnifying-glass
             font.family: Theme.iconFont
             font.weight: Font.Black
             font.pixelSize: Theme.iconSize
@@ -259,7 +260,7 @@ DropdownMenu {
                         anchors.leftMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
                         visible: row.modelData.image && thumb.status !== Image.Ready
-                        text: "" // image
+                        text: "\uf03e" // image
                         font.family: Theme.iconFont
                         font.weight: Font.Black
                         font.pixelSize: Theme.iconSize
@@ -293,7 +294,7 @@ DropdownMenu {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "" // xmark
+                            text: "\uf00d" // xmark
                             font.family: Theme.iconFont
                             font.weight: Font.Black
                             font.pixelSize: Theme.iconSize - 2

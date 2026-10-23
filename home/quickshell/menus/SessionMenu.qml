@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Widgets
+import qs
 
 // Start menu, opened from the NixOS button: an application search field
 // (type, pick with Up/Down, launch with Enter) above a row of lock, sleep,
@@ -30,11 +31,11 @@ DropdownMenu {
     }
 
     readonly property var actions: [
-        { icon: "", label: "Lock", command: "loginctl lock-session", confirm: false },
-        { icon: "", label: "Sleep", command: "systemctl suspend", confirm: false },
-        { icon: "", label: "Shut down", command: "systemctl poweroff", confirm: true },
+        { icon: "\uf023", label: "Lock", command: "loginctl lock-session", confirm: false },
+        { icon: "\uf186", label: "Sleep", command: "systemctl suspend", confirm: false },
+        { icon: "\uf011", label: "Shut down", command: "systemctl poweroff", confirm: true },
         // Same as the SUPER+M bind
-        { icon: "", label: "Exit Hyprland", confirm: true,
+        { icon: "\uf2f5", label: "Exit Hyprland", confirm: true,
           command: "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'" },
     ]
 
@@ -158,7 +159,7 @@ DropdownMenu {
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            text: ""
+            text: "\uf002"
             font.family: Theme.iconFont
             font.weight: Font.Black
             font.pixelSize: Theme.iconSize

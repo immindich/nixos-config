@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.Pipewire
 import Quickshell.Wayland
+import qs.menus
 
 // On-screen display for volume and brightness changes: a bubble at the
 // bottom center of the focused screen that fades out shortly after the last
@@ -72,11 +73,11 @@ PanelWindow {
             width: 18
             horizontalAlignment: Text.AlignHCenter
             readonly property int percent: Math.round(osd.level * 100)
-            text: osd.kind === "brightness" ? "" // sun
-                : osd.muted ? ""                 // volume-xmark
-                : percent === 0 ? ""             // volume-off
-                : percent < 50 ? ""              // volume-low
-                : ""                             // volume-high
+            text: osd.kind === "brightness" ? "\uf185" // sun
+                : osd.muted ? "\uf6a9"                 // volume-xmark
+                : percent === 0 ? "\uf026"             // volume-off
+                : percent < 50 ? "\uf027"              // volume-low
+                : "\uf028"                             // volume-high
             font.family: Theme.iconFont
             font.weight: Font.Black
             font.pixelSize: Theme.iconSize + 2

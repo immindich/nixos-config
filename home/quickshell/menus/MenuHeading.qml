@@ -1,4 +1,5 @@
 import QtQuick
+import qs
 
 // Bold section heading for a DropdownMenu
 Text {

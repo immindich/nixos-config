@@ -1,4 +1,5 @@
 import QtQuick
+import qs
 
 // On/off switch styled to match the bar. `checked` shows the state; clicking
 // emits `toggled()` and leaves updating `checked` to the owner, so it can

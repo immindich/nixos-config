@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import qs
 
 // Slider styled to match the bar, sized to fill a DropdownMenu's width
 Slider {

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import qs
 
 // Month calendar, opened from the clock. Set `anchor.item` to the clock and
 // `today` to its date. Opens on the current month; the arrows step through
@@ -71,8 +72,8 @@ DropdownMenu {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 4
 
-            NavButton { icon: ""; onClicked: calendar.step(-1) } // chevron-left
-            NavButton { icon: ""; onClicked: calendar.step(1) }  // chevron-right
+            NavButton { icon: "\uf053"; onClicked: calendar.step(-1) } // chevron-left
+            NavButton { icon: "\uf054"; onClicked: calendar.step(1) }  // chevron-right
         }
     }
 

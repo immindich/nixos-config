@@ -4,6 +4,7 @@ import Quickshell.Io
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Effects
+import qs.menus
 
 ShellRoot {
   // One wallpaper per screen

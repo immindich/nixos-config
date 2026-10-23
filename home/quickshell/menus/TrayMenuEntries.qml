@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
+import qs
 
 // Entries of a tray item's menu, for use inside a DropdownMenu. Submenus
 // expand inline below their entry, indented.
@@ -67,8 +68,8 @@ Column {
                         Layout.preferredWidth: Theme.iconSize + 2
                         horizontalAlignment: Text.AlignHCenter
                         text: entry.modelData.checkState !== Qt.Checked ? ""
-                            : entry.modelData.buttonType === QsMenuButtonType.RadioButton ? "" // circle-dot
-                            : "" // check
+                            : entry.modelData.buttonType === QsMenuButtonType.RadioButton ? "\uf192" // circle-dot
+                            : "\uf00c" // check
                     }
 
                     // Hidden if the icon fails to load (e.g. Quickshell only
@@ -99,7 +100,7 @@ Column {
                         font.weight: Font.Black
                         font.pixelSize: Theme.iconSize - 2
                         color: Theme.dimTextColor
-                        text: entry.expanded ? "" : "" // chevron-down : chevron-right
+                        text: entry.expanded ? "\uf078" : "\uf054" // chevron-down : chevron-right
                     }
                 }
 

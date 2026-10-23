@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Services.UPower
+import qs
 
 // Buttons for power-profiles-daemon's profiles, with the current one
 // highlighted, plus a note when the daemon reports degraded performance.
@@ -15,9 +16,9 @@ Column {
 
         Repeater {
             model: [
-                { profile: PowerProfile.PowerSaver, icon: "", label: "Saver" },        // leaf
-                { profile: PowerProfile.Balanced, icon: "", label: "Balanced" },       // scale-balanced
-                { profile: PowerProfile.Performance, icon: "", label: "Performance" }, // gauge-high
+                { profile: PowerProfile.PowerSaver, icon: "\uf06c", label: "Saver" },        // leaf
+                { profile: PowerProfile.Balanced, icon: "\uf24e", label: "Balanced" },       // scale-balanced
+                { profile: PowerProfile.Performance, icon: "\uf625", label: "Performance" }, // gauge-high
             ]
 
             Rectangle {

@@ -65,15 +65,15 @@ Singleton {
 
     // Font Awesome solid glyph for a weather code
     function iconFor(code, day) {
-        if (code <= 1) return day ? "" : ""             // sun : moon
-        if (code === 2) return day ? "" : ""            // cloud-sun : cloud-moon
-        if (code === 3) return ""                             // cloud
-        if (code <= 48) return ""                             // smog
-        if (code <= 61 || code === 80) return day ? "" : "" // cloud-sun-rain : cloud-moon-rain
-        if (code <= 67 || code === 81) return ""              // cloud-rain
-        if (code <= 77 || code === 85 || code === 86) return "" // snowflake
-        if (code === 82) return ""                            // cloud-showers-heavy
-        return ""                                             // cloud-bolt
+        if (code <= 1) return day ? "\uf185" : "\uf186"             // sun : moon
+        if (code === 2) return day ? "\uf6c4" : "\uf6c3"            // cloud-sun : cloud-moon
+        if (code === 3) return "\uf0c2"                             // cloud
+        if (code <= 48) return "\uf75f"                             // smog
+        if (code <= 61 || code === 80) return day ? "\uf743" : "\uf73c" // cloud-sun-rain : cloud-moon-rain
+        if (code <= 67 || code === 81) return "\uf73d"              // cloud-rain
+        if (code <= 77 || code === 85 || code === 86) return "\uf2dc" // snowflake
+        if (code === 82) return "\uf740"                            // cloud-showers-heavy
+        return "\uf76c"                                             // cloud-bolt
     }
 
     Timer {

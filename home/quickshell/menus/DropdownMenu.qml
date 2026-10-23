@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import qs
 
 // Popup that opens below `anchor.item`, styled like the bar's bubbles.
 // Children are stacked vertically. Clicking outside the menu or right-clicking

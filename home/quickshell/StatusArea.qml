@@ -5,6 +5,7 @@ import Quickshell.Networking
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 import Quickshell.Wayland
+import qs.menus
 
 // Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
 // clock, privacy indicators, then volume, brightness, network and battery
@@ -146,7 +147,7 @@ Rectangle {
             menu: NotificationMenu { anchor.item: notifications }
 
             readonly property int count: Notifications.history.length
-            icon: Notifications.dnd ? "" : "" // bell-slash : bell
+            icon: Notifications.dnd ? "\uf1f6" : "\uf0f3" // bell-slash : bell
             contentColor: Notifications.dnd ? Theme.dimTextColor : Theme.textColor
             text: count > 0 ? count : ""
         }
@@ -174,29 +175,7 @@ Rectangle {
             text: Qt.formatDateTime(clock.date, "ddd d MMM hh:mm")
         }
 
-        // Privacy: shown only while something records the mic, camera or screen
-        Row {
-            id: privacy
-            spacing: 8
-            leftPadding: 6
-            rightPadding: 6
-            anchors.verticalCenter: parent.verticalCenter
-            visible: micInUse || cameraInUse || screenInUse
-
-            readonly property bool micInUse: Pipewire.nodes.values.some(n => n.properties?.["media.class"] === "Stream/Input/Audio")
-            // Video streams are split into screen sharing (fed by the Hyprland
-            // portal) and everything else (cameras). The portal's node is named
-            // after its binary, ".xdg-desktop-portal-hyprland-wrapped" on NixOS.
-            readonly property var videoSources: Pipewire.links.values
-                .filter(l => l.target?.properties?.["media.class"] === "Stream/Input/Video")
-                .map(l => l.source?.name ?? "")
-            readonly property bool screenInUse: videoSources.some(n => n.includes("xdg-desktop-portal-hyprland"))
-            readonly property bool cameraInUse: videoSources.some(n => !n.includes("xdg-desktop-portal-hyprland"))
-
-            Icon { text: ""; color: Theme.bad; visible: privacy.micInUse }    // microphone
-            Icon { text: ""; color: Theme.bad; visible: privacy.cameraInUse } // video
-            Icon { text: ""; color: Theme.bad; visible: privacy.screenInUse } // circle-dot (recording)
-        }
+        Privacy { anchors.verticalCenter: parent.verticalCenter }
 
         Indicator {
             id: volume
@@ -205,10 +184,10 @@ Rectangle {
             readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
             readonly property int percent: audio ? Math.round(audio.volume * 100) : 0
             visible: audio !== null
-            icon: !audio || audio.muted ? ""   // volume-xmark
-                : percent === 0 ? ""           // volume-off
-                : percent < 50 ? ""            // volume-low
-                : ""                           // volume-high
+            icon: !audio || audio.muted ? "\uf6a9"   // volume-xmark
+                : percent === 0 ? "\uf026"           // volume-off
+                : percent < 50 ? "\uf027"            // volume-low
+                : "\uf028"                           // volume-high
             text: audio && !audio.muted ? percent + "%" : ""
 
             // Middle click mutes and unmutes
@@ -238,7 +217,7 @@ Rectangle {
             }
 
             visible: Brightness.max > 0
-            icon: "" // sun
+            icon: "\uf185" // sun
             text: Brightness.percent + "%"
 
             // Scroll to change the brightness in 5% steps, like the brightness keys
@@ -261,7 +240,7 @@ Rectangle {
 
             // Wired: plug icon. Wi-Fi: signal bars, cycling while connecting.
             // Otherwise a dimmed Wi-Fi icon.
-            icon: wired ? "" : wifi || connecting ? "" : "" // network-wired : wifi
+            icon: wired ? "\uf6ff" : wifi || connecting ? "" : "\uf1eb" // network-wired : wifi
             contentColor: wired ? Theme.textColor : Theme.dimTextColor
             text: ""
             extraVisible: !wired && (wifi || connecting)
@@ -277,7 +256,7 @@ Rectangle {
 
             readonly property var adapter: Bluetooth.defaultAdapter
             visible: adapter !== null
-            icon: "" // bluetooth-b
+            icon: "\uf294" // bluetooth-b
             iconFont: Theme.brandIconFont
             contentColor: adapter?.enabled ? Theme.textColor : Theme.dimTextColor
             text: ""
@@ -293,12 +272,12 @@ Rectangle {
                 || battery.state === UPowerDeviceState.FullyCharged
             visible: battery.isLaptopBattery
             contentColor: charging ? Theme.good : percent <= 15 ? Theme.bad : Theme.textColor
-            icon: charging ? ""   // bolt
-                : percent > 87 ? "" // battery-full
-                : percent > 62 ? "" // battery-three-quarters
-                : percent > 37 ? "" // battery-half
-                : percent > 12 ? "" // battery-quarter
-                : ""                // battery-empty
+            icon: charging ? "\uf0e7"   // bolt
+                : percent > 87 ? "\uf240" // battery-full
+                : percent > 62 ? "\uf241" // battery-three-quarters
+                : percent > 37 ? "\uf242" // battery-half
+                : percent > 12 ? "\uf243" // battery-quarter
+                : "\uf244"                // battery-empty
             text: percent + "%"
         }
     }

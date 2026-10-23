@@ -1,4 +1,5 @@
 import QtQuick
+import qs
 
 // "Label ........ value" row for a DropdownMenu
 Item {

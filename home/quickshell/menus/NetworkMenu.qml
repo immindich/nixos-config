@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Networking
+import qs
 
 // Wi-Fi network selector, opened from the network indicator. Set
 // `anchor.item` to the indicator. Click a network to connect; if it needs a
@@ -161,7 +162,7 @@ DropdownMenu {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: entry.secure && !entry.modelData.connected
-                    text: "" // lock
+                    text: "\uf023" // lock
                     font.family: Theme.iconFont
                     font.weight: Font.Black
                     font.pixelSize: Theme.iconSize

@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
+import qs
 
 // One half of the audio menu: heading with mute button, volume slider for the
 // default device, and the list of devices (click one to make it the default).
@@ -43,8 +44,8 @@ Column {
             Text {
                 anchors.centerIn: parent
                 text: section.sink
-                    ? (muteButton.muted ? "" : "")  // volume-xmark : volume-high
-                    : (muteButton.muted ? "" : "")  // microphone-slash : microphone
+                    ? (muteButton.muted ? "\uf6a9" : "\uf028")  // volume-xmark : volume-high
+                    : (muteButton.muted ? "\uf131" : "\uf130")  // microphone-slash : microphone
                 font.family: Theme.iconFont
                 font.weight: Font.Black
                 font.pixelSize: Theme.iconSize
@@ -104,9 +105,9 @@ Column {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 18
                     horizontalAlignment: Text.AlignHCenter
-                    text: row.modelData.name.startsWith("bluez") ? "" // headphones
-                        : !section.sink ? ""                          // microphone
-                        : row.label.includes("HDMI") ? ""             // tv
+                    text: row.modelData.name.startsWith("bluez") ? "\uf025" // headphones
+                        : !section.sink ? "\uf130"                          // microphone
+                        : row.label.includes("HDMI") ? "\uf26c"             // tv
                         : "\uf028"                                          // volume-high
                     font.family: Theme.iconFont
                     font.weight: Font.Black
@@ -133,7 +134,7 @@ Column {
                     anchors.right: parent.right
                     anchors.rightMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
-                    text: row.selected ? "" : "" // check
+                    text: row.selected ? "\uf00c" : "" // check
                     font.family: Theme.iconFont
                     font.weight: Font.Black
                     font.pixelSize: Theme.iconSize
