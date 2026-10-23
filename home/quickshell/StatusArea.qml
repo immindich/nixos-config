@@ -40,6 +40,12 @@ Rectangle {
         property alias icon: icon.text
         property alias iconFont: icon.font.family // Theme.brandIconFont for brand glyphs
         property alias text: label.text
+        // Optional item shown in place of (or before) the icon, e.g. the
+        // network indicator's signal bars. Shown while `extraVisible`; it's
+        // set here rather than on the item, since an item under a hidden
+        // parent reads as hidden itself, which would keep it hidden for good.
+        property Component extra: null
+        property bool extraVisible: false
         property color contentColor: Theme.textColor
         property DropdownMenu menu: null
         property bool active: false
@@ -58,6 +64,11 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 4
 
+            Loader {
+                anchors.verticalCenter: parent.verticalCenter
+                sourceComponent: indicator.extra
+                visible: indicator.extraVisible
+            }
             Icon { id: icon; color: indicator.contentColor; visible: text !== "" }
             Label { id: label; color: indicator.contentColor; visible: text !== "" }
         }
@@ -209,10 +220,22 @@ Rectangle {
 
             readonly property var devices: Networking.devices.values
             readonly property bool wired: devices.some(d => d.type === DeviceType.Wired && d.connected)
-            readonly property bool wifi: devices.some(d => d.type === DeviceType.Wifi && d.connected)
-            icon: wired ? "" : "" // network-wired : wifi
-            contentColor: wired || wifi ? Theme.textColor : Theme.dimTextColor
+            readonly property var wifiDevice: devices.find(d => d.type === DeviceType.Wifi) ?? null
+            readonly property bool wifi: wifiDevice?.connected ?? false
+            readonly property bool connecting: wifiDevice?.state === ConnectionState.Connecting
+            // The connected network, for its signal strength
+            readonly property var wifiNetwork: wifiDevice?.networks.values.find(n => n.connected) ?? null
+
+            // Wired: plug icon. Wi-Fi: signal bars, cycling while connecting.
+            // Otherwise a dimmed Wi-Fi icon.
+            icon: wired ? "" : wifi || connecting ? "" : "" // network-wired : wifi
+            contentColor: wired ? Theme.textColor : Theme.dimTextColor
             text: ""
+            extraVisible: !wired && (wifi || connecting)
+            extra: SignalBars {
+                strength: network.wifiNetwork?.signalStrength ?? 0
+                connecting: network.connecting && !network.wifi
+            }
         }
 
         Indicator {
