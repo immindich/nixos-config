@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792621350,
-        "narHash": "sha256-quhyY1hzlGiHnITTguFoWwO1p8v8dmYCXmVtzfgYPBA=",
+        "lastModified": 1792707809,
+        "narHash": "sha256-KB575edXawOSuB3Q35IEs4Wt9eXBheD8abMuAO+7u9M=",
         "owner": "danielbodart",
         "repo": "claude-desktop",
-        "rev": "cd6ac0bd16cd1d5711fac5c153bacad536144486",
+        "rev": "bd3dc7f4bd4fb98714fb1059dbc63287d94bbd0c",
         "type": "github"
       },
       "original": {
