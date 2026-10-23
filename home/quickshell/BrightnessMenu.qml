@@ -1,9 +1,11 @@
 import QtQuick
 import Quickshell.Io
 
-// Brightness slider, opened from the brightness indicator. Set `anchor.item`
-// to the indicator and pass in the backlight's raw `current` and `max` values;
-// the menu sets brightness itself with brightnessctl.
+// Brightness slider and night light controls, opened from the brightness
+// indicator. Set `anchor.item` to the indicator and pass in the backlight's
+// raw `current` and `max` values; the menu sets brightness itself with
+// brightnessctl. The night light section follows NightLight and is hidden
+// when hyprsunset isn't running.
 DropdownMenu {
     id: brightnessMenu
 
@@ -54,5 +56,51 @@ DropdownMenu {
         value: brightnessMenu.max > 0 ? brightnessMenu.current : 0
         when: !brightnessSlider.pressed
         delayed: true
+    }
+
+    Item {
+        visible: NightLight.available
+        width: parent.width - parent.leftPadding - parent.rightPadding
+        implicitHeight: Math.max(nightLightHeading.implicitHeight, nightLightSwitch.implicitHeight)
+
+        MenuHeading {
+            id: nightLightHeading
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Night light"
+        }
+
+        MenuSwitch {
+            id: nightLightSwitch
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            checked: NightLight.enabled
+            onToggled: NightLight.enabled = !NightLight.enabled
+        }
+    }
+
+    MenuSlider {
+        id: temperatureSlider
+        visible: NightLight.available
+        enabled: NightLight.enabled
+        opacity: enabled ? 1 : 0.5
+        from: NightLight.minTemperature
+        to: NightLight.maxTemperature
+        stepSize: 100
+        live: true
+        // Throttled in NightLight, so every move can be forwarded
+        onMoved: NightLight.temperature = value
+    }
+
+    Binding {
+        target: temperatureSlider
+        property: "value"
+        value: NightLight.temperature
+        when: !temperatureSlider.pressed
+    }
+
+    MenuInfoRow {
+        visible: NightLight.available
+        label: "Temperature"
+        value: NightLight.temperature + " K"
     }
 }

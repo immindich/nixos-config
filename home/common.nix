@@ -40,6 +40,8 @@ in {
   services.cliphist.enable = true;
   services.hyprpolkitagent.enable = true;
 
+  services.hyprsunset.enable = true;
+
   home.sessionPath = [ "$HOME/.local/bin" ];
 
   dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
