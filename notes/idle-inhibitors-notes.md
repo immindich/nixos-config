@@ -36,33 +36,47 @@ Sources (master, 2026-10-24): powerdevil `daemon/powerdevilpolicyagent.cpp`,
   `idle_inhibit` window rule). This includes the class and title, but no reason.
 - logind inhibitors whose `what` includes `idle`, with who and why.
 
-It polls both every 2 s while the menu is open. The gap is D-Bus
-ScreenSaver inhibits: hypridle owns `org.freedesktop.ScreenSaver`, honors
-those calls, and has no way to list them.
+It polls both every 2 s while the menu is open. D-Bus ScreenSaver inhibits
+reach it as logind inhibitors, through the bridge below.
 
-## Closing the gap, KDE-style (not done)
+## Closing the gap, KDE-style (done, 2026-10-24)
 
-A small user service that does what kscreenlocker does, sending the calls
-to logind instead of PowerDevil:
+Firefox needed it: `busctl --user monitor org.freedesktop.ScreenSaver` showed
+it calling `Inhibit("firefox", "Playing video")` and `("firefox", "Playing
+audio")` on hypridle, and in the VM its window had `inhibitingIdle: false`, so
+it doesn't also take a Wayland inhibitor. Before the bridge the menu showed
+nothing while Firefox played. On pause it releases the video inhibit at once
+and the audio one about 10 s later.
 
-1. Set `services.hypridle.settings.general.ignore_dbus_inhibit = true` so
-   hypridle doesn't claim the name.
+`home/screensaver-inhibit.py` (Python with Gio from pygobject3), run by the
+`screensaver-inhibit` user service in `home/hypridle.nix`, does what
+kscreenlocker does but sends the calls to logind instead of PowerDevil:
+
+1. hypridle runs with `ignore_dbus_inhibit = true`, so it doesn't claim the
+   name.
 2. The service owns `org.freedesktop.ScreenSaver` (paths `/ScreenSaver` and
    `/org/freedesktop/ScreenSaver`). On `Inhibit(app, reason)` it takes a
    logind inhibitor (`Inhibit("idle", app, reason, "block")`, keeping the fd)
-   and returns a cookie. On `UnInhibit(cookie)` it closes the fd, and it does
-   the same when the caller leaves the bus (NameOwnerChanged).
-3. hypridle already honors logind idle inhibitors, so behavior is unchanged,
-   and these entries appear in the menu's logind list with app name and
-   reason.
+   and returns a cookie. `UnInhibit(cookie)` closes the fd, and the service
+   does the same when the caller leaves the bus. Only the connection that
+   took an inhibitor can release it; other cookies are ignored. An empty app
+   name becomes "unknown" (logind would accept it, but it'd be a blank row).
+3. hypridle honors logind idle inhibitors (it watches `BlockInhibited`), so
+   behavior is unchanged, and the entries appear in the menu's logind list
+   with app name and reason.
 
-Cost: a short Python script (needs a D-Bus library, e.g. dbus-next or
-pygobject, built by Nix) and a home-manager systemd user service. Another
-moving part in the idle path: if it dies, D-Bus inhibits stop working until
-it restarts.
+Behavior to know about:
 
-Check first whether it's needed: play a video in Firefox and run
-`hyprctl clients -j | jq '.[] | {class, inhibitingIdle}'`. If Firefox
-shows `inhibitingIdle: true`, it's using Wayland idle-inhibit and already
-appears in the menu. To see whether anything uses the D-Bus path, run
-`busctl --user monitor org.freedesktop.ScreenSaver` while it plays.
+- If the service dies, logind drops its inhibitors, and apps that already
+  inhibited don't re-send, so they stop blocking idle until they inhibit
+  again. systemd restarts it after 5 s. (hypridle restarting had the same
+  effect before.)
+- `StartServiceByName("org.freedesktop.ScreenSaver")` still fails with "not
+  activatable" in a trace. That's GLib's name watcher trying auto-start
+  before `GetNameOwner`; it's expected and harmless.
+
+Tested in the VM with a second hypridle on a 15 s listener that only logs:
+no inhibitor fires at 15 s; a ScreenSaver inhibit through the bridge, a
+logind inhibitor, mpv's Wayland inhibitor, and Firefox playing a video each
+keep it from firing, and it fires 15 s after release. The menu listed all
+three kinds at once and updated as each went away.
