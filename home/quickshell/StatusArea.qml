@@ -8,7 +8,7 @@ import Quickshell.Wayland
 import qs.menus
 
 // Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
-// clock, privacy indicators, then volume, brightness, network and battery
+// privacy indicators, then volume, brightness, network, battery and the clock
 Rectangle {
     anchors.verticalCenter: parent.verticalCenter
     implicitWidth: row.implicitWidth + 12
@@ -163,18 +163,6 @@ Rectangle {
             text: Weather.temperature + "°"
         }
 
-        // Clock; opens the calendar
-        Indicator {
-            id: clockIndicator
-            menu: CalendarMenu {
-                anchor.item: clockIndicator
-                today: clock.date
-            }
-
-            icon: ""
-            text: Qt.formatDateTime(clock.date, "ddd d MMM hh:mm")
-        }
-
         Privacy { anchors.verticalCenter: parent.verticalCenter }
 
         Indicator {
@@ -279,6 +267,18 @@ Rectangle {
                 : percent > 12 ? "\uf243" // battery-quarter
                 : "\uf244"                // battery-empty
             text: percent + "%"
+        }
+
+        // Clock; opens the calendar
+        Indicator {
+            id: clockIndicator
+            menu: CalendarMenu {
+                anchor.item: clockIndicator
+                today: clock.date
+            }
+
+            icon: ""
+            text: Qt.formatDateTime(clock.date, "ddd d MMM hh:mm")
         }
     }
 }
