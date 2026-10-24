@@ -6,18 +6,18 @@ import Quickshell.Widgets
 import qs.menus
 
 // The windows on a workspace, listed below its circle in WorkspaceSwitcher
-// while the pointer rests on the circle or on the list itself. Clicking a
-// window focuses it. One instance serves every circle: hovering another one
-// moves the list there.
+// while the pointer rests on the circle. It's a tooltip: it ignores the
+// pointer and goes away when the pointer leaves the circle. One instance
+// serves every circle: hovering another one moves the list there.
 PopupWindow {
     id: popup
 
     // The circle under the pointer, if any; set by the switcher
     property Item hoveredButton: null
     // The circle the list hangs from and its workspace. These stay put while
-    // the pointer is on the list, or passes over an empty circle. The anchor
-    // item is kept here too because anchor.item doesn't announce changes, so
-    // bindings can't depend on it.
+    // the pointer passes over an empty circle. The anchor item is kept here
+    // too because anchor.item doesn't announce changes, so bindings can't
+    // depend on it.
     property Item listedButton: null
     property HyprlandWorkspace workspace: null
 
@@ -46,15 +46,16 @@ PopupWindow {
         visible = false
     }
 
-    // Shown while the pointer is on the listed workspace's circle or on the
-    // list, as long as there's something to list and no dropdown menu is
-    // open (the launcher would overlap it)
-    readonly property bool wanted: (hoveredButton !== null && hoveredButton === listedButton || listHover.hovered)
+    // Shown while the pointer is on the listed workspace's circle, as long as
+    // there's something to list and no dropdown menu is open (the launcher
+    // would overlap it)
+    readonly property bool wanted: hoveredButton !== null && hoveredButton === listedButton
         && workspace !== null && workspace.toplevels.values.length > 0
         && MenuState.openMenu === null
 
-    // Open after a short rest, like a tooltip; close after a grace period, so
-    // the pointer can cross the gap between the circle and the list
+    // Open after a short rest, like a tooltip; close just slowly enough that
+    // crossing the gap between neighboring circles moves the list instead
+    // of flashing it
     onWantedChanged: {
         if (wanted) {
             closeDelay.stop()
@@ -72,7 +73,7 @@ PopupWindow {
     }
     Timer {
         id: closeDelay
-        interval: 300
+        interval: 100
         onTriggered: popup.visible = false
     }
 
@@ -93,13 +94,14 @@ PopupWindow {
     implicitWidth: Math.min(360, list.implicitWidth + 12)
     implicitHeight: list.implicitHeight + 12
     color: "transparent"
+    // Let the pointer through, like Tooltip, so the list never takes it
+    // from the bar
+    mask: Region {}
 
     Rectangle {
         anchors.fill: parent
         radius: 12
         color: Theme.background
-
-        HoverHandler { id: listHover }
 
         ColumnLayout {
             id: list
@@ -112,9 +114,9 @@ PopupWindow {
                     values: popup.workspace?.toplevels.values ?? []
                 }
 
-                // App icon and title in a pill; the focused window's title is
-                // in the accent color
-                Rectangle {
+                // App icon and title; the focused window's title is in the
+                // accent color
+                Item {
                     id: entry
                     required property HyprlandToplevel modelData
                     // The app id (window class) names the desktop entry,
@@ -132,10 +134,6 @@ PopupWindow {
                     Layout.fillWidth: true
                     implicitWidth: row.implicitWidth + 16
                     implicitHeight: Theme.bubbleHeight
-                    radius: height / 2
-                    color: entryHover.hovered ? Theme.highlight : "transparent"
-
-                    Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
 
                     RowLayout {
                         id: row
@@ -156,15 +154,6 @@ PopupWindow {
                             elide: Text.ElideRight
                             font.pixelSize: Theme.fontSize
                             color: entry.modelData.activated ? Theme.accent : Theme.textColor
-                        }
-                    }
-
-                    HoverHandler { id: entryHover }
-
-                    TapHandler {
-                        onTapped: {
-                            entry.modelData.wayland?.activate()
-                            popup.dismiss()
                         }
                     }
                 }
