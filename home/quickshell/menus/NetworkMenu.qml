@@ -128,7 +128,7 @@ DropdownMenu {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 8
 
-                SignalBars {
+                WifiSignal {
                     anchors.verticalCenter: parent.verticalCenter
                     strength: entry.modelData.signalStrength
                 }

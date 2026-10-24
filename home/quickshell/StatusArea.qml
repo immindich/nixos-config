@@ -51,6 +51,8 @@ Rectangle {
         property color contentColor: Theme.textColor
         property DropdownMenu menu: null
         property bool active: false
+        // Shown on hover while the menu is closed
+        property string tooltip: ""
         signal clicked()
 
         implicitWidth: content.implicitWidth + 12
@@ -73,6 +75,14 @@ Rectangle {
             }
             Icon { id: icon; color: indicator.contentColor; visible: text !== "" }
             Label { id: label; color: indicator.contentColor; visible: text !== "" }
+        }
+
+        HoverHandler { id: hover }
+
+        Tooltip {
+            anchor.item: indicator
+            text: indicator.tooltip
+            shown: hover.hovered && indicator.tooltip !== "" && !(indicator.menu?.visible ?? false)
         }
 
         TapHandler {
@@ -231,7 +241,7 @@ Rectangle {
             contentColor: wired ? Theme.textColor : Theme.dimTextColor
             text: ""
             extraVisible: !wired && (wifi || connecting)
-            extra: SignalBars {
+            extra: WifiSignal {
                 strength: network.wifiNetwork?.signalStrength ?? 0
                 connecting: network.connecting && !network.wifi
             }
@@ -259,18 +269,24 @@ Rectangle {
                 || battery.state === UPowerDeviceState.FullyCharged
             visible: battery.isLaptopBattery
             contentColor: charging ? Theme.good : percent <= 15 ? Theme.bad : Theme.textColor
-            icon: charging ? "\uf0e7"   // bolt
-                : percent > 87 ? "\uf240" // battery-full
-                : percent > 62 ? "\uf241" // battery-three-quarters
-                : percent > 37 ? "\uf242" // battery-half
-                : percent > 12 ? "\uf243" // battery-quarter
-                : "\uf244"                // battery-empty
-            text: percent + "%"
+            icon: ""
+            text: ""
+            tooltip: percent + "%"
             // Mug before the battery while the screen is kept awake
-            extraVisible: IdleInhibit.enabled
-            extra: Icon {
-                text: "\uf7b6" // mug-hot
-                color: power.contentColor
+            extraVisible: true
+            extra: Row {
+                spacing: 4
+                Icon {
+                    visible: IdleInhibit.enabled
+                    text: "\uf7b6" // mug-hot
+                    color: power.contentColor
+                }
+                BatteryGauge {
+                    anchors.verticalCenter: parent.verticalCenter
+                    level: power.battery.percentage
+                    charging: power.charging
+                    color: power.contentColor
+                }
             }
         }
 

@@ -70,6 +70,10 @@ DropdownMenu {
     MenuHeading { text: "Power" }
 
     MenuInfoRow {
+        label: "Charge"
+        value: Math.round(powerMenu.battery.percentage * 100) + "%"
+    }
+    MenuInfoRow {
         label: "Status"
         value: powerMenu.battery.state === UPowerDeviceState.Charging ? "Charging"
             : powerMenu.battery.state === UPowerDeviceState.Discharging ? "Discharging"
