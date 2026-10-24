@@ -5,10 +5,13 @@ import Quickshell.Hyprland
 // Styled after ashell's Workspaces module (Tokyo Night colors).
 // Regular workspaces in one bubble, special workspaces in a second one.
 // Scrolling on the regular bubble steps through the workspaces it shows.
+// Resting the pointer on a workspace lists its windows below it.
 Row {
     id: switcher
     anchors.verticalCenter: parent.verticalCenter
     spacing: Theme.bubbleSpacing
+
+    WorkspaceWindows { id: windows }
 
     // Focus the workspace `direction` places along the regular bubble from
     // the active one (up = previous, down = next); stops at the ends
@@ -63,6 +66,7 @@ Row {
     }
 
     component WorkspaceButton: Rectangle {
+        id: button
         required property var modelData
         readonly property var ws: typeof modelData === "number" ? null : modelData
         // Special workspaces show an icon instead of their name
@@ -99,9 +103,14 @@ Row {
             color: Theme.background
         }
 
+        HoverHandler {
+            onHoveredChanged: hovered ? windows.hover(button) : windows.unhover(button)
+        }
+
         MouseArea {
             anchors.fill: parent
             onClicked: {
+                windows.dismiss()
                 if (!ws)
                     Hyprland.dispatch("hl.dsp.focus({ workspace = " + modelData + " })")
                 else if (ws.name.startsWith("special:"))
