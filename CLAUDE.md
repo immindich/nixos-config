@@ -77,6 +77,7 @@ The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any ed
 - Landing a change: commit on `vm-dev` in the worktree, then `git -C ~/nixos-config cherry-pick <sha>`. That edits the main checkout, so the live bar reloads at that moment; if it renders the old layout, `touch` the changed file. Nix changes still need a switch on the host.
 - Only one VM runs at a time: the disk image and host port 2222 are shared no matter which tree launched it. Power the guest off before launching from a different build.
 - `main` can only be checked out in one place, so don't switch the worktree to it; `vm-dev` is the branch for everything done there.
+- If you learn something new about driving the VM or testing in it (an input or inspection technique that works or doesn't, a timing, a quirk of the guest), add it to this Test VM section as part of the same task, in its own commit separate from the feature's. Lessons that only live in a session or in memory get lost; this file doesn't.
 
 ## Conventions
 
