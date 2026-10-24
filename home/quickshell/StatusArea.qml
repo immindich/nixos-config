@@ -10,6 +10,7 @@ import qs.menus
 // Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
 // privacy indicators, then volume, brightness, network, battery and the clock
 Rectangle {
+    id: statusArea
     anchors.verticalCenter: parent.verticalCenter
     implicitWidth: row.implicitWidth + 12
     implicitHeight: Theme.bubbleHeight
@@ -89,6 +90,13 @@ Rectangle {
         precision: SystemClock.Minutes
     }
 
+    // Keep the screen awake while IdleInhibit is on (toggled from the power
+    // menu). Attached to this bar's window, which the compositor respects.
+    IdleInhibitor {
+        window: statusArea.QsWindow.window
+        enabled: IdleInhibit.enabled
+    }
+
     // Pipewire nodes must be tracked for volume and properties to be valid
     PwObjectTracker {
         objects: Pipewire.nodes.values
@@ -113,23 +121,6 @@ Rectangle {
             icon: playing ? "\uf04b" : "\uf04c" // play : pause
             contentColor: playing ? Theme.textColor : Theme.dimTextColor
             text: ""
-        }
-
-        // Keep the screen awake: click to toggle. Highlighted and full color
-        // while on, dimmed while off.
-        Indicator {
-            id: idleInhibit
-            active: IdleInhibit.enabled
-            icon: "\uf7b6" // mug-hot
-            contentColor: IdleInhibit.enabled ? Theme.textColor : Theme.dimTextColor
-            text: ""
-            onClicked: IdleInhibit.enabled = !IdleInhibit.enabled
-
-            // Attached to this bar's window, which the compositor respects
-            IdleInhibitor {
-                window: idleInhibit.QsWindow.window
-                enabled: IdleInhibit.enabled
-            }
         }
 
         // Clipboard history
@@ -275,6 +266,12 @@ Rectangle {
                 : percent > 12 ? "\uf243" // battery-quarter
                 : "\uf244"                // battery-empty
             text: percent + "%"
+            // Mug before the battery while the screen is kept awake
+            extraVisible: IdleInhibit.enabled
+            extra: Icon {
+                text: "\uf7b6" // mug-hot
+                color: power.contentColor
+            }
         }
 
         // Clock; opens the calendar
