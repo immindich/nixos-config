@@ -26,6 +26,27 @@ nix eval .#nixosConfigurations.<host>.config.<option.path>   # check a single op
 - Don't run `nix flake update` or touch `flake.lock` unless I ask.
 - The `homeConfigurations` output is for non-NixOS machines. It's fine to build it to check it evaluates, but never activate it on a NixOS machine.
 
+## Test VM
+
+`modules/vm.nix` defines a `virtualisation.vmVariant` of the laptop config: the same system and home config, booting straight into Hyprland as isaiah. The guest mounts the host's Nix store read-only (nothing is copied) and shares the checkout read-only at `~/nixos-config`, so the Quickshell symlink resolves and QML edits are visible in the guest immediately. The host toplevel is unaffected by anything in that module.
+
+Use it for desktop-shell work (Quickshell, Hyprland config) and for Nix changes that need to be run to be trusted, since activating on the host needs root. Don't use it for a simple Nix change that doesn't involve the shell and that you're reasonably confident will work the first time: the host has to be switched anyway, so the VM round-trip only adds time there.
+
+```sh
+nixos-rebuild build-vm --flake .#laptop              # no root; writes ./result/bin/run-laptop-vm-vm
+NIXOS_CONFIG_SRC=$PWD ./result/bin/run-laptop-vm-vm  # QEMU window, opens on special:vm (SUPER+SHIFT+M); disk image in ~/.cache/nixos-vm
+ssh vm true                                          # ~/.ssh/config has a `vm` entry (port 2222, key ~/.ssh/nixos-vm)
+```
+
+- Run the VM in the background and poll `ssh vm true` until it succeeds (about 10 s). Guest sudo password is `isaiah`. Shut down with `ssh vm 'echo isaiah | sudo -S systemctl poweroff'`.
+- Nix changes (system, Hyprland config, user services): rebuild the VM, power it off, relaunch. The qcow2 keeps the guest's home and store overlay.
+- QML changes: inotify doesn't cross 9p, so the guest's Quickshell won't reload itself. Run `ssh vm systemctl --user restart quickshell`.
+- `hyprctl`, `qs log` and `grim` over ssh need the session environment. Prefix commands with
+  `export $(systemctl --user show-environment | grep -E '^(WAYLAND_DISPLAY|HYPRLAND_INSTANCE_SIGNATURE)=' | xargs);`
+  then the Quickshell verification steps below apply unchanged inside the guest; `scp vm:/tmp/panel.png` to look at the result. The guest display is 1920x1200 at scale 2, like the laptop, so pixel measurements carry over.
+- To develop without disturbing the live bar, edit in a git worktree, build the VM there and point `NIXOS_CONFIG_SRC` at it.
+- The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd and Bluetooth are turned off in it, and the tailscale tray applet isn't started.
+
 ## Conventions
 
 - System services, hardware, drivers → `modules/` or the host file. User apps and dotfiles → `home/`.

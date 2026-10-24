@@ -24,6 +24,7 @@
 	  ./hosts/laptop/configuration.nix
 	  ./modules/common.nix
 	  ./modules/claude-desktop.nix
+	  ./modules/vm.nix
           home-manager.nixosModules.home-manager {
 	    home-manager.useGlobalPkgs = true;
 	    home-manager.useUserPackages = true;
