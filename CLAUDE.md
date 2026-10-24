@@ -44,6 +44,17 @@ ssh vm true                                          # ~/.ssh/config has a `vm` 
 - `hyprctl`, `qs log` and `grim` over ssh need the session environment. Prefix commands with
   `export $(systemctl --user show-environment | grep -E '^(WAYLAND_DISPLAY|HYPRLAND_INSTANCE_SIGNATURE)=' | xargs);`
   then the Quickshell verification steps below apply unchanged inside the guest; `scp vm:/tmp/panel.png` to look at the result. The guest display is 1920x1200 at scale 2, like the laptop, so pixel measurements carry over.
+- Hover, click and type from the host with `ydotool` and `wtype`, which `modules/vm.nix` installs in the guest (ydotoold runs as a system service and isaiah is in its group). The guest's pointer has a flat acceleration profile, so ydotool coordinates are logical pixels, 1:1 with `hyprctl cursorpos`:
+
+  ```sh
+  ssh vm 'ydotool mousemove --absolute -x 60 -y 19'   # rest on the first workspace circle
+  ssh vm 'ydotool mousemove -x 5 -y 0'                 # relative nudge; HoverHandlers follow it
+  ssh vm 'ydotool click 0xC0'                          # left click at the current position
+  ssh vm 'wtype "echo hi"'                             # type into the focused window
+  ```
+
+  ydotool needs no session environment; wtype needs the export above. Allow for the UI's own delays (tooltips and the workspace list open after 500 ms) before screenshotting. Don't test hover through the QEMU window's pointer or QMP `input-send-event`: both drive the usb-tablet, and the guest only delivers that device's enter, leave and clicks to Quickshell, not motion within a surface, so a HoverHandler never sees the pointer slide from one item to the next.
+- `systemctl --user restart quickshell` fails with "start-limit-hit" after a config error has crashed it a few times; `systemctl --user reset-failed quickshell` first.
 - The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd and Bluetooth are turned off in it, and the tailscale tray applet isn't started.
 
 ### Working in the `vm-dev` worktree
@@ -101,6 +112,10 @@ The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any ed
 - `Text` defaults to `textFormat: Text.AutoText`, which renders HTML (including `<img>` tags that fetch URLs) whenever the string starts with a tag. Any `Text` showing a string from outside the shell (window titles, notification fields, SSIDs, Bluetooth and audio device names, media metadata, tray entries, clipboard previews) must set `textFormat: Text.PlainText`. Where markup is built on purpose (`AudioStreamSection.qml`), escape `&`, `<` and `>` in the interpolated strings.
 - Hyprland runs in Lua mode: `Hyprland.dispatch()` takes a Lua dispatcher expression such as `hl.dsp.focus({ workspace = 1 })`, not the old `workspace 1` string syntax. See `~/.config/hypr/hyprland.lua` for the dispatcher names.
 - `Hyprland.dispatch()` evaluates its argument as Lua inside the compositor, so a string that reaches it is code. Only build dispatches from numbers and values Hyprland itself produced (workspace ids, names from its config); never interpolate window titles, app names or other strings from outside the shell. If a string must be passed, wrap it with `JSON.stringify` so it becomes a quoted literal.
+- `console.log` output never reaches `qs log`; `console.warn` does, as `WARN qml:` lines. Remove them before landing.
+- To inspect shell state without touching the running bar, run a throwaway instance: a file with a `ShellRoot`, no windows, and a `Timer` that logs with `console.warn` and calls `Qt.quit()`, started with `qs -p <file>`. This is safe on the host too.
+- `DesktopEntries.heuristicLookup()` returns null for a few seconds after the shell starts, while entries are indexed, and the call isn't reactive. A binding that uses it should also read `DesktopEntries.applications.values` so it runs again once the index is ready.
+- `PopupAnchor.item` has no change signal. A binding that reads `anchor.item` is evaluated once and goes stale, so for a popup whose anchor item changes at runtime, keep the item in a property of your own and set `anchor.rect` in `anchor.onAnchoring`. Calling `anchor.updateAnchor()` before the popup has ever been shown stops it from appearing; it's fine once visible.
 
 After each change, verify it:
 

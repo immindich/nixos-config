@@ -70,7 +70,17 @@
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKocrW5NT475m9LhsoXS/Oj85m6kB4hWDBpIArTriDwf nixos-vm"
       ];
+      extraGroups = [ config.programs.ydotool.group ];
     };
+
+    # Input injection for testing the shell over ssh (see CLAUDE.md):
+    # ydotool moves and clicks the pointer through uinput, wtype types into
+    # the focused window. No pointer acceleration, so ydotool's moves land
+    # where they're told to.
+    programs.ydotool.enable = true;
+    environment.systemPackages = [ pkgs.wtype ];
+    home-manager.users.isaiah.wayland.windowManager.hyprland.settings.config.input.accel_profile =
+      lib.mkVMOverride "flat";
 
     # Laptop hardware and services that don't exist or don't make sense in
     # the guest
