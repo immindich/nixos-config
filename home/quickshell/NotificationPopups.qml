@@ -5,8 +5,8 @@ import Quickshell.Services.Notifications
 
 // Notification popups, stacked down from the top right under the bar on the
 // focused monitor. Each hides after its timeout (5s by default; critical ones
-// stay until dismissed); hovering pauses the timer. Hidden popups stay in
-// the history menu.
+// stay until dismissed); hovering pauses the timer, and a two-finger swipe
+// right hides one early. Hidden popups stay in the history menu.
 PanelWindow {
     screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
 
@@ -45,6 +45,68 @@ PanelWindow {
                 width: stack.width
 
                 HoverHandler { id: hover }
+
+                // Two-finger swipe right hides the popup, keeping it in the
+                // history. Hyprland doesn't tell apps about natural scrolling,
+                // so this follows the content: with natural scrolling on, that's
+                // the way the fingers move.
+                property real swipeOffset: 0
+                transform: Translate { x: popup.swipeOffset }
+                opacity: 1 - Math.min(swipeOffset / width, 1)
+
+                function swipe(event) {
+                    if (flyOut.running)
+                        return
+                    if (event.phase === Qt.ScrollEnd) {
+                        settle()
+                        return
+                    }
+                    // Touchpads report pixels; wheels only angles (120 a notch)
+                    const dx = event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.angleDelta.x / 4
+                    snapBack.stop()
+                    swipeOffset = Math.max(0, swipeOffset + dx)
+                    swipeIdle.restart()
+                }
+
+                // Past a quarter of the width it flies out, otherwise it springs back
+                function settle() {
+                    swipeIdle.stop()
+                    if (swipeOffset > width / 4)
+                        flyOut.start()
+                    else if (swipeOffset > 0)
+                        snapBack.start()
+                }
+
+                WheelHandler {
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    onWheel: event => popup.swipe(event)
+                }
+
+                // Wheels and some touchpads never send a scroll-end event
+                Timer {
+                    id: swipeIdle
+                    interval: 200
+                    onTriggered: popup.settle()
+                }
+
+                NumberAnimation {
+                    id: flyOut
+                    target: popup
+                    property: "swipeOffset"
+                    to: popup.width
+                    duration: Theme.animationDuration
+                    easing.type: Easing.OutCubic
+                    onFinished: Notifications.hidePopup(popup.notification)
+                }
+
+                NumberAnimation {
+                    id: snapBack
+                    target: popup
+                    property: "swipeOffset"
+                    to: 0
+                    duration: Theme.animationDuration
+                    easing.type: Easing.OutCubic
+                }
 
                 Timer {
                     running: popup.notification.urgency !== NotificationUrgency.Critical && !hover.hovered
