@@ -55,6 +55,7 @@ ssh vm true                                          # ~/.ssh/config has a `vm` 
 
   ydotool needs no session environment; wtype needs the export above. Allow for the UI's own delays (tooltips and the workspace list open after 500 ms) before screenshotting. Don't test hover through the QEMU window's pointer or QMP `input-send-event`: both drive the usb-tablet, and the guest only delivers that device's enter, leave and clicks to Quickshell, not motion within a surface, so a HoverHandler never sees the pointer slide from one item to the next. `hl.dsp.cursor.move` warps the cursor without producing hover events at all.
 - `systemctl --user restart quickshell` fails with "start-limit-hit" after a config error has crashed it a few times; `systemctl --user reset-failed quickshell` first.
+- Menus that take the keyboard (the launcher, `qs ipc call startmenu toggle`) open as a Wayland popup grab, which the compositor only allows after the bar has received input. On a fresh boot that means "Failed to create grabbing popup" and no menu; click the bar first (`ydotool mousemove --absolute -x 500 -y 19; ydotool click 0xC0`). Type into the open launcher with `wtype htop; wtype -k Return`.
 - The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd and Bluetooth are turned off in it, and the tailscale tray applet isn't started.
 
 ### Working in the `vm-dev` worktree
