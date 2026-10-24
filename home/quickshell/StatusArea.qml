@@ -286,7 +286,7 @@ Rectangle {
             }
 
             icon: ""
-            text: Qt.formatDateTime(clock.date, "ddd d MMM hh:mm")
+            text: Qt.formatDateTime(clock.date, "hh:mm")
         }
     }
 }
