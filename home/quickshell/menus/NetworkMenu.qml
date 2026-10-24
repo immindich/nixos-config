@@ -67,11 +67,13 @@ DropdownMenu {
             spacing: 2
 
             Repeater {
-                // Connected network first, then strongest signal first
+                // Connected network first, then known (saved) ones, each
+                // group strongest signal first
                 model: ScriptModel {
                     values: (networkMenu.wifiDevice?.networks.values ?? [])
                         .filter(n => n.name !== "")
-                        .sort((a, b) => (b.connected - a.connected) || (b.signalStrength - a.signalStrength))
+                        .sort((a, b) => (b.connected - a.connected) || (b.known - a.known)
+                            || (b.signalStrength - a.signalStrength))
                 }
 
                 NetworkEntry {}
@@ -159,10 +161,21 @@ DropdownMenu {
                     color: Theme.dimTextColor
                 }
 
-                // Lock on secured networks that aren't connected
+                // "Saved" on known networks that aren't connected; these
+                // connect without asking for a password
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: entry.secure && !entry.modelData.connected
+                    anchors.verticalCenterOffset: Theme.textOffset
+                    visible: entry.modelData.known && !entry.modelData.connected && !entry.modelData.stateChanging
+                    text: "Saved"
+                    font.pixelSize: Theme.fontSize - 2
+                    color: Theme.dimTextColor
+                }
+
+                // Lock on other secured networks that aren't connected
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: entry.secure && !entry.modelData.known && !entry.modelData.connected
                     text: "\uf023" // lock
                     font.family: Theme.iconFont
                     font.weight: Font.Black
