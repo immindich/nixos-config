@@ -176,7 +176,7 @@ Rectangle {
                 : percent === 0 ? "\uf026"           // volume-off
                 : percent < 50 ? "\uf027"            // volume-low
                 : "\uf028"                           // volume-high
-            text: audio && !audio.muted ? percent + "%" : ""
+            text: ""
 
             // Middle click mutes and unmutes
             TapHandler {
@@ -206,7 +206,7 @@ Rectangle {
 
             visible: Brightness.max > 0
             icon: "\uf185" // sun
-            text: Brightness.percent + "%"
+            text: ""
 
             // Scroll to change the brightness in 5% steps, like the brightness keys
             WheelSteps {
