@@ -51,6 +51,8 @@ PanelWindow {
                 // so this follows the content: with natural scrolling on, that's
                 // the way the fingers move.
                 property real swipeOffset: 0
+                // Movement of the latest event: a quick flick flies out early
+                property real swipeSpeed: 0
                 transform: Translate { x: popup.swipeOffset }
                 opacity: 1 - Math.min(swipeOffset / width, 1)
 
@@ -64,14 +66,21 @@ PanelWindow {
                     // Touchpads report pixels; wheels only angles (120 a notch)
                     const dx = event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.angleDelta.x / 4
                     snapBack.stop()
+                    swipeSpeed = dx
                     swipeOffset = Math.max(0, swipeOffset + dx)
-                    swipeIdle.restart()
+                    // A committed flick goes now: touchpads often send no
+                    // scroll-end after one, and waiting for the timer stalls it
+                    if (swipeSpeed >= 8 && swipeOffset > width / 6)
+                        settle()
+                    else
+                        swipeIdle.restart()
                 }
 
-                // Past a quarter of the width it flies out, otherwise it springs back
+                // Past a sixth of the width, or still moving fast when the
+                // fingers lift, it flies out; otherwise it springs back
                 function settle() {
                     swipeIdle.stop()
-                    if (swipeOffset > width / 4)
+                    if (swipeOffset > 0 && (swipeOffset > width / 6 || swipeSpeed >= 8))
                         flyOut.start()
                     else if (swipeOffset > 0)
                         snapBack.start()
@@ -79,13 +88,14 @@ PanelWindow {
 
                 WheelHandler {
                     acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    orientation: Qt.Horizontal
                     onWheel: event => popup.swipe(event)
                 }
 
                 // Wheels and some touchpads never send a scroll-end event
                 Timer {
                     id: swipeIdle
-                    interval: 200
+                    interval: 100
                     onTriggered: popup.settle()
                 }
 
