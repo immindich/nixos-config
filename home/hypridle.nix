@@ -17,6 +17,9 @@ in
         # Make sure the display comes back after resuming from suspend
         after_sleep_cmd = "hyprctl dispatch 'hl.dsp.dpms({ action = \"on\" })'";
         lock_cmd = "pidof hyprlock || hyprlock";
+        # screensaver-inhibit (below) answers org.freedesktop.ScreenSaver
+        # instead, so those inhibits show up in logind's list
+        ignore_dbus_inhibit = true;
       };
 
       # Skipped while the bar's keep-awake (idle inhibitor) toggle is on
@@ -46,5 +49,24 @@ in
         }
       ];
     };
+  };
+
+  # Takes a logind idle inhibitor for each org.freedesktop.ScreenSaver
+  # inhibit (Firefox, video players), so the bar's power menu can list them
+  # with the app and reason. hypridle honors those like its own.
+  systemd.user.services.screensaver-inhibit = {
+    Unit = {
+      Description = "org.freedesktop.ScreenSaver inhibits as logind inhibitors";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "dbus";
+      BusName = "org.freedesktop.ScreenSaver";
+      ExecStart = "${pkgs.python3.withPackages (ps: [ ps.pygobject3 ])}/bin/python3 ${./screensaver-inhibit.py}";
+      Restart = "always";
+      RestartSec = 5;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
   };
 }

@@ -19,8 +19,9 @@ DropdownMenu {
     // What else is keeping the screen awake, as { who, why }: windows holding
     // a Wayland idle inhibitor (Hyprland reports them, but not why), and
     // logind idle inhibitors (systemd-inhibit --what=idle). hypridle honors
-    // both. Inhibits made over D-Bus (org.freedesktop.ScreenSaver) are
-    // missing: hypridle holds those and has no way to list them.
+    // both. Inhibits made over D-Bus (org.freedesktop.ScreenSaver, e.g.
+    // Firefox) are among the logind ones: screensaver-inhibit turns each
+    // into a logind inhibitor with the app and reason.
     property var logindBlockers: []
     readonly property var blockers: Hyprland.toplevels.values
         .filter(t => t.lastIpcObject?.inhibitingIdle)
