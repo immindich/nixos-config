@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Drive the guest's pointer with ydotool (a real uinput mouse, no session
+# environment needed). Coordinates are logical pixels, as `hyprctl cursorpos`
+# reports them; the guest's pointer has a flat acceleration profile, so moves
+# land exactly.
+#
+#   vm-pointer move X Y       jump to (X, Y)
+#   vm-pointer nudge DX DY    move relative to the current position
+#   vm-pointer hover X Y      jump there and wait for tooltips/popups to open
+#   vm-pointer click [right]  press and release at the current position
+#   vm-pointer where          print the current position
+. "$(dirname "$0")/lib.sh"
+cmd=${1:-}
+case "$cmd" in
+    move)  vm_plain "ydotool mousemove --absolute -x ${2:?x} -y ${3:?y}" ;;
+    nudge) vm_plain "ydotool mousemove -x ${2:?dx} -y ${3:?dy}" ;;
+    hover) vm_plain "ydotool mousemove --absolute -x ${2:?x} -y ${3:?y}"; sleep 1.2 ;;
+    click) case "${2:-left}" in
+               left) code=0xC0 ;;
+               right) code=0xC1 ;;
+               *) die "click: left or right" ;;
+           esac
+           vm_plain "ydotool click $code" >/dev/null ;;
+    where) vm_session 'hyprctl cursorpos' ;;
+    *) die "usage: vm-pointer move X Y | nudge DX DY | hover X Y | click [right] | where" ;;
+esac

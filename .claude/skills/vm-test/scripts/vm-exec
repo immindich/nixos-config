@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Run a command line in the guest with the Hyprland session environment, so
+# hyprctl, qs, grim and wtype work. The arguments are joined into one shell
+# command line, so quote as for a remote shell:
+#
+#   vm-exec hyprctl clients -j
+#   vm-exec 'hyprctl dispatch "hl.dsp.exec_cmd(\"kitty --title test\")"'
+. "$(dirname "$0")/lib.sh"
+[ $# -gt 0 ] || die "usage: vm-exec <command...>"
+vm_session "$*"

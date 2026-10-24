@@ -28,57 +28,9 @@ nix eval .#nixosConfigurations.<host>.config.<option.path>   # check a single op
 
 ## Test VM
 
-`modules/vm.nix` defines a `virtualisation.vmVariant` of the laptop config: the same system and home config, booting straight into Hyprland as isaiah. The guest mounts the host's Nix store read-only (nothing is copied) and shares the checkout read-only at `~/nixos-config`, so the Quickshell symlink resolves and QML edits are visible in the guest immediately. The host toplevel is unaffected by anything in that module.
+`modules/vm.nix` defines a `virtualisation.vmVariant` of the laptop config that boots straight into Hyprland as isaiah, with the host's Nix store mounted read-only and a checkout shared in at `~/nixos-config`. Use it for desktop-shell work (Quickshell, Hyprland config) and for Nix changes that need to be run to be trusted, since activating on the host needs root. Don't use it for a simple Nix change that doesn't involve the shell and that you're reasonably confident will work the first time: the host has to be switched anyway, so the VM round-trip only adds time there.
 
-Use it for desktop-shell work (Quickshell, Hyprland config) and for Nix changes that need to be run to be trusted, since activating on the host needs root. Don't use it for a simple Nix change that doesn't involve the shell and that you're reasonably confident will work the first time: the host has to be switched anyway, so the VM round-trip only adds time there.
-
-```sh
-nixos-rebuild build-vm --flake .#laptop              # no root; writes ./result/bin/run-laptop-vm-vm
-NIXOS_CONFIG_SRC=$PWD ./result/bin/run-laptop-vm-vm  # QEMU window, opens on special:vm (SUPER+SHIFT+M); disk image in ~/.cache/nixos-vm
-ssh vm true                                          # ~/.ssh/config has a `vm` entry (port 2222, key ~/.ssh/nixos-vm)
-```
-
-- Run the VM in the background and poll `ssh vm true` until it succeeds (about 10 s). Guest sudo password is `isaiah`. Shut down with `ssh vm 'echo isaiah | sudo -S systemctl poweroff'`.
-- Nix changes (system, Hyprland config, user services): rebuild the VM, power it off, relaunch. The qcow2 keeps the guest's home and store overlay.
-- QML changes: inotify doesn't cross 9p, so the guest's Quickshell won't reload itself. Run `ssh vm systemctl --user restart quickshell`.
-- `hyprctl`, `qs log` and `grim` over ssh need the session environment. Prefix commands with
-  `export $(systemctl --user show-environment | grep -E '^(WAYLAND_DISPLAY|HYPRLAND_INSTANCE_SIGNATURE)=' | xargs);`
-  then the Quickshell verification steps below apply unchanged inside the guest; `scp vm:/tmp/panel.png` to look at the result. The guest display is 1920x1200 at scale 2, like the laptop, so pixel measurements carry over.
-- Hover, click and type from the host with `ydotool` and `wtype`, which `modules/vm.nix` installs in the guest (ydotoold runs as a system service and isaiah is in its group). The guest's pointer has a flat acceleration profile, so ydotool coordinates are logical pixels, 1:1 with `hyprctl cursorpos`:
-
-  ```sh
-  ssh vm 'ydotool mousemove --absolute -x 60 -y 19'   # rest on the first workspace circle
-  ssh vm 'ydotool mousemove -x 5 -y 0'                 # relative nudge; HoverHandlers follow it
-  ssh vm 'ydotool click 0xC0'                          # left click at the current position
-  ssh vm 'wtype "echo hi"'                             # type into the focused window
-  ```
-
-  ydotool needs no session environment; wtype needs the export above. Allow for the UI's own delays (tooltips and the workspace list open after 500 ms) before screenshotting. Don't test hover through the QEMU window's pointer or QMP `input-send-event`: both drive the usb-tablet, and the guest only delivers that device's enter, leave and clicks to Quickshell, not motion within a surface, so a HoverHandler never sees the pointer slide from one item to the next. `hl.dsp.cursor.move` warps the cursor without producing hover events at all.
-- `systemctl --user restart quickshell` fails with "start-limit-hit" after a config error has crashed it a few times; `systemctl --user reset-failed quickshell` first.
-- Menus that take the keyboard (the launcher, `qs ipc call startmenu toggle`) open as a Wayland popup grab, which the compositor only allows after the bar has received input. On a fresh boot that means "Failed to create grabbing popup" and no menu; click the bar first (`ydotool mousemove --absolute -x 500 -y 19; ydotool click 0xC0`). Type into the open launcher with `wtype htop; wtype -k Return`.
-- The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd and Bluetooth are turned off in it, and the tailscale tray applet isn't started.
-
-### Working in the `vm-dev` worktree
-
-The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any edit in the main checkout reloads the shell on the host. Shell work happens in a worktree instead, and reaches `main` only when it's verified.
-
-- `~/nixos-config/.worktrees/vm-dev` is a worktree of this repo on the throwaway branch `vm-dev`. If it's missing: `git worktree add -b vm-dev .worktrees/vm-dev main`.
-- Start a session by checking whether `vm-dev` is ahead of `main` (`git -C ~/nixos-config/.worktrees/vm-dev log main..vm-dev`) or has uncommitted edits (`git status`). If so, something from an earlier session never landed. Stop and ask what to do with it (land it, keep it, or drop it) before starting on the new task; don't rebase or reset over it.
-- Then sync it: `git -C ~/nixos-config/.worktrees/vm-dev rebase main`. Commits already cherry-picked onto `main` drop out automatically.
-- Build and run the VM from the worktree, and share the worktree into it:
-
-  ```sh
-  cd ~/nixos-config/.worktrees/vm-dev
-  nixos-rebuild build-vm --flake .#laptop             # cheap when nothing in Nix changed
-  NIXOS_CONFIG_SRC=$PWD ./result/bin/run-laptop-vm-vm  # in the background
-  ```
-
-  The guest sees the worktree at `/home/isaiah/nixos-config` whatever its host path, so the Quickshell symlink resolves to it.
-- Edit in the worktree only. QML: `ssh vm systemctl --user restart quickshell`, then check `qs log` and a screenshot inside the guest. Nix: `git add` new files, rebuild the VM, power it off, relaunch.
-- Landing a change: commit on `vm-dev` in the worktree, then `git -C ~/nixos-config cherry-pick <sha>`. That edits the main checkout, so the live bar reloads at that moment; if it renders the old layout, `touch` the changed file. Nix changes still need a switch on the host.
-- Only one VM runs at a time: the disk image and host port 2222 are shared no matter which tree launched it. Power the guest off before launching from a different build.
-- `main` can only be checked out in one place, so don't switch the worktree to it; `vm-dev` is the branch for everything done there.
-- If you learn something new about driving the VM or testing in it (an input or inspection technique that works or doesn't, a timing, a quirk of the guest), add it to this Test VM section as part of the same task, in its own commit separate from the feature's. Lessons that only live in a session or in memory get lost; this file doesn't.
+The whole workflow, including the `vm-dev` worktree that shell work happens in, how to start and stop the guest, screenshots, and driving pointer and keyboard input, is the `vm-test` skill (`.claude/skills/vm-test/`), with helper scripts in its `scripts/` directory. Load it before any shell work.
 
 ## Conventions
 

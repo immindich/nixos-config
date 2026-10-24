@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Quickshell in the guest.
+#
+#   vm-qs restart     restart it (QML edits don't reload on their own in the
+#                     guest: inotify doesn't cross 9p) and wait until it is up
+#   vm-qs log [N]     the last N log lines (default 40), without the noise
+#                     from hardware the guest doesn't have
+. "$(dirname "$0")/lib.sh"
+# Old instances leave their log directories behind, so address the one the
+# service is running now; without a running service fall back to qs's choice
+qs_instance() {
+    local pid
+    pid=$(vm_plain 'systemctl --user show -p MainPID --value quickshell' 2>/dev/null || echo 0)
+    [ "${pid:-0}" != 0 ] && echo "--pid $pid"
+}
+
+case "${1:-}" in
+    restart)
+        # A config error that crashed it a few times trips systemd's start
+        # limit; clearing it first keeps the restart from failing on that
+        vm_plain 'systemctl --user reset-failed quickshell 2>/dev/null; systemctl --user restart quickshell'
+        sleep 1
+        inst=$(qs_instance)
+        [ -n "$inst" ] || die "the quickshell service isn't running after the restart; vm-qs log"
+        # Loading takes a few seconds; report the outcome, not the start
+        for _ in $(seq 1 60); do
+            result=$(vm_session "qs log --no-color $inst -t 30 2>/dev/null | grep -E 'ERROR|Configuration Loaded|Failed to load'" || true)
+            if [ -n "$result" ]; then
+                echo "$result"
+                vm_wait_for_bar 20 || die "config loaded but the bar didn't appear; vm-qs log"
+                exit 0
+            fi
+            sleep 0.5
+        done
+        die "no load result in the log after 30 s; vm-qs log" ;;
+    log)
+        inst=$(qs_instance)
+        vm_session "qs log --no-color $inst -t ${2:-40} | grep -vE 'intel_backlight|QSettings::value: Empty key|org.bluez'" ;;
+    *) die "usage: vm-qs restart | vm-qs log [N]" ;;
+esac

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Type into the guest's focused window with wtype.
+#
+#   vm-type htop            type the text
+#   vm-type -k Return       press a key (any wtype -k name: Return, Escape, Tab...)
+. "$(dirname "$0")/lib.sh"
+[ $# -gt 0 ] || die "usage: vm-type <text> | vm-type -k <key>"
+if [ "$1" = "-k" ]; then
+    vm_session "wtype -k $(printf '%q' "${2:?key}")"
+else
+    vm_session "wtype $(printf '%q' "$*")"
+fi

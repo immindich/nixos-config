@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Screenshot the guest and copy it to the host.
+#
+#   vm-shot out.png              the bar's own area (Quickshell's layer surface)
+#   vm-shot out.png 0,0 500x160  a region, in logical pixels, like grim -g
+#   vm-shot out.png --full       the whole screen
+#
+# The guest runs at scale 2 like the laptop, so the PNG is twice the logical
+# size; for pixel measurements decode it with python3.
+. "$(dirname "$0")/lib.sh"
+out=${1:-}
+[ -n "$out" ] || die "usage: vm-shot <out.png> [x,y wxh | --full]"
+shift
+case "${1:-}" in
+    --full) geom="" ;;
+    "") geom=$(vm_bar_geometry)
+        [ -n "$geom" ] || die "the bar isn't on screen; is Quickshell running? (vm-qs log)" ;;
+    *) geom="$*" ;;
+esac
+if [ -n "$geom" ]; then
+    vm_session "grim -g \"$geom\" /tmp/vm-shot.png"
+else
+    vm_session "grim /tmp/vm-shot.png"
+fi
+scp -q vm:/tmp/vm-shot.png "$out"
+echo "$out${geom:+ ($geom)}"

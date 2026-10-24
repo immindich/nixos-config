@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Build (if needed) and start the test VM from the current checkout, sharing
+# that checkout into the guest, then wait until ssh and Quickshell are up.
+#
+#   vm-up             reuse ./result if it is a VM build
+#   vm-up --rebuild   nixos-rebuild build-vm first (after any Nix change)
+#
+# Run it from the tree you want the guest to see (normally the vm-dev
+# worktree). Only one VM can run at a time: the disk image and port 2222 are
+# shared, so this refuses to start a second one.
+. "$(dirname "$0")/lib.sh"
+
+rebuild=false
+case "${1:-}" in
+    --rebuild|-r) rebuild=true ;;
+    "") ;;
+    *) die "usage: vm-up [--rebuild]" ;;
+esac
+
+tree=$(git rev-parse --show-toplevel 2>/dev/null) || die "run from inside the checkout to share"
+cd "$tree"
+
+if vm_reachable; then
+    die "a VM is already running (ssh vm works); vm-down first"
+fi
+if pgrep -f 'qemu-system-x86_64.*laptop' >/dev/null; then
+    die "a QEMU process is still running; wait for it to exit or kill it"
+fi
+
+if $rebuild || [ ! -x result/bin/run-laptop-vm-vm ]; then
+    # ./result may point at a host build from `nixos-rebuild build`
+    echo "building the VM..."
+    nixos-rebuild build-vm --flake .#laptop
+fi
+
+log=${XDG_RUNTIME_DIR:-/tmp}/vm-test.log
+NIXOS_CONFIG_SRC=$tree nohup ./result/bin/run-laptop-vm-vm >"$log" 2>&1 &
+echo "QEMU started (log: $log), sharing $tree"
+
+start=$(date +%s)
+for _ in $(seq 1 120); do
+    vm_reachable && break
+    sleep 1
+done
+vm_reachable || die "guest didn't answer on ssh within 120 s; see $log"
+
+# The bar appears a good while after ssh; nothing can be tested before then
+if vm_wait_for_bar 90; then
+    echo "VM up after $(( $(date +%s) - start )) s: ssh works and the bar is on screen"
+else
+    die "ssh is up but the bar never appeared; try 'vm-qs log'"
+fi

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Power the guest off and wait for QEMU to exit. The qcow2 keeps the guest's
+# home and store overlay, so the next vm-up boots the same guest.
+. "$(dirname "$0")/lib.sh"
+
+if ! vm_reachable; then
+    echo "no guest answering on ssh"
+    exit 0
+fi
+vm_plain 'echo isaiah | sudo -S systemctl poweroff' 2>&1 | grep -v 'password for' || true
+for _ in $(seq 1 60); do
+    if ! vm_reachable && ! pgrep -f 'qemu-system-x86_64.*laptop' >/dev/null; then
+        echo "guest is off"
+        exit 0
+    fi
+    sleep 1
+done
+die "guest still running after 60 s"
