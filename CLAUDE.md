@@ -44,8 +44,28 @@ ssh vm true                                          # ~/.ssh/config has a `vm` 
 - `hyprctl`, `qs log` and `grim` over ssh need the session environment. Prefix commands with
   `export $(systemctl --user show-environment | grep -E '^(WAYLAND_DISPLAY|HYPRLAND_INSTANCE_SIGNATURE)=' | xargs);`
   then the Quickshell verification steps below apply unchanged inside the guest; `scp vm:/tmp/panel.png` to look at the result. The guest display is 1920x1200 at scale 2, like the laptop, so pixel measurements carry over.
-- To develop without disturbing the live bar, edit in a git worktree, build the VM there and point `NIXOS_CONFIG_SRC` at it.
 - The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd and Bluetooth are turned off in it, and the tailscale tray applet isn't started.
+
+### Working in the `vm-dev` worktree
+
+The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any edit in the main checkout reloads the shell on the host. Shell work happens in a worktree instead, and reaches `main` only when it's verified.
+
+- `~/nixos-config.vm` is a worktree of this repo on the throwaway branch `vm-dev`. If it's missing: `git worktree add -b vm-dev ../nixos-config.vm main`.
+- Start a session by checking whether `vm-dev` is ahead of `main` (`git -C ~/nixos-config.vm log main..vm-dev`) or has uncommitted edits (`git status`). If so, something from an earlier session never landed. Stop and ask what to do with it (land it, keep it, or drop it) before starting on the new task; don't rebase or reset over it.
+- Then sync it: `git -C ~/nixos-config.vm rebase main`. Commits already cherry-picked onto `main` drop out automatically.
+- Build and run the VM from the worktree, and share the worktree into it:
+
+  ```sh
+  cd ~/nixos-config.vm
+  nixos-rebuild build-vm --flake .#laptop             # cheap when nothing in Nix changed
+  NIXOS_CONFIG_SRC=$PWD ./result/bin/run-laptop-vm-vm  # in the background
+  ```
+
+  The guest sees the worktree at `/home/isaiah/nixos-config` whatever its host path, so the Quickshell symlink resolves to it.
+- Edit in the worktree only. QML: `ssh vm systemctl --user restart quickshell`, then check `qs log` and a screenshot inside the guest. Nix: `git add` new files, rebuild the VM, power it off, relaunch.
+- Landing a change: commit on `vm-dev` in the worktree, then `git -C ~/nixos-config cherry-pick <sha>`. That edits the main checkout, so the live bar reloads at that moment; if it renders the old layout, `touch` the changed file. Nix changes still need a switch on the host.
+- Only one VM runs at a time: the disk image and host port 2222 are shared no matter which tree launched it. Power the guest off before launching from a different build.
+- `main` can only be checked out in one place, so don't switch the worktree to it; `vm-dev` is the branch for everything done there.
 
 ## Conventions
 
