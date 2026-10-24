@@ -83,9 +83,9 @@ DropdownMenu {
 
     function launch(entry) {
         sessionMenu.visible = false
-        // execute() ignores Terminal=true, so wrap those in foot ourselves
+        // execute() ignores Terminal=true, so wrap those in kitty ourselves
         Quickshell.execDetached({
-            command: entry.runInTerminal ? ["foot", "--"].concat(entry.command) : entry.command,
+            command: entry.runInTerminal ? ["kitty", "--"].concat(entry.command) : entry.command,
             workingDirectory: entry.workingDirectory
         })
     }
