@@ -24,6 +24,12 @@ Row {
         Hyprland.dispatch("hl.dsp.focus({ workspace = " + (typeof target === "number" ? target : target.id) + " })")
     }
 
+    // Icons for the special workspaces: the test VM (modules/vm.nix) gets a
+    // cube, anything else the magic wand
+    readonly property var specialIcons: ({
+        "special:vm": "\uf1b2" // cube
+    })
+
     // Names of the special workspaces open on any monitor, as in WindowTitle;
     // HyprlandWorkspace.active doesn't cover them
     readonly property var openSpecials: Hyprland.monitors.values
@@ -86,7 +92,7 @@ Row {
         Text {
             anchors.centerIn: parent
             visible: special
-            text: "\ue2ca" // wand-magic-sparkles
+            text: special ? (switcher.specialIcons[ws.name] ?? "\ue2ca") : "" // wand-magic-sparkles
             font.family: Theme.iconFont
             font.weight: Font.Black
             font.pixelSize: Theme.iconSize

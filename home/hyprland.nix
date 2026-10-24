@@ -231,6 +231,8 @@ in
         # Scratchpad
         (bind "${mainMod} + S" ''hl.dsp.workspace.toggle_special("magic")'')
         (bind "${mainMod} + SHIFT + S" ''hl.dsp.window.move({ workspace = "special:magic silent" })'')
+        # The test VM's window (modules/vm.nix) lives on special:vm
+        (bind "${mainMod} + SHIFT + M" ''hl.dsp.workspace.toggle_special("vm")'')
 
         # Scroll through existing workspaces
         (bind "${mainMod} + mouse_down" ''hl.dsp.focus({ workspace = "e+1" })'')
@@ -286,6 +288,15 @@ in
           name = "claude-desktop-magic";
           match.class = "com.anthropic.Claude";
           workspace = "special:magic silent";
+        }
+        {
+          # The test VM (modules/vm.nix) opens out of the way; SUPER+SHIFT+M shows it
+          name = "test-vm";
+          match = {
+            class = "qemu";
+            title = "^QEMU \\(laptop-vm\\)$";
+          };
+          workspace = "special:vm silent";
         }
       ];
     };
