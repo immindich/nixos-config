@@ -50,13 +50,13 @@ ssh vm true                                          # ~/.ssh/config has a `vm` 
 
 The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any edit in the main checkout reloads the shell on the host. Shell work happens in a worktree instead, and reaches `main` only when it's verified.
 
-- `~/nixos-config.vm` is a worktree of this repo on the throwaway branch `vm-dev`. If it's missing: `git worktree add -b vm-dev ../nixos-config.vm main`.
-- Start a session by checking whether `vm-dev` is ahead of `main` (`git -C ~/nixos-config.vm log main..vm-dev`) or has uncommitted edits (`git status`). If so, something from an earlier session never landed. Stop and ask what to do with it (land it, keep it, or drop it) before starting on the new task; don't rebase or reset over it.
-- Then sync it: `git -C ~/nixos-config.vm rebase main`. Commits already cherry-picked onto `main` drop out automatically.
+- `~/nixos-config/.worktrees/vm-dev` is a worktree of this repo on the throwaway branch `vm-dev`. If it's missing: `git worktree add -b vm-dev .worktrees/vm-dev main`.
+- Start a session by checking whether `vm-dev` is ahead of `main` (`git -C ~/nixos-config/.worktrees/vm-dev log main..vm-dev`) or has uncommitted edits (`git status`). If so, something from an earlier session never landed. Stop and ask what to do with it (land it, keep it, or drop it) before starting on the new task; don't rebase or reset over it.
+- Then sync it: `git -C ~/nixos-config/.worktrees/vm-dev rebase main`. Commits already cherry-picked onto `main` drop out automatically.
 - Build and run the VM from the worktree, and share the worktree into it:
 
   ```sh
-  cd ~/nixos-config.vm
+  cd ~/nixos-config/.worktrees/vm-dev
   nixos-rebuild build-vm --flake .#laptop             # cheap when nothing in Nix changed
   NIXOS_CONFIG_SRC=$PWD ./result/bin/run-laptop-vm-vm  # in the background
   ```
