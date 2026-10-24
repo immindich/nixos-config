@@ -4,7 +4,7 @@ import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 import qs
 
-// Applications section of the audio menu: every program currently playing
+// Applications tab of the audio menu: every program currently playing
 // audio, each with its own mute button and volume slider. Needs the nodes
 // to be tracked by a PwObjectTracker (StatusArea has one).
 Column {
@@ -12,8 +12,6 @@ Column {
 
     width: parent.width - parent.leftPadding - parent.rightPadding
     spacing: 6
-
-    MenuHeading { text: "Applications" }
 
     Text {
         visible: streams.values.length === 0

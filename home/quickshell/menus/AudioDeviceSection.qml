@@ -3,8 +3,9 @@ import Quickshell
 import Quickshell.Services.Pipewire
 import qs
 
-// One half of the audio menu: heading with mute button, volume slider for the
-// default device, and the list of devices (click one to make it the default).
+// One half of the audio menu's Devices tab: heading with mute button, volume
+// slider for the default device, and the list of devices (click one to make
+// it the default).
 // `sink: true` is for outputs (speakers), false for inputs (microphones).
 // Needs the nodes to be tracked by a PwObjectTracker (StatusArea has one).
 Column {
