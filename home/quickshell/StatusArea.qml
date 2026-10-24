@@ -170,13 +170,21 @@ Rectangle {
             menu: AudioMenu { anchor.item: volume }
 
             readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
-            readonly property int percent: audio ? Math.round(audio.volume * 100) : 0
+            readonly property bool muted: !audio || audio.muted
             visible: audio !== null
-            icon: !audio || audio.muted ? "\uf6a9"   // volume-xmark
-                : percent === 0 ? "\uf026"           // volume-off
-                : percent < 50 ? "\uf027"            // volume-low
-                : "\uf028"                           // volume-high
+            // Muted: speaker with a cross. Otherwise the bare speaker with
+            // sound-wave arcs lit by volume.
+            icon: muted ? "\uf6a9" : "" // volume-xmark
             text: ""
+            extraVisible: !muted
+            extra: Row {
+                spacing: 1
+                Icon { text: "\uf026" } // volume-off (bare speaker)
+                VolumeArcs {
+                    anchors.verticalCenter: parent.verticalCenter
+                    level: volume.audio?.volume ?? 0
+                }
+            }
 
             // Middle click mutes and unmutes
             TapHandler {
