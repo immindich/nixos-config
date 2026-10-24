@@ -53,7 +53,7 @@ ssh vm true                                          # ~/.ssh/config has a `vm` 
   ssh vm 'wtype "echo hi"'                             # type into the focused window
   ```
 
-  ydotool needs no session environment; wtype needs the export above. Allow for the UI's own delays (tooltips and the workspace list open after 500 ms) before screenshotting. Don't test hover through the QEMU window's pointer or QMP `input-send-event`: both drive the usb-tablet, and the guest only delivers that device's enter, leave and clicks to Quickshell, not motion within a surface, so a HoverHandler never sees the pointer slide from one item to the next.
+  ydotool needs no session environment; wtype needs the export above. Allow for the UI's own delays (tooltips and the workspace list open after 500 ms) before screenshotting. Don't test hover through the QEMU window's pointer or QMP `input-send-event`: both drive the usb-tablet, and the guest only delivers that device's enter, leave and clicks to Quickshell, not motion within a surface, so a HoverHandler never sees the pointer slide from one item to the next. `hl.dsp.cursor.move` warps the cursor without producing hover events at all.
 - `systemctl --user restart quickshell` fails with "start-limit-hit" after a config error has crashed it a few times; `systemctl --user reset-failed quickshell` first.
 - The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd and Bluetooth are turned off in it, and the tailscale tray applet isn't started.
 
@@ -95,6 +95,7 @@ The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any ed
 - Installed by NixOS `programs.hyprland`; configured by home-manager in `home/hyprland.nix` with `package = null` and `portalPackage = null`.
 - Config is Lua (`configType = "lua"`). Each `settings.<name>` becomes `hl.<name>(...)`; a list makes one call per element; `{ _args = [ ... ]; }` makes a multi-argument call; `lib.generators.mkLuaInline` emits raw Lua (used for `hl.dsp.*` dispatchers).
 - Sections are written alphabetically, except `curve` goes first.
+- Options live under `settings.config.<section>` (`general`, `input`, `misc`, ...), which renders as one `hl.config({...})` call. A key placed directly under `settings.<section>` renders a separate `hl.<section>(...)` call that has no effect on the option and draws no error (`hyprctl getoption` shows `set: false`). Overrides for the VM in `modules/vm.nix` must use the `settings.config` path too.
 - Output lands at `~/.config/hypr/hyprland.lua`. To check the rendering without switching:
   `nix eval --raw '.#nixosConfigurations.<host>.config.home-manager.users.isaiah.xdg.configFile."hypr/hyprland.lua".text'`
 - To screenshot an app window (e.g. to check theming), capture the window itself rather than a screen region: I may switch workspaces while you test, and a region grab then shows whatever is on screen. Find the window's `stableId`, then capture it; this works even when the window is on a workspace that isn't visible:
