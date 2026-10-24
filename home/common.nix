@@ -19,6 +19,17 @@ in {
   programs.foot.enable = true;
   programs.foot.settings.main.font = "monospace:size=9";
 
+  programs.kitty = {
+    enable = true;
+
+    font.package = pkgs.inconsolata;
+    font.name = "Inconsolata-Regular";
+    font.size = 12;
+
+    # Keep the block cursor; the shell integration otherwise switches it to a beam at the prompt.
+    shellIntegration.mode = "no-rc no-cursor";
+  };
+
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;

@@ -3,7 +3,7 @@ let
   inline = lib.generators.mkLuaInline;
 
   mainMod = "SUPER";
-  terminal = "foot";
+  terminal = "kitty";
   fileManager = "dolphin";
 
   # Drag to select a region; saves to ~/screenshots and copies to the clipboard.
