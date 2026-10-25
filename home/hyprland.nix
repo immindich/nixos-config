@@ -356,6 +356,14 @@ in
           float = true;
         }
         {
+          name = "steam-friends-float";
+          match = {
+            class = "^steam$";
+            title = "^Friends List$";
+          };
+          float = true;
+        }
+        {
           name = "claude-desktop-magic";
           match.class = "com.anthropic.Claude";
           workspace = "special:magic silent";
