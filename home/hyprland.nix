@@ -289,6 +289,46 @@ in
         ];
       };
 
+      # A window that goes fullscreen moves to an empty workspace of its own
+      # if it's sharing one, like macOS, so switching to another window never
+      # has to take it out of fullscreen (misc:on_focus_under_fullscreen).
+      # Leaving fullscreen takes it back, if it's still alone there. Handled
+      # on a timer because the event fires inside Hyprland's fullscreen code,
+      # and again (with the window still fullscreen) during the move itself.
+      on = {
+        _args = [
+          "window.fullscreen"
+          (inline ''
+            (function()
+              local home = {}
+              return function(w)
+                local window = "address:" .. w.address
+                hl.timer(function()
+                  local win = hl.get_window(window)
+                  if not win then
+                    home[window] = nil
+                    return
+                  end
+                  local ws = win.workspace
+                  if win.fullscreen == 2 then
+                    if not ws.special and ws.windows > 1 then
+                      home[window] = ws.id
+                      hl.dispatch(hl.dsp.window.move({ workspace = "empty", window = window }))
+                    end
+                  elseif win.fullscreen == 0 and home[window] then
+                    local id = home[window]
+                    home[window] = nil
+                    if ws.windows == 1 then
+                      hl.dispatch(hl.dsp.window.move({ workspace = id, window = window }))
+                    end
+                  end
+                end, { timeout = 1, type = "oneshot" })
+              end
+            end)()
+          '')
+        ];
+      };
+
       window_rule = [
         {
           # Ignore maximize requests from all apps
