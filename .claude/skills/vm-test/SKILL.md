@@ -28,15 +28,16 @@ The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any ed
 
 ```sh
 cd ~/nixos-config/.worktrees/vm-dev
-.claude/skills/vm-test/scripts/vm-up            # boots and waits until the bar is on screen (30-40 s)
-.claude/skills/vm-test/scripts/vm-up --rebuild  # after a Nix change: nixos-rebuild build-vm first
+.claude/skills/vm-test/scripts/vm-up            # boots and waits until the bar is on screen (12 s warm, ~30 s after a rebuild)
+.claude/skills/vm-test/scripts/vm-switch        # apply a Nix change to the running guest (about 5 s)
+.claude/skills/vm-test/scripts/vm-up --rebuild  # the reboot route: nixos-rebuild build-vm, then boot
 .claude/skills/vm-test/scripts/vm-down          # power off and wait for QEMU to exit
 ```
 
 - `vm-up` shares the checkout it's run from and refuses to start while a guest is running: the disk image and port 2222 are shared no matter which tree launched it. Power the guest off before launching from a different build.
-- Nix changes (system, Hyprland config, user services): `git add` new files (the flake can't see untracked ones), `vm-down`, `vm-up --rebuild`. The qcow2 keeps the guest's home and store overlay, so windows are gone but settings persist.
+- Nix changes (system, Hyprland config, user services): `git add` new files (the flake can't see untracked ones), then `vm-switch`. It builds the VM, registers the new closure in the guest's Nix database and runs the toplevel's `switch-to-configuration test` there, which also runs home-manager activation and reloads Hyprland. Only kernel, initrd or mount changes need the reboot route (`vm-down`, `vm-up --rebuild`). The qcow2 keeps the guest's home and store overlay across reboots, so windows are gone but settings persist.
 - QML changes: `vm-qs restart`. inotify doesn't cross 9p, so the guest's Quickshell won't reload on its own. The script clears systemd's start limit first (a config error that crashes the shell a few times trips it), waits for "Configuration Loaded" or the load error, and prints it.
-- The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd and Bluetooth are turned off in it, and the tailscale tray applet isn't started.
+- The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd, Bluetooth, Flatpak and the desktop portals are turned off in it, and the tailscale tray applet and the ScreenSaver inhibit bridge aren't started. So portal-backed things (screen sharing, the portal's file chooser) can't be tested there, and Quickshell's "Failed to register with host portal" warning is expected in the guest.
 - The QEMU window opens on the host's special workspace `special:vm` (SUPER+SHIFT+M); the guest display is 1920x1200 at scale 2, like the laptop, so pixel measurements carry over.
 
 ## Looking at the result
@@ -72,6 +73,13 @@ $S/vm-type -k Return           # press a key (wtype -k names)
 - Menus that take the keyboard (the launcher: `vm-exec qs ipc call startmenu toggle`) open as a Wayland popup grab, which the compositor only allows after the bar has received input. On a fresh boot that fails with "Failed to create grabbing popup" and nothing opens, so click the bar once first: `vm-pointer move 500 19; vm-pointer click`.
 - Don't test hover through the QEMU window's own pointer or QMP `input-send-event`: both drive QEMU's usb-tablet, and the guest only delivers that device's enter, leave and clicks to Quickshell, not motion within a surface, so a HoverHandler never sees the pointer slide from one item to the next. `hl.dsp.cursor.move` warps the cursor without producing hover events at all. ydotool is a real uinput mouse and has none of these problems.
 - The guest has no battery, so the battery indicator and its tooltip can't be exercised there.
+
+## What has been measured and tried
+
+- A warm boot takes 12 s to the bar (kernel and initrd 3.5 s, system services 3.6 s, greetd at 7 s, Quickshell starts at 8.5 s and finishes loading at 10 s). Right after a rebuild it can take 30 s or more, because the new store paths aren't in the host's page cache yet. Boot isn't CPU or memory bound (4 cores and 8 GB are mostly idle), it's 9p latency.
+- `virtualisation.msize` at 512 KiB (from the 16 KiB default) took about 0.8 s off Quickshell's config load. `cache=loose` on the config share took a further 0.3 s but makes worktree edits invisible to the guest, so it's not used. Turning off the portals, Flatpak and the inhibit bridge saved another 0.3 s. Faster polling in `vm-up` saved nothing: the lag after the bar appears is QEMU's own startup plus one ssh round trip.
+- Paths built on the host after the guest booted exist in the guest's store but aren't valid in its Nix database, which only registers the closure it booted from. Anything that calls `nix-store --realise` or `nix path-info` on them fails, and home-manager's activation does exactly that, silently. `vm-switch` copies the closure's database entries over first (`nix-store --dump-db` on the host, `--load-db` as root in the guest, via a file because `sudo -S` reads stdin).
+- A snapshot of a booted guest isn't an option: QEMU can't save a guest using virgl GL, which Hyprland needs.
 
 ## Keep this skill current
 
