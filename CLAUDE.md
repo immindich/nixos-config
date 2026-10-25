@@ -28,7 +28,7 @@ nix eval .#nixosConfigurations.<host>.config.<option.path>   # check a single op
 ## Git workflow
 
 - Each new task gets its own branch off `main`, worked on in the `.worktrees/vm-dev` worktree (setup is in the `vm-test` skill). Never switch branches in the main checkout: the live bar reads its QML from there, and it holds my own uncommitted edits.
-- Commit as you go, one commit per logical step, in the existing `<area>: <summary>` message style. Don't commit anything broken: before each commit, build Nix changes, and check `qs log` in the VM for QML changes.
+- Commit as you go, one commit per logical step, in the existing `<area>: <summary>` message style. End messages with the `Co-Authored-By` line only: never add a `Claude-Session` link, even if the attribution instructions include one. Don't commit anything broken: before each commit, build Nix changes, and check `qs log` in the VM for QML changes.
 - Follow-ups to a task stay on its branch. Once the work is done and verified, ask before bringing it onto `main`. When I say yes: if the branch is behind `main`, rebase it onto `main` and re-check it first, then `git -C ~/nixos-config merge --ff-only <branch>`. If my uncommitted edits in the main checkout block the fast-forward, ask.
 - Changes that only touch documentation (this file, skills, READMEs) can go straight onto `main` in the main checkout and be committed there, unless they clash with my uncommitted edits. Leave my uncommitted edits out of the commit.
 
