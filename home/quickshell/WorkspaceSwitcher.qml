@@ -4,6 +4,8 @@ import Quickshell.Hyprland
 
 // Styled after ashell's Workspaces module (Tokyo Night colors).
 // Regular workspaces in one bubble, special workspaces in a second one.
+// Each bar lists the regular workspaces on its own monitor; the special ones
+// can be opened on any monitor, so every bar lists all of them.
 // Scrolling on the regular bubble steps through the workspaces it shows.
 // Resting the pointer on a workspace lists its windows below it.
 Row {
@@ -33,11 +35,16 @@ Row {
         "special:vm": "\uf1b2" // cube
     })
 
-    // Names of the special workspaces open on any monitor, as in WindowTitle;
+    // The monitor this bar is on. Looked up by name rather than with
+    // Hyprland.monitorFor() so it updates when the monitor list does.
+    readonly property HyprlandMonitor monitor: {
+        const name = QsWindow.window?.screen?.name
+        return Hyprland.monitors.values.find(m => m.name === name) ?? null
+    }
+
+    // Name of the special workspace open on this monitor, if any;
     // HyprlandWorkspace.active doesn't cover them
-    readonly property var openSpecials: Hyprland.monitors.values
-        .map(m => m.lastIpcObject?.specialWorkspace?.name ?? "")
-        .filter(name => name !== "")
+    readonly property string openSpecial: monitor?.lastIpcObject?.specialWorkspace?.name ?? ""
 
     Connections {
         target: Hyprland
@@ -72,7 +79,7 @@ Row {
         // Special workspaces show an icon instead of their name
         readonly property bool special: ws !== null && ws.name.startsWith("special:")
         readonly property bool active: ws !== null
-            && (special ? switcher.openSpecials.includes(ws.name) : ws.active)
+            && (special ? switcher.openSpecial === ws.name : ws.active)
         readonly property bool empty: ws === null || ws.toplevels.values.length === 0
 
         width: active ? 2 * height : special ? height : Math.max(height, label.implicitWidth + 12)
@@ -125,14 +132,16 @@ Row {
         onScrolled: direction => switcher.step(direction)
 
         Repeater {
-            // Workspaces 1-5 always appear; ones that don't exist yet are
-            // plain numbers instead of HyprlandWorkspace objects
+            // The workspaces on this monitor, plus whichever of 1-5 don't
+            // exist on any monitor yet, as plain numbers instead of
+            // HyprlandWorkspace objects; clicking one creates it here
             model: ScriptModel {
                 id: regularModel
                 values: {
-                    const regular = Hyprland.workspaces.values.filter(ws => !ws.name.startsWith("special:"))
+                    const all = Hyprland.workspaces.values.filter(ws => !ws.name.startsWith("special:"))
+                    const regular = all.filter(ws => ws.monitor !== null && ws.monitor === switcher.monitor)
                     for (let id = 1; id <= 5; id++) {
-                        if (!regular.some(ws => ws.id === id))
+                        if (!all.some(ws => ws.id === id))
                             regular.push(id)
                     }
                     const idOf = w => typeof w === "number" ? w : w.id
