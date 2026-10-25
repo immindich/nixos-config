@@ -9,10 +9,9 @@ import qs
 // with Up/Down or the mouse; Enter or a click copies the entry back to the
 // clipboard. ✕ on a row deletes it, "Clear" deletes them all. Images are
 // shown as thumbnails.
-DropdownMenu {
+KeyboardMenu {
     id: clipboardMenu
 
-    takesKeyboard: true
     implicitWidth: 380
 
     // Image entries are decoded here for their thumbnails, once per login

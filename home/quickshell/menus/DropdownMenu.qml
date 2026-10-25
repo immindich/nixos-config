@@ -4,22 +4,13 @@ import Quickshell.Hyprland
 import qs
 
 // Popup that opens below `anchor.item`, styled like the bar's bubbles.
-// Children are stacked vertically. Clicking outside the menu or right-clicking
+// Children are stacked vertically. Menus that take keyboard input use
+// KeyboardMenu instead. Clicking outside the menu or right-clicking
 // inside it closes it, and opening a menu closes any other open one.
 PopupWindow {
     id: menu
 
     default property alias content: column.data
-
-    // Take keyboard input, e.g. for a text field. Uses a Wayland popup grab
-    // instead of HyprlandFocusGrab, since a popup only gets the keyboard
-    // with the former; clicking anywhere outside the popup closes it.
-    property bool takesKeyboard: false
-    // While menus are held open for a screenshot (MenuState.hold), even these
-    // use the focus grab, since the compositor closes a popup with a keyboard
-    // grab as soon as slurp opens
-    readonly property bool popupGrab: takesKeyboard && !MenuState.hold
-    grabFocus: popupGrab
 
     // Hang below the bar, centered on the anchor item; slides back on screen
     // if it would go past the edge
@@ -59,29 +50,16 @@ PopupWindow {
     // a grab the compositor has already cleared.
     function updateGrab() {
         grab.active = false
-        grab.active = backingWindowVisible && !popupGrab
+        grab.active = backingWindowVisible
     }
     onBackingWindowVisibleChanged: updateGrab()
 
-    // A hold starting or ending: grabFocus only changes when the popup is
-    // reopened, so reopen keyboard menus; others just take the grab (back)
     Connections {
         target: MenuState
         function onHoldChanged() {
-            if (!menu.visible)
-                return
-            if (menu.takesKeyboard) {
-                menu.visible = false
-                reopen.start()
-            } else {
+            if (menu.visible)
                 menu.updateGrab()
-            }
         }
-    }
-    Timer {
-        id: reopen
-        interval: 50
-        onTriggered: menu.visible = true
     }
 
     // Clicks on the bar don't clear the grab, so clicking another indicator

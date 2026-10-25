@@ -10,10 +10,9 @@ import qs
 // shut down and exit Hyprland buttons. Shut down and exit ask for
 // confirmation first. Tab cycles between the search field and the buttons.
 // Set `anchor.item` to the button.
-DropdownMenu {
+KeyboardMenu {
     id: sessionMenu
     implicitWidth: 300
-    takesKeyboard: true
 
     // Action awaiting confirmation, or null while showing the buttons
     property var pending: null

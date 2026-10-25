@@ -49,7 +49,7 @@ Rectangle {
         property Component extra: null
         property bool extraVisible: false
         property color contentColor: Theme.textColor
-        property DropdownMenu menu: null
+        property QtObject menu: null // DropdownMenu or KeyboardMenu
         property bool active: false
         // Shown on hover while the menu is closed
         property string tooltip: ""

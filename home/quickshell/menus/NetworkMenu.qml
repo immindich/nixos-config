@@ -6,10 +6,8 @@ import qs
 // Wi-Fi network selector, opened from the network indicator. Set
 // `anchor.item` to the indicator. Click a network to connect; if it needs a
 // password NetworkManager doesn't have yet, a password field opens below it.
-DropdownMenu {
+KeyboardMenu {
     id: networkMenu
-    // For the password field
-    takesKeyboard: true
 
     readonly property var wifiDevice: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
 
