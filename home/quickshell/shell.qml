@@ -136,4 +136,7 @@ ShellRoot {
 
   // Volume/brightness OSD, on the focused screen
   Osd {}
+
+  // ALT+Tab window switcher, on the focused screen
+  WindowSwitcher {}
 }

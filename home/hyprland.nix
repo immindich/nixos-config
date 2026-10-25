@@ -47,6 +47,9 @@ let
   mediaOpts = { locked = true; repeating = true; };
   # Triggers a Quickshell GlobalShortcut with appid "quickshell"
   shellShortcut = name: ''hl.dsp.global("quickshell:${name}")'';
+  # Closes the window switcher (home/quickshell/WindowSwitcher.qml) with
+  # shortcut `name` and leaves its submap; does nothing outside the submap
+  switcherFinish = name: ''function() if hl.get_current_submap() == "alttab" then hl.dispatch(${shellShortcut name}); hl.dispatch(hl.dsp.submap("reset")) end end'';
 
   bezier = name: p1: p2: { _args = [ name { type = "bezier"; points = [ p1 p2 ]; } ]; };
   anim = leaf: speed: extra: { inherit leaf speed; enabled = true; } // extra;
@@ -227,9 +230,16 @@ in
         (bind "${mainMod} + W" ''hl.dsp.group.toggle()'')
         (bind "${mainMod} + TAB" "hl.dsp.group.next()")
         (bind "${mainMod} + SHIFT + TAB" "hl.dsp.group.prev()")
-        # Window switcher (home/quickshell/WindowSwitcher.qml); the shell
-        # enters the alttab submap below while it's open
-        (bind "ALT + TAB" (shellShortcut "alttab-open"))
+        # Window switcher (home/quickshell/WindowSwitcher.qml). Hyprland, not
+        # the shell, enters and leaves the alttab submap, so letting go of ALT
+        # straight away still closes it, and ALT can't get stuck in the submap
+        # if Quickshell isn't running.
+        (bind "ALT + TAB" "function() hl.dispatch(${shellShortcut "alttab-open"}); hl.dispatch(hl.dsp.submap(\"alttab\")) end")
+        # Letting go of ALT picks the window. A release bind only fires after
+        # other keys (Tab) were pressed if it's transparent, which also lets
+        # the app see ALT go up.
+        (bindWith "Alt_L" (switcherFinish "alttab-commit") { release = true; transparent = true; ignore_mods = true; submap_universal = true; })
+        (bindWith "Alt_R" (switcherFinish "alttab-commit") { release = true; transparent = true; ignore_mods = true; submap_universal = true; })
       ]
       ++ workspaceBinds
       ++ [
@@ -264,8 +274,8 @@ in
       ];
 
       # Active while the window switcher is open. Tab and SHIFT+Tab move the
-      # selection, letting go of ALT picks the window, Escape or any other key
-      # cancels. The shell leaves the submap when it closes.
+      # selection, Escape cancels. (A catchall can't cancel on other keys:
+      # it fires on Tab too.)
       define_submap = {
         _args = [
           "alttab"
@@ -273,12 +283,7 @@ in
             function()
               hl.bind("ALT + TAB", ${shellShortcut "alttab-next"}, { repeating = true })
               hl.bind("ALT + SHIFT + TAB", ${shellShortcut "alttab-prev"}, { repeating = true })
-              hl.bind("Alt_L", ${shellShortcut "alttab-commit"}, { release = true, ignore_mods = true })
-              hl.bind("Alt_R", ${shellShortcut "alttab-commit"}, { release = true, ignore_mods = true })
-              -- SHIFT is held for SHIFT+TAB; pressing it mustn't cancel
-              hl.bind("Shift_L", hl.dsp.no_op(), { ignore_mods = true })
-              hl.bind("Shift_R", hl.dsp.no_op(), { ignore_mods = true })
-              hl.bind("catchall", ${shellShortcut "alttab-cancel"}, { ignore_mods = true })
+              hl.bind("Escape", ${switcherFinish "alttab-cancel"}, { ignore_mods = true })
             end
           '')
         ];
