@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Apply a Nix change to the running guest without rebooting it: build the VM,
+# then activate the new system (and home-manager) configuration inside the
+# guest, the way `nixos-rebuild test` does on the host. A few seconds instead
+# of a reboot. Run it from the tree the guest was launched from.
+#
+# Kernel, initrd and mount changes still need `vm-down; vm-up --rebuild`.
+#
+# The guest shares the host's store, so the new toplevel is already there,
+# but the guest's Nix database doesn't know the paths (its boot-time
+# registration covers only the closure it booted from), and home-manager's
+# activation checks that its generation is a valid path. So the closure's
+# database entries are copied over first.
+. "$(dirname "$0")/lib.sh"
+
+tree=$(git rev-parse --show-toplevel 2>/dev/null) || die "run from inside the checkout"
+cd "$tree"
+vm_reachable || die "no guest answering on ssh; vm-up first"
+
+echo "building..."
+nixos-rebuild build-vm --flake .#laptop 2>&1 | grep -vE '^(warning: Git tree|Done\.)' || true
+top=$(readlink -f result/system)
+[ -x "$top/bin/switch-to-configuration" ] || die "result/system isn't a system toplevel"
+
+if [ "$(vm_plain 'readlink /run/current-system')" = "$top" ]; then
+    echo "guest already runs $top"
+    exit 0
+fi
+
+# Register the closure in the guest (a file, not a pipe: sudo -S reads the
+# password from stdin)
+db=$(mktemp)
+nix-store --dump-db $(nix-store -qR "$top") >"$db"
+scp -q "$db" vm:/tmp/vm-switch.db
+rm -f "$db"
+vm_plain 'echo isaiah | sudo -S sh -c "nix-store --load-db < /tmp/vm-switch.db" 2>&1 | grep -v "password for"' || true
+
+start=$(date +%s)
+vm_plain "echo isaiah | sudo -S $top/bin/switch-to-configuration test 2>&1 | grep -v 'password for'" || true
+
+if [ "$(vm_plain 'systemctl is-active home-manager-isaiah')" != "active" ]; then
+    vm_plain 'journalctl -u home-manager-isaiah -b --no-pager | tail -15'
+    die "home-manager activation failed in the guest (see above)"
+fi
+echo "guest now runs $top ($(( $(date +%s) - start )) s)"

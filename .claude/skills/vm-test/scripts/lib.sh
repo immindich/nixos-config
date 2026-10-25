@@ -21,7 +21,7 @@ vm_plain() {
 }
 
 vm_reachable() {
-    ssh -o ConnectTimeout=2 -o BatchMode=yes vm true 2>/dev/null
+    ssh -o ConnectTimeout=1 -o BatchMode=yes vm true 2>/dev/null
 }
 
 die() {
@@ -36,9 +36,10 @@ vm_env_ready() {
 }
 
 # Geometry of the bar's layer surface as "x,y wxh" (logical pixels), or
-# nothing while the bar isn't mapped
+# nothing while the bar isn't mapped (or the environment isn't there yet:
+# the eval exports nothing then, and hyprctl fails without it). One ssh
+# round trip, since vm-up polls this.
 vm_bar_geometry() {
-    vm_env_ready || return 0
     vm_session 'hyprctl layers -j 2>/dev/null | jq -r ".. | objects | select(.namespace? == \"quickshell\") | \"\(.x),\(.y) \(.w)x\(.h)\"" | head -1' 2>/dev/null || true
 }
 
