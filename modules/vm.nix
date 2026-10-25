@@ -28,6 +28,10 @@
         "-display gtk,gl=on,zoom-to-fit=on"
       ];
 
+      # Bigger 9p packets: the guest reads the whole system and the shell's
+      # QML through 9p, and the 16 KiB default costs a round trip per 16 KiB
+      msize = 512 * 1024;
+
       sharedDirectories.nixos-config = {
         source = "\${NIXOS_CONFIG_SRC:-$HOME/nixos-config}";
         target = "/home/isaiah/nixos-config";
@@ -90,6 +94,14 @@
     hardware.bluetooth.enable = lib.mkVMOverride false;
     # No tailscaled to talk to; without this the tray applet restart-loops
     home-manager.users.isaiah.systemd.user.services.tailscale-systray.Install.WantedBy =
+      lib.mkVMOverride [ ];
+
+    # Session services that compete with Quickshell's startup and aren't
+    # exercised in the guest: the desktop portals (which Flatpak insists on,
+    # so it goes too) and the ScreenSaver inhibit bridge
+    services.flatpak.enable = lib.mkVMOverride false;
+    xdg.portal.enable = lib.mkVMOverride false;
+    home-manager.users.isaiah.systemd.user.services.screensaver-inhibit.Install.WantedBy =
       lib.mkVMOverride [ ];
   };
 }
