@@ -45,6 +45,8 @@ let
   bindWith = key: dsp: opts: { _args = [ key (inline dsp) opts ]; };
   exec = cmd: "hl.dsp.exec_cmd(${builtins.toJSON cmd})";
   mediaOpts = { locked = true; repeating = true; };
+  # Triggers a Quickshell GlobalShortcut with appid "quickshell"
+  shellShortcut = name: ''hl.dsp.global("quickshell:${name}")'';
 
   bezier = name: p1: p2: { _args = [ name { type = "bezier"; points = [ p1 p2 ]; } ]; };
   anim = leaf: speed: extra: { inherit leaf speed; enabled = true; } // extra;
@@ -225,6 +227,9 @@ in
         (bind "${mainMod} + W" ''hl.dsp.group.toggle()'')
         (bind "${mainMod} + TAB" "hl.dsp.group.next()")
         (bind "${mainMod} + SHIFT + TAB" "hl.dsp.group.prev()")
+        # Window switcher (home/quickshell/WindowSwitcher.qml); the shell
+        # enters the alttab submap below while it's open
+        (bind "ALT + TAB" (shellShortcut "alttab-open"))
       ]
       ++ workspaceBinds
       ++ [
@@ -257,6 +262,27 @@ in
         (bindWith "XF86AudioPlay" (exec "playerctl play-pause") { locked = true; })
         (bindWith "XF86AudioPrev" (exec "playerctl previous") { locked = true; })
       ];
+
+      # Active while the window switcher is open. Tab and SHIFT+Tab move the
+      # selection, letting go of ALT picks the window, Escape or any other key
+      # cancels. The shell leaves the submap when it closes.
+      define_submap = {
+        _args = [
+          "alttab"
+          (inline ''
+            function()
+              hl.bind("ALT + TAB", ${shellShortcut "alttab-next"}, { repeating = true })
+              hl.bind("ALT + SHIFT + TAB", ${shellShortcut "alttab-prev"}, { repeating = true })
+              hl.bind("Alt_L", ${shellShortcut "alttab-commit"}, { release = true, ignore_mods = true })
+              hl.bind("Alt_R", ${shellShortcut "alttab-commit"}, { release = true, ignore_mods = true })
+              -- SHIFT is held for SHIFT+TAB; pressing it mustn't cancel
+              hl.bind("Shift_L", hl.dsp.no_op(), { ignore_mods = true })
+              hl.bind("Shift_R", hl.dsp.no_op(), { ignore_mods = true })
+              hl.bind("catchall", ${shellShortcut "alttab-cancel"}, { ignore_mods = true })
+            end
+          '')
+        ];
+      };
 
       window_rule = [
         {
