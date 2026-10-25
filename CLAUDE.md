@@ -22,15 +22,21 @@ nix eval .#nixosConfigurations.<host>.config.<option.path>   # check a single op
 
 - Always build after editing. Don't run `nixos-rebuild switch`/`boot`, `sudo`, or `home-manager switch`. I activate changes myself.
 - New files must be `git add`ed before building; the flake can't see untracked files and the error is confusing.
-- Don't commit unless I ask.
 - Don't run `nix flake update` or touch `flake.lock` unless I ask.
 - The `homeConfigurations` output is for non-NixOS machines. It's fine to build it to check it evaluates, but never activate it on a NixOS machine.
+
+## Git workflow
+
+- Each new task gets its own branch off `main`, worked on in the `.worktrees/vm-dev` worktree (setup is in the `vm-test` skill). Never switch branches in the main checkout: the live bar reads its QML from there, and it holds my own uncommitted edits.
+- Commit as you go, one commit per logical step, in the existing `<area>: <summary>` message style. Don't commit anything broken: before each commit, build Nix changes, and check `qs log` in the VM for QML changes.
+- Follow-ups to a task stay on its branch. Don't merge into `main` unless I ask; when I do, rebase the branch onto `main`, then `git -C ~/nixos-config merge --ff-only <branch>`.
+- Changes that only touch documentation (this file, skills, READMEs) can go straight onto `main` in the main checkout and be committed there, unless they clash with my uncommitted edits. Leave my uncommitted edits out of the commit.
 
 ## Test VM
 
 `modules/vm.nix` defines a `virtualisation.vmVariant` of the laptop config that boots straight into Hyprland as isaiah, with the host's Nix store mounted read-only and a checkout shared in at `~/nixos-config`. Use it for desktop-shell work (Quickshell, Hyprland config) and for Nix changes that need to be run to be trusted, since activating on the host needs root. Don't use it for a simple Nix change that doesn't involve the shell and that you're reasonably confident will work the first time: the host has to be switched anyway, so the VM round-trip only adds time there.
 
-The whole workflow, including the `vm-dev` worktree that shell work happens in, how to start and stop the guest, screenshots, and driving pointer and keyboard input, is the `vm-test` skill (`.claude/skills/vm-test/`), with helper scripts in its `scripts/` directory. Load it before any shell work.
+The whole workflow, including the `vm-dev` worktree that code changes happen in, how to start and stop the guest, screenshots, and driving pointer and keyboard input, is the `vm-test` skill (`.claude/skills/vm-test/`), with helper scripts in its `scripts/` directory. Load it before any shell work.
 
 ## Conventions
 

@@ -15,14 +15,14 @@ Use it for desktop-shell work (Quickshell, Hyprland config) and for Nix changes 
 
 ## Work in the `vm-dev` worktree
 
-The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any edit in the main checkout reloads the shell on the host, half-finished or not. Shell work happens in a worktree instead and reaches `main` only when it's verified.
+The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any edit in the main checkout reloads the shell on the host, half-finished or not. Code changes happen in a worktree instead, each task on its own feature branch (the Git workflow section of CLAUDE.md), and reach `main` only when the user asks.
 
-- `~/nixos-config/.worktrees/vm-dev` is a worktree of this repo on the throwaway branch `vm-dev`. If it's missing: `git worktree add -b vm-dev .worktrees/vm-dev main`.
-- Start by checking whether `vm-dev` is ahead of `main` (`git -C ~/nixos-config/.worktrees/vm-dev log main..vm-dev`) or has uncommitted edits (`git status`). If so, something from an earlier session never landed. Stop and ask what to do with it (land it, keep it, or drop it) before starting on the new task; don't rebase or reset over it.
-- Then sync it: `git -C ~/nixos-config/.worktrees/vm-dev rebase main`. Commits already cherry-picked onto `main` drop out automatically.
-- Edit in the worktree only, and run the VM from it, so the guest sees the worktree at `/home/isaiah/nixos-config`.
-- Landing a change: commit on `vm-dev` in the worktree, then `git -C ~/nixos-config cherry-pick <sha>`. That edits the main checkout, so the live bar reloads at that moment; if it renders the old layout, `touch` the changed file. Nix changes still need a switch on the host, which the user does.
-- `main` can only be checked out in one place, so don't switch the worktree to it; `vm-dev` is the branch for everything done there.
+- `~/nixos-config/.worktrees/vm-dev` is a worktree of this repo. If it's missing: `git worktree add --detach .worktrees/vm-dev main`.
+- Starting a new task: first check `git -C ~/nixos-config/.worktrees/vm-dev status`. Uncommitted edits there are left over from an earlier session; stop and ask what to do with them, and don't stash, reset or commit over them. Then branch off `main`: `git -C ~/nixos-config/.worktrees/vm-dev switch -c <branch> main`, with a short descriptive name. The previous task's branch stays as it is, merged or not.
+- Continuing a task: switch the worktree back to its branch. Rebase onto `main` only if the work needs something that landed there since.
+- Edit in the worktree only, and run the VM from it, so the guest sees the worktree at `/home/isaiah/nixos-config`. Commit on the branch as each logical step is verified.
+- Landing a branch, only when the user asks: rebase it onto `main`, then `git -C ~/nixos-config merge --ff-only <branch>`. That updates the main checkout, so the live bar reloads at that moment; if it renders the old layout, `touch` the changed file. Nix changes still need a switch on the host, which the user does.
+- `main` can only be checked out in one place, so don't switch the worktree to it.
 
 ## Running the guest
 
