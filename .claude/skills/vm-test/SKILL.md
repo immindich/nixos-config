@@ -39,6 +39,7 @@ cd ~/nixos-config/.worktrees/vm-dev
 - QML changes: `vm-qs restart`. inotify doesn't cross 9p, so the guest's Quickshell won't reload on its own. The script clears systemd's start limit first (a config error that crashes the shell a few times trips it), waits for "Configuration Loaded" or the load error, and prints it.
 - The guest can't exercise the Intel driver, backlight, battery, Wi-Fi, Bluetooth or suspend. fprintd, tailscale, fwupd, Bluetooth, Flatpak and the desktop portals are turned off in it, and the tailscale tray applet and the ScreenSaver inhibit bridge aren't started. So portal-backed things (screen sharing, the portal's file chooser) can't be tested there, and Quickshell's "Failed to register with host portal" warning is expected in the guest.
 - The QEMU window opens on the host's special workspace `special:vm` (SUPER+SHIFT+M); the guest display is 1920x1200 at scale 2, like the laptop, so pixel measurements carry over.
+- The guest's GPU has two heads. The second (`Virtual-2`) starts out disconnected and is plugged and unplugged with `vm-display` (below), which is how multi-monitor and dock behaviour gets tested. It appears to the right of `Virtual-1`, so its coordinates start at x = 960; `grim -o Virtual-2` screenshots it, and in the QEMU window it's a second tab.
 
 ## Looking at the result
 
@@ -67,6 +68,9 @@ $S/vm-pointer click            # left click at the current position (or: click r
 $S/vm-pointer where            # hyprctl cursorpos
 $S/vm-type htop                # type into the focused window
 $S/vm-type -k Return           # press a key (wtype -k names)
+$S/vm-display plug             # connect the second display, as a dock would
+$S/vm-display unplug           # disconnect it; its workspaces move to Virtual-1
+$S/vm-display list             # connectors and Hyprland's monitors
 ```
 
 - Allow for the UI's own delays before screenshotting: tooltips and the workspace list open after 500 ms, which `hover` already covers.

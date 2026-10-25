@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Plug and unplug the guest's second display. The VM's virtio GPU has two
+# heads; the second starts out disconnected. Forcing its DRM connector on or
+# off and sending the udev change event a real cable would produce makes
+# Hyprland add or remove the monitor through the same path a dock takes.
+#
+#   vm-display plug      connect Virtual-2 (appears to the right of Virtual-1, x = 960)
+#   vm-display unplug    disconnect it; its workspaces move to Virtual-1
+#   vm-display list      the guest's connectors and Hyprland's monitors
+. "$(dirname "$0")/lib.sh"
+
+connector=card0-Virtual-2
+
+set_connector() {
+    # Writing on/off to a connector's status forces it and re-probes, but
+    # doesn't raise the hotplug event; the udev trigger does
+    vm_plain "echo isaiah | sudo -S sh -c 'echo $1 > /sys/class/drm/$connector/status && udevadm trigger --action=change /sys/class/drm/card0' 2>&1 | grep -v 'password for'" || true
+    sleep 3
+}
+
+case "${1:-}" in
+    plug)   set_connector on ;;
+    unplug) set_connector off ;;
+    list)   ;;
+    *) die "usage: vm-display plug | unplug | list" ;;
+esac
+
+vm_plain 'for c in /sys/class/drm/card*-*; do echo "$(basename "$c"): $(cat "$c/status")"; done'
+vm_session "hyprctl monitors -j | jq -r '.[] | \"\(.name): \(.width)x\(.height)@\(.scale) at \(.x),\(.y) workspace \(.activeWorkspace.name)\"'"

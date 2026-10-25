@@ -20,11 +20,13 @@
       diskSize = 20 * 1024;
       diskImage = "$HOME/.cache/nixos-vm/laptop.qcow2";
 
-      # virtio-gpu with virgl so Hyprland and Qt get GL. The GTK display is
-      # an ordinary host window; zoom-to-fit scales the guest's fixed mode
-      # (set below) into it instead of resizing the guest to the window.
+      # virtio-gpu with virgl so Hyprland and Qt get GL. Two heads, so
+      # multi-monitor and hotplug behaviour can be tested (see the vm-test
+      # skill); each is a tab of the GTK window. The GTK display is an
+      # ordinary host window; zoom-to-fit scales the guest's fixed mode (set
+      # below) into it instead of resizing the guest to the window.
       qemu.options = [
-        "-device virtio-vga-gl"
+        "-device virtio-vga-gl,max_outputs=2"
         "-display gtk,gl=on,zoom-to-fit=on"
       ];
 
