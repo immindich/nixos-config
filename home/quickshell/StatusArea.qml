@@ -299,7 +299,7 @@ Rectangle {
             }
 
             icon: ""
-            text: Qt.formatDateTime(clock.date, "hh:mm")
+            text: Qt.formatDateTime(clock.date, "h:mm AP")
         }
     }
 }
