@@ -15,13 +15,13 @@ Use it for desktop-shell work (Quickshell, Hyprland config) and for Nix changes 
 
 ## Work in the `vm-dev` worktree
 
-The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any edit in the main checkout reloads the shell on the host, half-finished or not. Code changes happen in a worktree instead, each task on its own feature branch (the Git workflow section of CLAUDE.md), and reach `main` only when the user asks.
+The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any edit in the main checkout reloads the shell on the host, half-finished or not. Code changes happen in a worktree instead, each task on its own feature branch (the Git workflow section of CLAUDE.md), and reach `main` only once they're verified.
 
 - `~/nixos-config/.worktrees/vm-dev` is a worktree of this repo. If it's missing: `git worktree add --detach .worktrees/vm-dev main`.
 - Starting a new task: first check `git -C ~/nixos-config/.worktrees/vm-dev status`. Uncommitted edits there are left over from an earlier session; stop and ask what to do with them, and don't stash, reset or commit over them. Then branch off `main`: `git -C ~/nixos-config/.worktrees/vm-dev switch -c <branch> main`, with a short descriptive name. The previous task's branch stays as it is, merged or not.
 - Continuing a task: switch the worktree back to its branch. Rebase onto `main` only if the work needs something that landed there since.
 - Edit in the worktree only, and run the VM from it, so the guest sees the worktree at `/home/isaiah/nixos-config`. Commit on the branch as each logical step is verified.
-- Landing a branch, only when the user asks: rebase it onto `main`, then `git -C ~/nixos-config merge --ff-only <branch>`. That updates the main checkout, so the live bar reloads at that moment; if it renders the old layout, `touch` the changed file. Nix changes still need a switch on the host, which the user does.
+- Landing a branch, once it's done and verified: if it's behind `main`, rebase it onto `main` and re-check it, then `git -C ~/nixos-config merge --ff-only <branch>`. That updates the main checkout, so the live bar reloads at that moment; if it renders the old layout, `touch` the changed file. Nix changes still need a switch on the host, which the user does.
 - `main` can only be checked out in one place, so don't switch the worktree to it.
 
 ## Running the guest
