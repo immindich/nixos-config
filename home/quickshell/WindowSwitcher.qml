@@ -42,7 +42,9 @@ PanelWindow {
             focusSettle.stop()
             recordFocus()
         }
-        const windows = Hyprland.toplevels.values.slice()
+        // Windows that closed before Quickshell heard about them (Steam's
+        // helper windows, for one) linger in the list with no workspace
+        const windows = Hyprland.toplevels.values.filter(t => t.workspace !== null)
         if (windows.length === 0)
             return
         windows.sort((a, b) => rank(a) - rank(b))
