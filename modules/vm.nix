@@ -105,5 +105,13 @@
     xdg.portal.enable = lib.mkVMOverride false;
     home-manager.users.isaiah.systemd.user.services.screensaver-inhibit.Install.WantedBy =
       lib.mkVMOverride [ ];
+
+    # No idle dim, lock, display off or suspend: a guest left idle between
+    # test steps would otherwise come back locked and screenshot as hyprlock.
+    # NixOS's programs.hyprlock also installs a system-wide hypridle unit,
+    # which home-manager's shadows on the host; without that one it would
+    # start and crash for want of a config.
+    home-manager.users.isaiah.services.hypridle.enable = lib.mkVMOverride false;
+    services.hypridle.enable = lib.mkVMOverride false;
   };
 }
