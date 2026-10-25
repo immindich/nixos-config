@@ -90,14 +90,31 @@ Row {
         Behavior on width { NumberAnimation { duration: Theme.animationDuration; easing.type: Easing.OutCubic } }
         Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
 
-        Text {
+        // The number, followed by an icon if a window is fullscreen there
+        // (home/hyprland.nix gives fullscreen windows a workspace of their own)
+        Row {
             id: label
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: Theme.textOffset
             visible: !special
-            text: ws ? ws.name : modelData
-            font.pixelSize: Theme.fontSize
-            color: empty && !active ? Theme.textColor : Theme.background
+            spacing: 3
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: Theme.textOffset
+                text: ws ? ws.name : modelData
+                font.pixelSize: Theme.fontSize
+                color: empty && !active ? Theme.textColor : Theme.background
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                visible: ws?.hasFullscreen ?? false
+                text: "\uf065" // expand
+                font.family: Theme.iconFont
+                font.weight: Font.Black
+                font.pixelSize: Theme.iconSize - 2
+                color: Theme.background
+            }
         }
 
         Text {
