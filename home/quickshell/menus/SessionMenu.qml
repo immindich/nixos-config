@@ -83,9 +83,12 @@ DropdownMenu {
 
     function launch(entry) {
         sessionMenu.visible = false
-        // execute() ignores Terminal=true, so wrap those in kitty ourselves
+        // execute() ignores Terminal=true, so wrap those in kitty ourselves.
+        // systemd-run gives the app its own scope; otherwise it stays in
+        // quickshell.service's cgroup and is killed when the shell restarts.
+        const command = entry.runInTerminal ? ["kitty", "--"].concat(entry.command) : entry.command
         Quickshell.execDetached({
-            command: entry.runInTerminal ? ["kitty", "--"].concat(entry.command) : entry.command,
+            command: ["systemd-run", "--user", "--scope", "--slice=app.slice", "--collect", "--"].concat(command),
             workingDirectory: entry.workingDirectory
         })
     }
