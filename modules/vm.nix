@@ -84,7 +84,9 @@
     # the focused window. No pointer acceleration, so ydotool's moves land
     # where they're told to.
     programs.ydotool.enable = true;
-    environment.systemPackages = [ pkgs.wtype ];
+    # neverball is a small SDL game for testing fullscreen handling; run it
+    # with SDL_VIDEODRIVER=x11 to test the XWayland path
+    environment.systemPackages = [ pkgs.wtype pkgs.neverball ];
     home-manager.users.isaiah.wayland.windowManager.hyprland.settings.config.input.accel_profile =
       lib.mkVMOverride "flat";
 
