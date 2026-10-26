@@ -133,6 +133,18 @@ Rectangle {
             text: ""
         }
 
+        // Pending Flatpak updates and their count; hidden when there are none
+        Indicator {
+            id: flatpak
+            menu: FlatpakMenu { anchor.item: flatpak }
+
+            readonly property int count: FlatpakUpdates.updates.length
+            visible: count > 0 || FlatpakUpdates.updating
+            icon: "\uf019" // download
+            text: count > 0 ? count : ""
+            active: FlatpakUpdates.updating
+        }
+
         // Clipboard history
         Indicator {
             id: clipboard
