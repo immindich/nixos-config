@@ -36,6 +36,33 @@ DropdownMenu {
         }
     }
 
+    // Full-width row so the button can be anchored to the right
+    Item {
+        visible: Notifications.history.length > 0
+        width: parent.width - parent.leftPadding - parent.rightPadding
+        height: 24
+
+        Rectangle {
+            anchors.right: parent.right
+            width: clearLabel.implicitWidth + 20
+            height: parent.height
+            radius: height / 2
+            color: clearHover.hovered ? Theme.highlight : Theme.surface
+
+            Text {
+                id: clearLabel
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: Theme.textOffset
+                text: "Clear all"
+                font.pixelSize: Theme.fontSize - 2
+                color: Theme.textColor
+            }
+
+            HoverHandler { id: clearHover }
+            TapHandler { onTapped: Notifications.clearAll() }
+        }
+    }
+
     Text {
         visible: Notifications.history.length === 0
         font.pixelSize: Theme.fontSize
@@ -70,33 +97,6 @@ DropdownMenu {
                     buttonColor: Theme.highlight
                 }
             }
-        }
-    }
-
-    // Full-width row so the button can be anchored to the right
-    Item {
-        visible: Notifications.history.length > 0
-        width: parent.width - parent.leftPadding - parent.rightPadding
-        height: 24
-
-        Rectangle {
-            anchors.right: parent.right
-            width: clearLabel.implicitWidth + 20
-            height: parent.height
-            radius: height / 2
-            color: clearHover.hovered ? Theme.highlight : Theme.surface
-
-            Text {
-                id: clearLabel
-                anchors.centerIn: parent
-                anchors.verticalCenterOffset: Theme.textOffset
-                text: "Clear all"
-                font.pixelSize: Theme.fontSize - 2
-                color: Theme.textColor
-            }
-
-            HoverHandler { id: clearHover }
-            TapHandler { onTapped: Notifications.clearAll() }
         }
     }
 }
