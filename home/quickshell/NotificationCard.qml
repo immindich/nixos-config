@@ -50,8 +50,11 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 implicitSize: 16
-                // Absolute paths/URLs as-is, otherwise look up the icon name
-                source: icon.startsWith("/") || icon.includes("://") ? icon
+                // URLs as-is, absolute paths as file URLs (a bare path would
+                // resolve against this file's qrc: location), otherwise look
+                // up the icon name
+                source: icon.includes("://") ? icon
+                    : icon.startsWith("/") ? "file://" + icon
                     : icon !== "" ? Quickshell.iconPath(icon, true) : ""
                 visible: source != ""
             }
