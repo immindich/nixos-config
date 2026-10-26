@@ -294,7 +294,8 @@ in
       # fullscreen (misc:on_focus_under_fullscreen). Workspaces from 101 up
       # are kept for these; the bar (home/quickshell/WorkspaceSwitcher.qml)
       # shows them after the others. Leaving fullscreen takes the window back,
-      # if it's still alone there. Handled
+      # if it's still alone there; closing it (quitting a game) takes you back
+      # there instead, if you're still looking at its empty workspace. Handled
       # on a timer because the event fires inside Hyprland's fullscreen code,
       # and again (with the window still fullscreen) during the move itself.
       on = {
@@ -303,6 +304,20 @@ in
           (inline ''
             (function()
               local home = {}
+              -- Registered here to share `home`
+              hl.on("window.close", function(w)
+                local window = "address:" .. w.address
+                local id = home[window]
+                if not id then return end
+                home[window] = nil
+                local left = w.workspace and w.workspace.id
+                hl.timer(function()
+                  local active = hl.get_active_workspace()
+                  if active and active.id == left and active.windows == 0 then
+                    hl.dispatch(hl.dsp.focus({ workspace = id }))
+                  end
+                end, { timeout = 1, type = "oneshot" })
+              end)
               return function(w)
                 local window = "address:" .. w.address
                 hl.timer(function()
