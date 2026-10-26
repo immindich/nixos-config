@@ -29,6 +29,10 @@ Row {
         Hyprland.dispatch("hl.dsp.focus({ workspace = " + (typeof target === "number" ? target : target.id) + " })")
     }
 
+    // Workspaces above this id hold fullscreen windows, one each
+    // (home/hyprland.nix moves them there)
+    readonly property int fullscreenBase: 100
+
     // Icons for the special workspaces: the test VM (modules/vm.nix) gets a
     // cube, anything else the magic wand
     readonly property var specialIcons: ({
@@ -81,6 +85,7 @@ Row {
         readonly property bool active: ws !== null
             && (special ? switcher.openSpecial === ws.name : ws.active)
         readonly property bool empty: ws === null || ws.toplevels.values.length === 0
+        readonly property bool fullscreen: ws !== null && ws.id > switcher.fullscreenBase
 
         width: active ? 2 * height : special ? height : Math.max(height, label.implicitWidth + 12)
         height: Theme.workspaceSize
@@ -90,8 +95,8 @@ Row {
         Behavior on width { NumberAnimation { duration: Theme.animationDuration; easing.type: Easing.OutCubic } }
         Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
 
-        // The number, followed by an icon if a window is fullscreen there
-        // (home/hyprland.nix gives fullscreen windows a workspace of their own)
+        // The number; fullscreen workspaces (see fullscreenBase) count from 1
+        // after an icon
         Row {
             id: label
             anchors.centerIn: parent
@@ -100,20 +105,20 @@ Row {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.verticalCenterOffset: Theme.textOffset
-                text: ws ? ws.name : modelData
-                font.pixelSize: Theme.fontSize
-                color: empty && !active ? Theme.textColor : Theme.background
-            }
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: ws?.hasFullscreen ?? false
+                visible: fullscreen
                 text: "\uf065" // expand
                 font.family: Theme.iconFont
                 font.weight: Font.Black
                 font.pixelSize: Theme.iconSize - 2
                 color: Theme.background
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: Theme.textOffset
+                text: fullscreen ? ws.id - switcher.fullscreenBase : ws ? ws.name : modelData
+                font.pixelSize: Theme.fontSize
+                color: empty && !active ? Theme.textColor : Theme.background
             }
         }
 
