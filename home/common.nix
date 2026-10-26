@@ -37,6 +37,8 @@ in {
       epkgs.nix-mode
       epkgs.zenburn-theme
       epkgs.magit
+      epkgs.agent-shell
+      epkgs.helm
     ];
     extraConfig = ''
      (ido-mode 1)
@@ -64,7 +66,7 @@ in {
 
   services.hyprsunset.enable = true;
 
-  home.sessionPath = [ "$HOME/.local/bin" ];
+  home.sessionPath = [ "$HOME/.local/bin" "$HOME/.npm-global/bin" ];
 
   dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
 
@@ -99,7 +101,14 @@ in {
       ${pkgs.gawk}/bin/awk '/^Latitude:/ { lat = $2 + 0 } /^Longitude:/ { printf "%.2f %.2f\n", lat, $2 + 0; exit }' <&3
       kill $! 2>/dev/null
     '')
+    pkgs.nodejs
+    pkgs.nixd
+    pkgs.nil
   ];
+
+  home.file.".npmrc".text = ''
+    prefix=${config.home.homeDirectory}/.npm-global
+  '';
 
   dconf.settings."org/gnome/desktop/interface".font-name = "Cantarell 9";
 

@@ -10,6 +10,11 @@
       url = "github:danielbodart/claude-desktop";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    emacs-overlay = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
@@ -21,20 +26,21 @@
       nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
-	  ./hosts/laptop/configuration.nix
-	  ./modules/common.nix
-	  ./modules/claude-desktop.nix
-	  ./modules/vm.nix
+	        ./hosts/laptop/configuration.nix
+	        ./modules/common.nix
+	        ./modules/claude-desktop.nix
+	        ./modules/vm.nix
+          ./modules/emacs.nix
           home-manager.nixosModules.home-manager {
-	    home-manager.useGlobalPkgs = true;
-	    home-manager.useUserPackages = true;
-	    home-manager.backupFileExtension = "backup";
-	    home-manager.extraSpecialArgs = { inherit inputs; };
-	    home-manager.users.${username} = import ./home/common.nix;
-	  }
-	];
+	          home-manager.useGlobalPkgs = true;
+	          home-manager.useUserPackages = true;
+	          home-manager.backupFileExtension = "backup";
+	          home-manager.extraSpecialArgs = { inherit inputs; };
+	          home-manager.users.${username} = import ./home/common.nix;
+	        }
+	      ];
       };
-
+      
       homeConfigurations."${username}@${hostname}" =
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
