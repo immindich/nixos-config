@@ -289,10 +289,12 @@ in
         ];
       };
 
-      # A window that goes fullscreen moves to an empty workspace of its own
-      # if it's sharing one, like macOS, so switching to another window never
-      # has to take it out of fullscreen (misc:on_focus_under_fullscreen).
-      # Leaving fullscreen takes it back, if it's still alone there. Handled
+      # A window that goes fullscreen moves to a workspace of its own, like
+      # macOS, so switching to another window never has to take it out of
+      # fullscreen (misc:on_focus_under_fullscreen). Workspaces from 101 up
+      # are kept for these; the bar (home/quickshell/WorkspaceSwitcher.qml)
+      # shows them after the others. Leaving fullscreen takes the window back,
+      # if it's still alone there. Handled
       # on a timer because the event fires inside Hyprland's fullscreen code,
       # and again (with the window still fullscreen) during the move itself.
       on = {
@@ -311,9 +313,15 @@ in
                   end
                   local ws = win.workspace
                   if win.fullscreen == 2 then
-                    if not ws.special and ws.windows > 1 then
+                    if not ws.special and ws.id <= 100 then
                       home[window] = ws.id
-                      hl.dispatch(hl.dsp.window.move({ workspace = "empty", window = window }))
+                      local id = 101
+                      while true do
+                        local target = hl.get_workspace(id)
+                        if not target or target.windows == 0 then break end
+                        id = id + 1
+                      end
+                      hl.dispatch(hl.dsp.window.move({ workspace = id, window = window }))
                     end
                   elseif win.fullscreen == 0 and home[window] then
                     local id = home[window]
