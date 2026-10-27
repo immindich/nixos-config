@@ -86,6 +86,11 @@ in {
   qt.style.package = pkgs.kdePackages.breeze;
 
   home.packages = [
+    # qmlls, the QML language server Emacs uses for the bar's QML. Same Qt
+    # build as Quickshell, so it reads the module info Quickshell generates.
+    pkgs.qt6.qtdeclarative
+    # Nix language server; Eglot runs it in nix-mode by default.
+    pkgs.nil
     # Icon theme for the bar's app icons; selected in shell.qml
     pkgs.papirus-icon-theme
     # Breeze Dark colours as a system-wide kdeglobals. KDE apps merge it under
