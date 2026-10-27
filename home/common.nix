@@ -42,8 +42,11 @@ in {
       epkgs.doom-themes
       epkgs.lsp-mode
     ];
-    extraConfig = builtins.readFile ./emacs.el;
   };
+
+  xdg.configFile."emacs/init.el".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/nixos-config/home/emacs/init.el";
 
   # Clipboard history, shown by the bar's clipboard menu. Kept in the runtime
   # dir (tmpfs, wiped at logout) rather than ~/.cache; %t is systemd's
