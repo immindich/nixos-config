@@ -40,7 +40,18 @@ in {
       epkgs.agent-shell
       epkgs.helm
       epkgs.doom-themes
-      epkgs.lsp-mode
+      (epkgs.treesit-grammars.with-grammars (g: [ g.tree-sitter-qmljs ]))
+      # Not in nixpkgs. Uses the qmljs grammar above; autoloaded for .qml files.
+      (epkgs.trivialBuild {
+        pname = "qml-ts-mode";
+        version = "0-unstable-2025-06-01";
+        src = pkgs.fetchFromGitHub {
+          owner = "xhcoding";
+          repo = "qml-ts-mode";
+          rev = "b80c6663521b4d0083e416e6712ebc02d37b7aec";
+          hash = "sha256-WXK/CdFF9E2kG+uIios4HtKcEMhILS9MddJfVDeRLh0=";
+        };
+      })
     ];
   };
 

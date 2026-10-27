@@ -1,4 +1,4 @@
-(ido-mode 1)
+(helm-mode 1)
 (scroll-bar-mode -1)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
@@ -24,4 +24,8 @@
    '((display-buffer-reuse-window display-buffer-pop-up-window)))
   (agent-shell-show-session-id t)
   (agent-shell-session-restore-verbosity 'full)
-  (agent-shell-anthropic-default-session-mode-id "auto"))
+  (agent-shell-anthropic-default-session-mode-id "auto")
+  (agent-shell-chat-mode-enabled nil))
+
+(use-package qml-ts-mode
+  :mode "\\.qml\\'")
