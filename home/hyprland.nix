@@ -401,6 +401,12 @@ in
           workspace = "special:vm silent";
         }
       ];
+
+      # Keep 1-5 around when empty, so the workspace swipe can reach them
+      workspace_rule = map (i: {
+        workspace = toString i;
+        persistent = true;
+      }) (lib.range 1 5);
     };
   };
 }
