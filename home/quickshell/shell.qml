@@ -1,6 +1,8 @@
 //@ pragma IconTheme Papirus-Dark
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Effects
@@ -19,6 +21,8 @@ ShellRoot {
 
     delegate: Component {
       PanelWindow {
+        id: bar
+
         // the screen from the screens list will be injected into this
         // property
         required property var modelData
@@ -38,93 +42,142 @@ ShellRoot {
         exclusiveZone: Theme.barHeight - Theme.barMargin
         color: "transparent"
 
-        // NixOS logo; opens the lock/sleep/shut down/exit menu
-        Rectangle {
-          id: session
-          anchors.left: parent.left
-          anchors.leftMargin: Theme.barMargin
-          anchors.verticalCenter: parent.verticalCenter
-          implicitWidth: sessionButton.width + 8
-          implicitHeight: Theme.bubbleHeight
-          radius: height / 2
-          color: Theme.background
+        // Over a fullscreen window the bar slides out of sight, leaving a
+        // strip along the top edge; pushing the pointer into it brings the
+        // bar back, drawn over the window, until the pointer leaves again
+        readonly property HyprlandMonitor monitor:
+          Hyprland.monitors.values.find(m => m.name === modelData.name) ?? null
+        readonly property bool fullscreen: monitor?.activeWorkspace?.hasFullscreen ?? false
+        property bool revealed: false
+        readonly property bool hidden: fullscreen && !revealed
 
+        WlrLayershell.layer: fullscreen ? WlrLayer.Overlay : WlrLayer.Top
+        mask: hidden ? hotEdge : null
+
+        Region {
+          id: hotEdge
+          item: hotEdgeItem
+        }
+
+        Item {
+          id: hotEdgeItem
+          width: parent.width
+          height: 2
+        }
+
+        onFullscreenChanged: revealed = false
+
+        HoverHandler { id: barHover }
+
+        // Short delay before showing, so the pointer passing over the edge
+        // doesn't trigger it; keep it shown while one of its menus is open
+        Timer {
+          interval: 150
+          running: bar.hidden && barHover.hovered
+          onTriggered: bar.revealed = true
+        }
+        Timer {
+          interval: 400
+          running: bar.revealed && !barHover.hovered && !MenuState.openMenu
+          onTriggered: bar.revealed = false
+        }
+
+        Item {
+          id: content
+          width: parent.width
+          height: parent.height
+          y: bar.hidden ? -height : 0
+
+          Behavior on y { NumberAnimation { duration: Theme.animationDuration; easing.type: Easing.OutCubic } }
+
+          // NixOS logo; opens the lock/sleep/shut down/exit menu
           Rectangle {
-            id: sessionButton
-            anchors.centerIn: parent
-            width: Theme.workspaceSize
-            height: Theme.workspaceSize
+            id: session
+            anchors.left: parent.left
+            anchors.leftMargin: Theme.barMargin
+            anchors.verticalCenter: parent.verticalCenter
+            implicitWidth: sessionButton.width + 8
+            implicitHeight: Theme.bubbleHeight
             radius: height / 2
-            color: sessionMenu.visible ? Theme.highlight : "transparent"
+            color: Theme.background
 
-            Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
-
-            // The white logo, recolored to match the other bar icons
-            IconImage {
-              id: logo
+            Rectangle {
+              id: sessionButton
               anchors.centerIn: parent
-              implicitSize: 14
-              source: Quickshell.iconPath("nix-snowflake-white")
-              layer.enabled: true
-              layer.effect: MultiEffect {
-                colorization: 1
-                colorizationColor: Theme.textColor
+              width: Theme.workspaceSize
+              height: Theme.workspaceSize
+              radius: height / 2
+              color: sessionMenu.visible ? Theme.highlight : "transparent"
+
+              Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
+
+              // The white logo, recolored to match the other bar icons
+              IconImage {
+                id: logo
+                anchors.centerIn: parent
+                implicitSize: 14
+                source: Quickshell.iconPath("nix-snowflake-white")
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                  colorization: 1
+                  colorizationColor: Theme.textColor
+                }
+              }
+
+              TapHandler { onTapped: sessionMenu.toggle() }
+
+              SessionMenu {
+                id: sessionMenu
+                anchor.item: sessionButton
               }
             }
+          }
 
-            TapHandler { onTapped: sessionMenu.toggle() }
+          WorkspaceSwitcher {
+            id: workspaces
+            anchors.left: session.right
+            anchors.leftMargin: Theme.bubbleSpacing
+          }
 
-            SessionMenu {
-              id: sessionMenu
-              anchor.item: sessionButton
+          // Centered on the bar, so it can extend half its width either side of
+          // the center; limit that to the room before the nearest neighbor
+          WindowTitle {
+            anchors.centerIn: parent
+            maxWidth: {
+              const center = parent.width / 2
+              const leftRoom = center - (workspaces.x + workspaces.width)
+              const rightRoom = (tray.visible ? tray.x : statusArea.x) - center
+              return Math.min(600, 2 * (Math.min(leftRoom, rightRoom) - Theme.bubbleSpacing))
             }
           }
-        }
 
-        WorkspaceSwitcher {
-          id: workspaces
-          anchors.left: session.right
-          anchors.leftMargin: Theme.bubbleSpacing
-        }
-
-        // Centered on the bar, so it can extend half its width either side of
-        // the center; limit that to the room before the nearest neighbor
-        WindowTitle {
-          anchors.centerIn: parent
-          maxWidth: {
-            const center = parent.width / 2
-            const leftRoom = center - (workspaces.x + workspaces.width)
-            const rightRoom = (tray.visible ? tray.x : statusArea.x) - center
-            return Math.min(600, 2 * (Math.min(leftRoom, rightRoom) - Theme.bubbleSpacing))
+          TrayArea {
+            id: tray
+            anchors.right: statusArea.left
+            anchors.rightMargin: Theme.bubbleSpacing
           }
-        }
 
-        TrayArea {
-          id: tray
-          anchors.right: statusArea.left
-          anchors.rightMargin: Theme.bubbleSpacing
-        }
+          StatusArea {
+            id: statusArea
+            anchors.right: parent.right
+            anchors.rightMargin: Theme.barMargin
+          }
 
-        StatusArea {
-          id: statusArea
-          anchors.right: parent.right
-          anchors.rightMargin: Theme.barMargin
-        }
-
-        // Close the open menu on any press on the bar, except on the indicator
-        // that owns it (which toggles it itself). The press still reaches
-        // whatever is underneath.
-        MouseArea {
-          id: closeMenus
-          anchors.fill: parent
-          onPressed: mouse => {
-            const menu = MenuState.openMenu
-            if (menu) {
-              const item = menu.anchor.item
-              if (!item.contains(item.mapFromItem(closeMenus, mouse.x, mouse.y)))
-                menu.visible = false
+          // Close the open menu on any press on the bar, except on the indicator
+          // that owns it (which toggles it itself). The press still reaches
+          // whatever is underneath.
+          MouseArea {
+            id: closeMenus
+            anchors.fill: parent
+            onPressed: mouse => {
+              const menu = MenuState.openMenu
+              if (menu) {
+                const item = menu.anchor.item
+                if (!item.contains(item.mapFromItem(closeMenus, mouse.x, mouse.y)))
+                  menu.visible = false
+              }
+              mouse.accepted = false
             }
-            mouse.accepted = false
           }
         }
       }
