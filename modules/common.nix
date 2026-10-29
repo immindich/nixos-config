@@ -54,7 +54,11 @@
     sysstat
     kdePackages.okular
     sl
-    texliveMedium
+    (texliveBasic.withPackages (ps: with ps; [
+      latexmk amsmath mathtools thmtools enumitem cleveref
+      pgf tikz-cd xcolor microtype booktabs caption
+      biblatex biber csquotes jknapltx rsfs stmaryrd cm-super
+    ]))
     yt-dlp
     dosbox
     transmission_4-qt6
@@ -94,7 +98,6 @@
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
-    google-fonts
     corefonts
   ];
 
