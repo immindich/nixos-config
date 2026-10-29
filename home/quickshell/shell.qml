@@ -47,7 +47,7 @@ ShellRoot {
         // bar back, drawn over the window, until the pointer leaves again
         readonly property HyprlandMonitor monitor:
           Hyprland.monitors.values.find(m => m.name === modelData.name) ?? null
-        readonly property bool fullscreen: monitor?.activeWorkspace?.hasFullscreen ?? false
+        readonly property bool fullscreen: monitor?.activeWorkspace?.lastIpcObject?.hasfullscreen ?? false
         property bool revealed: false
         readonly property bool hidden: fullscreen && !revealed
 
@@ -66,6 +66,17 @@ ShellRoot {
         }
 
         onFullscreenChanged: revealed = false
+
+        // HyprlandWorkspace.hasFullscreen misses a window that goes
+        // fullscreen and is then moved to a workspace of its own, as the
+        // Hyprland config does, so read Hyprland's own answer instead
+        Connections {
+          target: Hyprland
+          function onRawEvent(event) {
+            if (["fullscreen", "movewindowv2", "workspacev2", "createworkspacev2"].includes(event.name))
+              Hyprland.refreshWorkspaces()
+          }
+        }
 
         HoverHandler { id: barHover }
 
