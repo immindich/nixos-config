@@ -47,11 +47,24 @@ ShellRoot {
         // bar back, drawn over the window, until the pointer leaves again
         readonly property HyprlandMonitor monitor:
           Hyprland.monitors.values.find(m => m.name === modelData.name) ?? null
-        readonly property bool fullscreen: monitor?.activeWorkspace?.lastIpcObject?.hasfullscreen ?? false
+        // A special workspace shown on the monitor sits over the active one,
+        // so its windows decide whether the bar hides. The monitor's IPC
+        // object gives it at startup; after that activespecialv2 keeps it
+        // current, since Hyprland sends that event before the monitor's own
+        // state changes
+        property int specialId: monitor?.lastIpcObject?.specialWorkspace?.id ?? 0
+        readonly property HyprlandWorkspace special: specialId !== 0
+          ? Hyprland.workspaces.values.find(w => w.id === specialId) ?? null
+          : null
+        readonly property bool activeFullscreen: monitor?.activeWorkspace?.lastIpcObject?.hasfullscreen ?? false
+        readonly property bool fullscreen: special ? special.lastIpcObject?.hasfullscreen ?? false : activeFullscreen
         property bool revealed: false
         readonly property bool hidden: fullscreen && !revealed
 
-        WlrLayershell.layer: fullscreen ? WlrLayer.Overlay : WlrLayer.Top
+        // A fullscreen window is drawn over the top layer even while a
+        // special workspace is shown over it, so the bar needs the overlay
+        // layer to be seen there too
+        WlrLayershell.layer: fullscreen || activeFullscreen ? WlrLayer.Overlay : WlrLayer.Top
         mask: hidden ? hotEdge : null
 
         Region {
@@ -75,6 +88,12 @@ ShellRoot {
           function onRawEvent(event) {
             if (["fullscreen", "movewindowv2", "workspacev2", "createworkspacev2"].includes(event.name))
               Hyprland.refreshWorkspaces()
+            // Data is "id,name,monitor", with an empty id when it closes
+            if (event.name === "activespecialv2") {
+              const fields = event.data.split(",")
+              if (fields[fields.length - 1] === modelData.name)
+                bar.specialId = Number(fields[0]) || 0
+            }
           }
         }
 
