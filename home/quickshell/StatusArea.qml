@@ -95,9 +95,12 @@ Rectangle {
         }
     }
 
+    // Ticks every second though only minutes are shown: SystemClock's timer
+    // runs on the monotonic clock, which stops during suspend, so with minute
+    // precision the time could stay stale for up to a minute after waking.
     SystemClock {
         id: clock
-        precision: SystemClock.Minutes
+        precision: SystemClock.Seconds
     }
 
     // Keep the screen awake while IdleInhibit is on (toggled from the power
