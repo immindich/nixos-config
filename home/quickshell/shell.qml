@@ -217,6 +217,9 @@ ShellRoot {
   // One popup stack, on the focused screen
   NotificationPopups {}
 
+  // Low battery notification
+  BatteryWarning {}
+
   // Volume/brightness OSD, on the focused screen
   Osd {}
 
