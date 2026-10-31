@@ -58,7 +58,9 @@ Scope {
             "org.freedesktop.Notifications", "Notify", "susssasa{sv}i",
             "Battery", "0", "battery-caution",
             level === 2 ? "Battery critically low" : "Battery low", body,
-            "0", "1", "urgency", "y", String(level), "-1"
+            "0", "1", "urgency", "y", String(level),
+            // ms; the low one stays up for 30 s, critical until dismissed
+            "30000"
         ]
         notify.running = true
     }
