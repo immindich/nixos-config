@@ -221,6 +221,8 @@ in
         # Tapping SUPER on its own toggles the Quickshell start menu
         (bindWith "${mainMod} + Super_L" (exec "qs ipc call startmenu toggle") { release = true; })
         (bind "${mainMod} + SHIFT + V" (exec "qs ipc call clipboard toggle"))
+        # Prompt box that starts a Claude Desktop chat (home/quickshell/ClaudePrompt.qml)
+        (bind "${mainMod} + A" (shellShortcut "claude-prompt"))
         (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
         (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
         (bind "Print" (exec (lib.getExe screenshot)))

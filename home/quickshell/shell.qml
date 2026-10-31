@@ -225,4 +225,7 @@ ShellRoot {
 
   // ALT+Tab window switcher, on the focused screen
   WindowSwitcher {}
+
+  // SUPER+A prompt that starts a Claude Desktop chat, on the focused screen
+  ClaudePrompt {}
 }
