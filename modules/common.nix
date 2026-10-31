@@ -72,6 +72,8 @@
     nix-tree
     file
     sox
+    kdePackages.dolphin
+    kdePackages.gwenview
   ];
 
   # Select internationalisation properties.
