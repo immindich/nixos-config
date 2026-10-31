@@ -194,4 +194,19 @@ in {
         "image/x-ico"
       ] (_: gwenview);
   };
+
+  # KDE apps (Dolphin's "Open With", and opening files from it) only know
+  # about apps listed in an applications.menu. Plasma ships one, but it isn't
+  # installed here, so without this Dolphin finds no apps at all.
+  xdg.configFile."menus/applications.menu".text = ''
+    <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+      "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+    <Menu>
+      <Name>Applications</Name>
+      <DefaultAppDirs/>
+      <DefaultDirectoryDirs/>
+      <DefaultMergeDirs/>
+      <Include><All/></Include>
+    </Menu>
+  '';
 }
