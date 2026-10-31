@@ -261,9 +261,10 @@ in
 
         # Claude Desktop's quick entry, which the app registers through the
         # GlobalShortcuts portal (see modules/claude-desktop.nix). The id is
-        # what `hyprctl globalshortcuts` lists; the app picks the key, but the
-        # portal can't bind it, so it's bound here to match.
-        (bind "CTRL + ALT + space" ''hl.dsp.global("com.anthropic.Claude:5E9820CFF75E33B9AC5C9FA75EFFF1D7-Ctrl+Alt+Space")'')
+        # what `hyprctl globalshortcuts` lists, and is tied to the app's profile
+        # (~/.config/Claude), so it changes if that is reset. The app picks the
+        # key, but the portal can't bind it, so it's bound here to match.
+        (bind "CTRL + ALT + space" ''hl.dsp.global("com.anthropic.Claude:0AAD7C444F61D669DCBB25DDA7C44871-Ctrl+Alt+Space")'')
 
         # Scroll through existing workspaces
         (bind "${mainMod} + mouse_down" ''hl.dsp.focus({ workspace = "e+1" })'')
