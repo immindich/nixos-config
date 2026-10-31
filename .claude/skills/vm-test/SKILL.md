@@ -80,6 +80,8 @@ $S/vm-display list             # connectors and Hyprland's monitors
 - Menus that take the keyboard (`KeyboardMenu`: the launcher, clipboard and network menus) are layer surfaces, so they open on a fresh boot with no prior input. Hyprland gives such a layer the pointer as well as the keyboard when it maps, wherever the cursor is; `KeyboardMenu` maps it as Exclusive and drops to OnDemand 50 ms later, which makes Hyprland re-evaluate pointer focus. To test that, click the bar twice without moving the pointer: the second click must reach the bar.
 - Don't test hover through the QEMU window's own pointer or QMP `input-send-event`: both drive QEMU's usb-tablet, and the guest only delivers that device's enter, leave and clicks to Quickshell, not motion within a surface, so a HoverHandler never sees the pointer slide from one item to the next. `hl.dsp.cursor.move` warps the cursor without producing hover events at all. ydotool is a real uinput mouse and has none of these problems.
 - The guest has no battery, so the battery indicator and its tooltip can't be exercised there.
+- Battery logic can still be tested by temporarily replacing the UPower-derived properties (`percent`, `discharging`) with plain properties stepped by a `Timer`, logging each step with `console.warn`. `Quickshell.reload(false)` from such a timer (guarded by a `PersistentProperties` flag so it fires once) tests reload behaviour, since the guest's shell doesn't reload on file changes.
+- Notifications can be posted and closed from the shell with `busctl --user call -- org.freedesktop.Notifications ...`. The `--` is needed: without it busctl reads an `expire_timeout` of `-1` as an option.
 
 ## What has been measured and tried
 
