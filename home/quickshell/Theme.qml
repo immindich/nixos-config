@@ -35,6 +35,10 @@ Singleton {
     // the workspace window list open toward the middle of the screen.
     readonly property string barPosition: "top"
     readonly property bool barOnBottom: barPosition === "bottom"
+    // Fill the whole bar behind the bubbles instead of leaving the wallpaper
+    // showing between them, in barColor
+    readonly property bool solidBar: false
+    readonly property color barColor: background
 
     // Sizes
     readonly property int bubbleHeight: px(26)

@@ -40,8 +40,9 @@ ShellRoot {
         implicitHeight: Theme.barHeight
         // Reserve space only up to the bubbles; Hyprland's gaps_out supplies
         // the gap between them and the windows, so it matches the gaps
-        // between windows
-        exclusiveZone: Theme.barHeight - Theme.barMargin
+        // between windows. A solid bar reserves all of itself, so the gap
+        // starts at its edge instead.
+        exclusiveZone: Theme.solidBar ? Theme.barHeight : Theme.barHeight - Theme.barMargin
         color: "transparent"
 
         // Over a fullscreen window the bar slides out of sight, leaving a
@@ -122,6 +123,13 @@ ShellRoot {
           y: bar.hidden ? (Theme.barOnBottom ? height : -height) : 0
 
           Behavior on y { NumberAnimation { duration: Theme.animationDuration; easing.type: Easing.OutCubic } }
+
+          // Solid background behind the bubbles, when Theme.solidBar is set
+          Rectangle {
+            anchors.fill: parent
+            visible: Theme.solidBar
+            color: Theme.barColor
+          }
 
           // NixOS logo; opens the lock/sleep/shut down/exit menu
           Rectangle {
