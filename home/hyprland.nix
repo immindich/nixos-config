@@ -5,6 +5,8 @@ let
   mainMod = "SUPER";
   terminal = "kitty";
   fileManager = "dolphin";
+  # Gap between windows and the screen edges; the bar's Theme.barMargin matches it
+  gapsOut = 6;
 
   # Drag to select a region; saves to ~/screenshots and copies to the clipboard.
   # Does nothing if a selection is already in progress.
@@ -97,7 +99,7 @@ in
       config = {
         general = {
           gaps_in = 3;
-          gaps_out = 6;
+          gaps_out = gapsOut;
           border_size = 1;
           # Tokyo Night, matching the bar's Theme.qml (accent, dimTextColor)
           col = {
@@ -426,13 +428,46 @@ in
           };
           workspace = "special:vm silent";
         }
+        {
+          # A lone tiled window fills the screen (see the w[tv1] workspace rule)
+          name = "single-window-no-border";
+          match = {
+            float = false;
+            workspace = "w[tv1]";
+          };
+          border_size = 0;
+          rounding = 0;
+        }
       ];
 
       # Keep 1-5 around when empty, so the workspace swipe can reach them
       workspace_rule = map (i: {
         workspace = toString i;
         persistent = true;
-      }) (lib.range 1 5);
+      }) (lib.range 1 5) ++ [
+        {
+          # With a single tiled window, drop the outer gaps, except on the
+          # bar's edge: the bar only reserves space down to its bubbles and
+          # relies on the gap to keep windows off them. The edge is read from
+          # the bar's Theme.qml when the config loads, so after changing
+          # barPosition run `hyprctl reload`.
+          workspace = "w[tv1]";
+          gaps_in = 0;
+          gaps_out = inline ''
+            (function()
+              local f = io.open(os.getenv("HOME") .. "/.config/quickshell/Theme.qml")
+              local onBottom = f ~= nil and f:read("a"):match('barPosition:%s*"(%a+)"') == "bottom"
+              if f then f:close() end
+              return {
+                top = onBottom and 0 or ${toString gapsOut},
+                right = 0,
+                bottom = onBottom and ${toString gapsOut} or 0,
+                left = 0,
+              }
+            end)()
+          '';
+        }
+      ];
     };
   };
 }
