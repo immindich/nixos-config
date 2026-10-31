@@ -3,6 +3,14 @@
 {
   nixpkgs.config.allowUnfree = true;
 
+  boot.loader.systemd-boot.configurationLimit = 5;
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
+
   networking.networkmanager.enable = true;
 
   hardware.bluetooth = {
