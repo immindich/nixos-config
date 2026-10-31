@@ -207,7 +207,17 @@ in
         (bind "${mainMod} + M" (exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
         (bind "${mainMod} + Escape" (exec "pidof hyprlock || hyprlock"))
         (bind "${mainMod} + E" (exec fileManager))
-        (bind "${mainMod} + V" ''hl.dsp.window.float({ action = "toggle" })'')
+        # Kitty floats at a set size, centred, rather than at its tiled size
+        (bind "${mainMod} + V" ''
+          function()
+            hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
+            local w = hl.get_active_window()
+            if w and w.floating and w.class == "kitty" and w.monitor then
+              local m = w.monitor
+              hl.dispatch(hl.dsp.window.resize({ x = math.floor(m.width / m.scale * 0.5), y = math.floor(m.height / m.scale * 0.6) }))
+              hl.dispatch(hl.dsp.window.center())
+            end
+          end'')
         # Tapping SUPER on its own toggles the Quickshell start menu
         (bindWith "${mainMod} + Super_L" (exec "qs ipc call startmenu toggle") { release = true; })
         (bind "${mainMod} + SHIFT + V" (exec "qs ipc call clipboard toggle"))
