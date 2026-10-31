@@ -81,18 +81,18 @@ PopupWindow {
     // circle is only known once hovered, so the rect is set when the anchor
     // is about to be used rather than bound (a binding made while the item
     // was still null would never pick it up).
-    anchor.rect.width: 1
-    anchor.rect.height: 1
+    anchor.rect.width: Theme.px(1)
+    anchor.rect.height: Theme.px(1)
     anchor.edges: Edges.Top | Edges.Left
     anchor.gravity: Edges.Bottom | Edges.Right
     anchor.onAnchoring: {
         anchor.rect.x = (anchor.item.width - implicitWidth) / 2
-        anchor.rect.y = anchor.item.height + 8
+        anchor.rect.y = anchor.item.height + Theme.px(8)
     }
 
     // As wide as the longest title, up to a limit; longer ones are elided
-    implicitWidth: Math.min(360, list.implicitWidth + 12)
-    implicitHeight: list.implicitHeight + 12
+    implicitWidth: Math.min(Theme.px(360), list.implicitWidth + Theme.px(12))
+    implicitHeight: list.implicitHeight + Theme.px(12)
     color: "transparent"
     // Let the pointer through, like Tooltip, so the list never takes it
     // from the bar
@@ -100,14 +100,14 @@ PopupWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: 12
+        radius: Theme.px(12)
         color: Theme.background
 
         ColumnLayout {
             id: list
             anchors.fill: parent
-            anchors.margins: 6
-            spacing: 2
+            anchors.margins: Theme.px(6)
+            spacing: Theme.px(2)
 
             Repeater {
                 model: ScriptModel {
@@ -132,18 +132,18 @@ PopupWindow {
                     }
 
                     Layout.fillWidth: true
-                    implicitWidth: row.implicitWidth + 16
+                    implicitWidth: row.implicitWidth + Theme.px(16)
                     implicitHeight: Theme.bubbleHeight
 
                     RowLayout {
                         id: row
                         anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
-                        spacing: 8
+                        anchors.leftMargin: Theme.px(8)
+                        anchors.rightMargin: Theme.px(8)
+                        spacing: Theme.px(8)
 
                         IconImage {
-                            implicitSize: 16
+                            implicitSize: Theme.px(16)
                             source: Quickshell.iconPath(entry.desktopEntry?.icon ?? "", "application-x-executable")
                         }
 

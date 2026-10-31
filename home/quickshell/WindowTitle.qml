@@ -40,9 +40,9 @@ Rectangle {
 
     visible: title !== ""
     // Widest the pill may get; longer titles are cut off with "…"
-    property real maxWidth: 600
+    property real maxWidth: Theme.px(600)
 
-    implicitWidth: row.implicitWidth + 24
+    implicitWidth: row.implicitWidth + Theme.px(24)
     implicitHeight: Theme.bubbleHeight
     radius: height / 2
     color: Theme.background
@@ -50,11 +50,11 @@ Rectangle {
     RowLayout {
         id: row
         anchors.centerIn: parent
-        spacing: 8
+        spacing: Theme.px(8)
 
         IconImage {
             id: icon
-            implicitSize: 16
+            implicitSize: Theme.px(16)
             source: Quickshell.iconPath(desktopEntry?.icon ?? "", "application-x-executable")
         }
 

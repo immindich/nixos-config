@@ -161,7 +161,7 @@ DropdownMenu {
                 elide: Text.ElideRight
                 text: blocker.modelData.why
                 textFormat: Text.PlainText
-                font.pixelSize: Theme.fontSize - 2
+                font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
         }

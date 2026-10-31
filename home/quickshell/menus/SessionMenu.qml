@@ -12,7 +12,7 @@ import qs
 // Set `anchor.item` to the button.
 KeyboardMenu {
     id: sessionMenu
-    implicitWidth: 300
+    implicitWidth: Theme.px(300)
 
     // Action awaiting confirmation, or null while showing the buttons
     property var pending: null
@@ -103,7 +103,7 @@ KeyboardMenu {
         property bool centered: false
         signal clicked()
 
-        implicitHeight: 28
+        implicitHeight: Theme.px(28)
         radius: height / 2
         color: hover.hovered ? Theme.highlight : Theme.surface
         border.width: activeFocus ? 1 : 0
@@ -118,13 +118,13 @@ KeyboardMenu {
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: button.centered ? parent.horizontalCenter : undefined
             anchors.left: button.centered ? undefined : parent.left
-            anchors.leftMargin: 12
-            spacing: 10
+            anchors.leftMargin: Theme.px(12)
+            spacing: Theme.px(10)
 
             Text {
                 id: iconText
                 visible: text !== ""
-                width: 16
+                width: Theme.px(16)
                 horizontalAlignment: Text.AlignHCenter
                 anchors.verticalCenter: parent.verticalCenter
                 font.family: Theme.iconFont
@@ -150,8 +150,8 @@ KeyboardMenu {
     // Search field
     Rectangle {
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: 30
-        radius: 8
+        height: Theme.px(30)
+        radius: Theme.px(8)
         color: Theme.surface
         border.width: searchInput.activeFocus ? 1 : 0
         border.color: Theme.accent
@@ -159,7 +159,7 @@ KeyboardMenu {
         Text {
             id: searchIcon
             anchors.left: parent.left
-            anchors.leftMargin: 10
+            anchors.leftMargin: Theme.px(10)
             anchors.verticalCenter: parent.verticalCenter
             text: "\uf002"
             font.family: Theme.iconFont
@@ -171,8 +171,8 @@ KeyboardMenu {
         TextInput {
             id: searchInput
             anchors.fill: parent
-            anchors.leftMargin: 32
-            anchors.rightMargin: 10
+            anchors.leftMargin: Theme.px(32)
+            anchors.rightMargin: Theme.px(10)
             verticalAlignment: TextInput.AlignVCenter
             clip: true
             font.pixelSize: Theme.fontSize
@@ -207,25 +207,25 @@ KeyboardMenu {
             required property var modelData
             required property int index
             width: parent.width - parent.leftPadding - parent.rightPadding
-            height: 32
-            radius: 8
+            height: Theme.px(32)
+            radius: Theme.px(8)
             // Only while Enter would launch it
             color: index === sessionMenu.selected && searchInput.activeFocus ? Theme.highlight : "transparent"
 
             IconImage {
                 id: appIcon
                 anchors.left: parent.left
-                anchors.leftMargin: 8
+                anchors.leftMargin: Theme.px(8)
                 anchors.verticalCenter: parent.verticalCenter
-                implicitSize: 20
+                implicitSize: Theme.px(20)
                 source: Quickshell.iconPath(result.modelData.icon, "application-x-executable")
             }
 
             Text {
                 anchors.left: appIcon.right
-                anchors.leftMargin: 10
+                anchors.leftMargin: Theme.px(10)
                 anchors.right: parent.right
-                anchors.rightMargin: 8
+                anchors.rightMargin: Theme.px(8)
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: Theme.textOffset
                 text: result.modelData.name
@@ -243,7 +243,7 @@ KeyboardMenu {
     Row {
         visible: sessionMenu.pending === null
         width: parent.width - parent.leftPadding - parent.rightPadding
-        spacing: 8
+        spacing: Theme.px(8)
 
         Repeater {
             model: sessionMenu.actions
@@ -278,7 +278,7 @@ KeyboardMenu {
     Row {
         visible: sessionMenu.pending !== null
         width: parent.width - parent.leftPadding - parent.rightPadding
-        spacing: 8
+        spacing: Theme.px(8)
 
         MenuButton {
             id: cancelButton

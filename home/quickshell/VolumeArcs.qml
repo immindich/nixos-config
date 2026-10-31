@@ -12,11 +12,11 @@ Item {
     readonly property int lit: level <= 0 ? 0 : Math.min(4, Math.ceil(level * 4))
 
     // Gap between arcs, center to center
-    readonly property real step: 2.5
-    readonly property real lineWidth: 1.5
+    readonly property real step: 2.5 * Theme.uiScale
+    readonly property real lineWidth: 1.5 * Theme.uiScale
 
     width: 4 * step + lineWidth / 2
-    height: 14
+    height: Theme.px(14)
 
     Repeater {
         model: 4

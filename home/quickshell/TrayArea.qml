@@ -11,7 +11,7 @@ import qs.menus
 Rectangle {
     anchors.verticalCenter: parent.verticalCenter
     visible: SystemTray.items.values.length > 0
-    implicitWidth: row.implicitWidth + 12
+    implicitWidth: row.implicitWidth + Theme.px(12)
     implicitHeight: Theme.bubbleHeight
     radius: height / 2
     color: Theme.background
@@ -19,7 +19,7 @@ Rectangle {
     Row {
         id: row
         anchors.centerIn: parent
-        spacing: 2
+        spacing: Theme.px(2)
 
         Repeater {
             model: SystemTray.items
@@ -29,7 +29,7 @@ Rectangle {
                 id: trayItem
                 required property var modelData
 
-                implicitWidth: Theme.workspaceSize + 8
+                implicitWidth: Theme.workspaceSize + Theme.px(8)
                 implicitHeight: Theme.workspaceSize
                 radius: height / 2
                 color: menu.visible ? Theme.highlight : "transparent"
@@ -39,7 +39,7 @@ Rectangle {
                 IconImage {
                     anchors.centerIn: parent
                     source: trayItem.modelData.icon
-                    implicitSize: 16
+                    implicitSize: Theme.px(16)
                 }
 
                 MouseArea {

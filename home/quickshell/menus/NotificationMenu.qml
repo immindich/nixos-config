@@ -5,7 +5,7 @@ import qs
 // Notification history with a do-not-disturb switch and "Clear all", opened
 // from the bell indicator. Set `anchor.item` to the indicator.
 DropdownMenu {
-    implicitWidth: 380
+    implicitWidth: Theme.px(380)
 
     Item {
         width: parent.width - parent.leftPadding - parent.rightPadding
@@ -19,11 +19,11 @@ DropdownMenu {
 
         Text {
             anchors.right: dndSwitch.left
-            anchors.rightMargin: 8
+            anchors.rightMargin: Theme.px(8)
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: Theme.textOffset
             text: "Do not disturb"
-            font.pixelSize: Theme.fontSize - 2
+            font.pixelSize: Theme.fontSize - Theme.px(2)
             color: Theme.dimTextColor
         }
 
@@ -40,11 +40,11 @@ DropdownMenu {
     Item {
         visible: Notifications.history.length > 0
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: 24
+        height: Theme.px(24)
 
         Rectangle {
             anchors.right: parent.right
-            width: clearLabel.implicitWidth + 20
+            width: clearLabel.implicitWidth + Theme.px(20)
             height: parent.height
             radius: height / 2
             color: clearHover.hovered ? Theme.highlight : Theme.surface
@@ -54,7 +54,7 @@ DropdownMenu {
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: Theme.textOffset
                 text: "Clear all"
-                font.pixelSize: Theme.fontSize - 2
+                font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.textColor
             }
 
@@ -75,7 +75,7 @@ DropdownMenu {
         id: list
         visible: Notifications.history.length > 0
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: Math.min(cards.implicitHeight, 420)
+        height: Math.min(cards.implicitHeight, Theme.px(420))
         contentHeight: cards.implicitHeight
         clip: true
         boundsBehavior: Flickable.StopAtBounds
@@ -83,7 +83,7 @@ DropdownMenu {
         Column {
             id: cards
             width: list.width
-            spacing: 6
+            spacing: Theme.px(6)
 
             Repeater {
                 model: ScriptModel { values: Notifications.history }

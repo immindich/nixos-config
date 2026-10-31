@@ -24,14 +24,14 @@ PanelWindow {
 
     // Only exists while there's something to show, so it never blocks clicks
     visible: Notifications.popups.length > 0
-    implicitWidth: 360
+    implicitWidth: Theme.px(360)
     implicitHeight: Math.max(1, stack.implicitHeight)
     color: "transparent"
 
     Column {
         id: stack
         width: parent.width
-        spacing: 6
+        spacing: Theme.px(6)
 
         Repeater {
             // ScriptModel keeps existing cards (and their timers) when

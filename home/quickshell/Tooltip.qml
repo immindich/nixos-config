@@ -9,14 +9,14 @@ PopupWindow {
     property bool shown: false
 
     anchor.rect.x: anchor.item ? (anchor.item.width - width) / 2 : 0
-    anchor.rect.y: anchor.item ? anchor.item.height + 8 : 0
-    anchor.rect.width: 1
-    anchor.rect.height: 1
+    anchor.rect.y: anchor.item ? anchor.item.height + Theme.px(8) : 0
+    anchor.rect.width: Theme.px(1)
+    anchor.rect.height: Theme.px(1)
     anchor.edges: Edges.Top | Edges.Left
     anchor.gravity: Edges.Bottom | Edges.Right
 
-    implicitWidth: label.implicitWidth + 16
-    implicitHeight: label.implicitHeight + 8
+    implicitWidth: label.implicitWidth + Theme.px(16)
+    implicitHeight: label.implicitHeight + Theme.px(8)
     color: "transparent"
     mask: Region {}
 

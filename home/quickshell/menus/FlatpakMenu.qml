@@ -16,8 +16,8 @@ DropdownMenu {
         property bool active: true
         signal clicked()
 
-        width: buttonLabel.implicitWidth + 20
-        height: 24
+        width: buttonLabel.implicitWidth + Theme.px(20)
+        height: Theme.px(24)
         radius: height / 2
         color: buttonHover.hovered && active ? Theme.highlight : Theme.surface
 
@@ -25,7 +25,7 @@ DropdownMenu {
             id: buttonLabel
             anchors.centerIn: parent
             anchors.verticalCenterOffset: Theme.textOffset
-            font.pixelSize: Theme.fontSize - 2
+            font.pixelSize: Theme.fontSize - Theme.px(2)
             color: button.active ? Theme.textColor : Theme.dimTextColor
         }
 
@@ -46,7 +46,7 @@ DropdownMenu {
             text: FlatpakUpdates.updating ? "Updating…"
                 : isNaN(FlatpakUpdates.checked.getTime()) ? ""
                 : "Checked " + Qt.formatTime(FlatpakUpdates.checked, "h:mm AP")
-            font.pixelSize: Theme.fontSize - 2
+            font.pixelSize: Theme.fontSize - Theme.px(2)
             color: Theme.dimTextColor
         }
     }
@@ -72,7 +72,7 @@ DropdownMenu {
                 id: nameText
                 anchors.left: parent.left
                 anchors.right: versionText.left
-                anchors.rightMargin: 8
+                anchors.rightMargin: Theme.px(8)
                 text: parent.modelData.name
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
@@ -98,18 +98,18 @@ DropdownMenu {
         text: FlatpakUpdates.error
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
-        font.pixelSize: Theme.fontSize - 2
+        font.pixelSize: Theme.fontSize - Theme.px(2)
         color: Theme.bad
     }
 
     // Full-width row so the buttons can be anchored to the right
     Item {
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: 24
+        height: Theme.px(24)
 
         Row {
             anchors.right: parent.right
-            spacing: 6
+            spacing: Theme.px(6)
 
             PillButton {
                 text: "Check now"

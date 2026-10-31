@@ -75,7 +75,7 @@ ShellRoot {
         Item {
           id: hotEdgeItem
           width: parent.width
-          height: 2
+          height: Theme.px(2)
         }
 
         onFullscreenChanged: revealed = false
@@ -126,7 +126,7 @@ ShellRoot {
             anchors.left: parent.left
             anchors.leftMargin: Theme.barMargin
             anchors.verticalCenter: parent.verticalCenter
-            implicitWidth: sessionButton.width + 8
+            implicitWidth: sessionButton.width + Theme.px(8)
             implicitHeight: Theme.bubbleHeight
             radius: height / 2
             color: Theme.background
@@ -145,7 +145,7 @@ ShellRoot {
               IconImage {
                 id: logo
                 anchors.centerIn: parent
-                implicitSize: 14
+                implicitSize: Theme.px(14)
                 source: Quickshell.iconPath("nix-snowflake-white")
                 layer.enabled: true
                 layer.effect: MultiEffect {
@@ -177,7 +177,7 @@ ShellRoot {
               const center = parent.width / 2
               const leftRoom = center - (workspaces.x + workspaces.width)
               const rightRoom = (tray.visible ? tray.x : statusArea.x) - center
-              return Math.min(600, 2 * (Math.min(leftRoom, rightRoom) - Theme.bubbleSpacing))
+              return Math.min(Theme.px(600), 2 * (Math.min(leftRoom, rightRoom) - Theme.bubbleSpacing))
             }
           }
 

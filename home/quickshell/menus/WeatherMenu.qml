@@ -17,7 +17,7 @@ DropdownMenu {
 
     // Big icon and temperature, with the conditions beside them
     Row {
-        spacing: 10
+        spacing: Theme.px(10)
 
         Icon {
             text: Weather.icon
@@ -58,12 +58,12 @@ DropdownMenu {
             Column {
                 required property var modelData
                 width: hourly.width / Weather.hours.length
-                spacing: 4
+                spacing: Theme.px(4)
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: parent.modelData.label
-                    font.pixelSize: Theme.fontSize - 2
+                    font.pixelSize: Theme.fontSize - Theme.px(2)
                     color: Theme.dimTextColor
                 }
                 Icon {

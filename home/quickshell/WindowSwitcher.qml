@@ -111,20 +111,20 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell-switcher"
-    implicitWidth: 480
-    implicitHeight: list.implicitHeight + 16
+    implicitWidth: Theme.px(480)
+    implicitHeight: list.implicitHeight + Theme.px(16)
     color: "transparent"
 
     Rectangle {
         anchors.fill: parent
-        radius: 14
+        radius: Theme.px(14)
         color: Theme.background
 
         ColumnLayout {
             id: list
             anchors.fill: parent
-            anchors.margins: 8
-            spacing: 2
+            anchors.margins: Theme.px(8)
+            spacing: Theme.px(2)
 
             Repeater {
                 model: switcher.entries
@@ -147,18 +147,18 @@ PanelWindow {
                     }
 
                     Layout.fillWidth: true
-                    implicitHeight: Theme.bubbleHeight + 8
+                    implicitHeight: Theme.bubbleHeight + Theme.px(8)
                     radius: height / 2
                     color: isSelected ? Theme.highlight : "transparent"
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        spacing: 10
+                        anchors.leftMargin: Theme.px(12)
+                        anchors.rightMargin: Theme.px(12)
+                        spacing: Theme.px(10)
 
                         IconImage {
-                            implicitSize: 20
+                            implicitSize: Theme.px(20)
                             source: Quickshell.iconPath(entry.desktopEntry?.icon ?? "", "application-x-executable")
                         }
 

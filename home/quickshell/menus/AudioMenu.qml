@@ -12,14 +12,14 @@ DropdownMenu {
     property int tab: 0
 
     // Wider than the default to leave room for longer device names
-    implicitWidth: 320
+    implicitWidth: Theme.px(320)
 
     onVisibleChanged: if (visible) tab = 0
 
     Row {
         id: tabs
         width: parent.width - parent.leftPadding - parent.rightPadding
-        spacing: 4
+        spacing: Theme.px(4)
 
         Repeater {
             model: ["Devices", "Applications"]
@@ -31,8 +31,8 @@ DropdownMenu {
                 readonly property bool selected: audioMenu.tab === index
 
                 width: (tabs.width - tabs.spacing) / 2
-                height: 28
-                radius: 8
+                height: Theme.px(28)
+                radius: Theme.px(8)
                 color: selected ? Theme.accent : hover.hovered ? Theme.highlight : Theme.surface
 
                 Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
@@ -52,7 +52,7 @@ DropdownMenu {
     }
 
     AudioDeviceSection { visible: audioMenu.tab === 0; title: "Output"; sink: true }
-    Item { visible: audioMenu.tab === 0; width: 1; height: 4 }
+    Item { visible: audioMenu.tab === 0; width: 1; height: Theme.px(4) }
     AudioDeviceSection { visible: audioMenu.tab === 0; title: "Input"; sink: false }
 
     AudioStreamSection { visible: audioMenu.tab === 1 }

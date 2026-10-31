@@ -14,7 +14,7 @@ Slider {
         x: slider.leftPadding
         y: slider.topPadding + (slider.availableHeight - height) / 2
         width: slider.availableWidth
-        height: 6
+        height: Theme.px(6)
         radius: height / 2
         color: Theme.surface
 
@@ -30,8 +30,8 @@ Slider {
     handle: Rectangle {
         x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
         y: slider.topPadding + (slider.availableHeight - height) / 2
-        width: 16
-        height: 16
+        width: Theme.px(16)
+        height: Theme.px(16)
         radius: width / 2
         color: slider.pressed ? Theme.textColor : Theme.accent
 

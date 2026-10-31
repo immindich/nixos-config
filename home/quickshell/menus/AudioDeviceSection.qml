@@ -17,7 +17,7 @@ Column {
     readonly property var current: sink ? Pipewire.defaultAudioSink : Pipewire.defaultAudioSource
 
     width: parent.width - parent.leftPadding - parent.rightPadding
-    spacing: 6
+    spacing: Theme.px(6)
 
     Item {
         width: parent.width
@@ -35,8 +35,8 @@ Column {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             visible: section.current !== null
-            width: 28
-            height: 22
+            width: Theme.px(28)
+            height: Theme.px(22)
             radius: height / 2
             color: muted ? Theme.bad : muteHover.hovered ? Theme.highlight : Theme.surface
 
@@ -79,7 +79,7 @@ Column {
 
     Column {
         width: parent.width
-        spacing: 2
+        spacing: Theme.px(2)
 
         Repeater {
             model: ScriptModel {
@@ -95,16 +95,16 @@ Column {
                 readonly property string label: modelData.nickname || modelData.description || modelData.name
 
                 width: parent.width
-                height: 32
-                radius: 8
+                height: Theme.px(32)
+                radius: Theme.px(8)
                 color: hover.hovered && !selected ? Theme.highlight : "transparent"
 
                 Text {
                     id: typeIcon
                     anchors.left: parent.left
-                    anchors.leftMargin: 8
+                    anchors.leftMargin: Theme.px(8)
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 18
+                    width: Theme.px(18)
                     horizontalAlignment: Text.AlignHCenter
                     text: row.modelData.name.startsWith("bluez") ? "\uf025" // headphones
                         : !section.sink ? "\uf130"                          // microphone
@@ -118,9 +118,9 @@ Column {
 
                 Text {
                     anchors.left: typeIcon.right
-                    anchors.leftMargin: 8
+                    anchors.leftMargin: Theme.px(8)
                     anchors.right: check.left
-                    anchors.rightMargin: 8
+                    anchors.rightMargin: Theme.px(8)
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: Theme.textOffset
                     elide: Text.ElideRight
@@ -134,7 +134,7 @@ Column {
                 Text {
                     id: check
                     anchors.right: parent.right
-                    anchors.rightMargin: 8
+                    anchors.rightMargin: Theme.px(8)
                     anchors.verticalCenter: parent.verticalCenter
                     text: row.selected ? "\uf00c" : "" // check
                     font.family: Theme.iconFont

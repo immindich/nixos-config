@@ -15,13 +15,13 @@ PopupWindow {
     // Hang below the bar, centered on the anchor item; slides back on screen
     // if it would go past the edge
     anchor.rect.x: anchor.item ? (anchor.item.width - width) / 2 : 0
-    anchor.rect.y: anchor.item ? anchor.item.height + 8 : 0
-    anchor.rect.width: 1
-    anchor.rect.height: 1
+    anchor.rect.y: anchor.item ? anchor.item.height + Theme.px(8) : 0
+    anchor.rect.width: Theme.px(1)
+    anchor.rect.height: Theme.px(1)
     anchor.edges: Edges.Top | Edges.Left
     anchor.gravity: Edges.Bottom | Edges.Right
 
-    implicitWidth: 280
+    implicitWidth: Theme.px(280)
     implicitHeight: column.implicitHeight // includes the column's padding
     color: "transparent"
 
@@ -75,7 +75,7 @@ PopupWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: 12
+        radius: Theme.px(12)
         color: Theme.background
 
         // Right-clicking anywhere on the menu closes it. Entries only handle
@@ -88,8 +88,8 @@ PopupWindow {
         Column {
             id: column
             anchors.fill: parent
-            padding: 12
-            spacing: 8
+            padding: Theme.px(12)
+            spacing: Theme.px(8)
 
             // Reached from any focused child that doesn't handle Escape itself
             Keys.onEscapePressed: menu.visible = false

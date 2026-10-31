@@ -10,8 +10,8 @@ Rectangle {
     property bool checked: false
     signal toggled()
 
-    implicitWidth: 36
-    implicitHeight: 20
+    implicitWidth: Theme.px(36)
+    implicitHeight: Theme.px(20)
     radius: height / 2
     color: checked ? Theme.accent : Theme.surface
     opacity: enabled ? 1 : 0.5
@@ -19,9 +19,9 @@ Rectangle {
     Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
 
     Rectangle {
-        x: menuSwitch.checked ? parent.width - width - 3 : 3
+        x: menuSwitch.checked ? parent.width - width - Theme.px(3) : Theme.px(3)
         anchors.verticalCenter: parent.verticalCenter
-        width: parent.height - 6
+        width: parent.height - Theme.px(6)
         height: width
         radius: width / 2
         color: menuSwitch.checked ? Theme.background : Theme.textColor

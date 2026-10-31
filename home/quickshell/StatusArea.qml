@@ -12,7 +12,7 @@ import qs.menus
 Rectangle {
     id: statusArea
     anchors.verticalCenter: parent.verticalCenter
-    implicitWidth: row.implicitWidth + 12
+    implicitWidth: row.implicitWidth + Theme.px(12)
     implicitHeight: Theme.bubbleHeight
     radius: height / 2
     color: Theme.background
@@ -55,7 +55,7 @@ Rectangle {
         property string tooltip: ""
         signal clicked()
 
-        implicitWidth: content.implicitWidth + 12
+        implicitWidth: content.implicitWidth + Theme.px(12)
         implicitHeight: Theme.workspaceSize
         radius: height / 2
         color: menu?.visible || active ? Theme.highlight : "transparent"
@@ -66,7 +66,7 @@ Rectangle {
         Row {
             id: content
             anchors.centerIn: parent
-            spacing: 4
+            spacing: Theme.px(4)
 
             Loader {
                 anchors.verticalCenter: parent.verticalCenter
@@ -120,7 +120,7 @@ Rectangle {
         anchors.centerIn: parent
         // Indicators are padded pills; this plus their padding spaces items
         // 14px apart
-        spacing: 2
+        spacing: Theme.px(2)
 
         // Media player: play icon while playing, dimmed pause icon while
         // paused; hidden when no player is running
@@ -194,7 +194,7 @@ Rectangle {
             text: ""
             extraVisible: !muted
             extra: Row {
-                spacing: 1
+                spacing: Theme.px(1)
                 Icon { text: "\uf026" } // volume-off (bare speaker)
                 VolumeArcs {
                     anchors.verticalCenter: parent.verticalCenter
@@ -290,7 +290,7 @@ Rectangle {
             // Mug before the battery while the screen is kept awake
             extraVisible: true
             extra: Row {
-                spacing: 4
+                spacing: Theme.px(4)
                 Icon {
                     visible: IdleInhibit.enabled
                     text: "\uf7b6" // mug-hot

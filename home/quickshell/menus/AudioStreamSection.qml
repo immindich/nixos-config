@@ -11,7 +11,7 @@ Column {
     id: section
 
     width: parent.width - parent.leftPadding - parent.rightPadding
-    spacing: 6
+    spacing: Theme.px(6)
 
     Text {
         visible: streams.values.length === 0
@@ -45,7 +45,7 @@ Column {
             }
 
             width: parent.width
-            spacing: 4
+            spacing: Theme.px(4)
 
             Item {
                 width: parent.width
@@ -55,7 +55,7 @@ Column {
                     id: appIcon
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    implicitSize: 18
+                    implicitSize: Theme.px(18)
                     source: stream.iconSource
                     visible: source != ""
                 }
@@ -64,7 +64,7 @@ Column {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     visible: !appIcon.visible
-                    width: 18
+                    width: Theme.px(18)
                     horizontalAlignment: Text.AlignHCenter
                     text: "\uf028" // volume-high
                     font.family: Theme.iconFont
@@ -76,9 +76,9 @@ Column {
                 Text {
                     id: name
                     anchors.left: parent.left
-                    anchors.leftMargin: 26
+                    anchors.leftMargin: Theme.px(26)
                     anchors.right: muteButton.left
-                    anchors.rightMargin: 8
+                    anchors.rightMargin: Theme.px(8)
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: Theme.textOffset
                     elide: Text.ElideRight
@@ -95,8 +95,8 @@ Column {
                     readonly property bool muted: stream.modelData.audio.muted
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 28
-                    height: 22
+                    width: Theme.px(28)
+                    height: Theme.px(22)
                     radius: height / 2
                     color: muted ? Theme.bad : muteHover.hovered ? Theme.highlight : Theme.surface
 

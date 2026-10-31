@@ -16,15 +16,15 @@ Item {
     readonly property int lit: connecting ? step + 1 : Math.max(1, Math.ceil(strength * 4))
 
     // Distance between arcs, center to center
-    readonly property real arcStep: 3
-    readonly property real lineWidth: 1.75
-    readonly property real dotRadius: 1.5
+    readonly property real arcStep: 3 * Theme.uiScale
+    readonly property real lineWidth: 1.75 * Theme.uiScale
+    readonly property real dotRadius: 1.5 * Theme.uiScale
     // Center of the fan, at the dot
     readonly property real centerX: width / 2
     readonly property real centerY: height - dotRadius
 
-    width: 16
-    height: 13
+    width: Theme.px(16)
+    height: Theme.px(13)
 
     onConnectingChanged: step = 0
 
@@ -63,7 +63,7 @@ Item {
                 PathAngleArc {
                     centerX: signal.centerX
                     centerY: signal.centerY
-                    radiusX: (arc.index + 1) * signal.arcStep + 1
+                    radiusX: (arc.index + 1) * signal.arcStep + Theme.uiScale
                     radiusY: radiusX
                     startAngle: -135
                     sweepAngle: 90

@@ -33,7 +33,7 @@ PanelWindow {
         const item = anchor.item
         if (!item)
             return
-        const pos = item.mapToItem(null, (item.width - implicitWidth) / 2, item.height + 8)
+        const pos = item.mapToItem(null, (item.width - implicitWidth) / 2, item.height + Theme.px(8))
         // Kept off the screen edges by the bar's own margin
         margins.left = Math.max(Theme.barMargin, Math.min(pos.x, (screen?.width ?? 0) - implicitWidth - Theme.barMargin))
         margins.top = pos.y
@@ -54,7 +54,7 @@ PanelWindow {
     WlrLayershell.keyboardFocus: mapped ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
 
     visible: false
-    implicitWidth: 280
+    implicitWidth: Theme.px(280)
     implicitHeight: column.implicitHeight // includes the column's padding
     color: "transparent"
 
@@ -110,7 +110,7 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: 12
+        radius: Theme.px(12)
         color: Theme.background
 
         // Right-clicking anywhere on the menu closes it. Entries only handle
@@ -123,8 +123,8 @@ PanelWindow {
         Column {
             id: column
             anchors.fill: parent
-            padding: 12
-            spacing: 8
+            padding: Theme.px(12)
+            spacing: Theme.px(8)
 
             // Reached from any focused child that doesn't handle Escape itself
             Keys.onEscapePressed: menu.visible = false

@@ -62,7 +62,7 @@ Row {
         default property alias content: row.data
         // Scroll wheel notches on the bubble (1 = up, -1 = down)
         signal scrolled(int direction)
-        implicitWidth: row.implicitWidth + 8
+        implicitWidth: row.implicitWidth + Theme.px(8)
         implicitHeight: Theme.bubbleHeight
         radius: height / 2
         color: Theme.background
@@ -87,7 +87,7 @@ Row {
         readonly property bool empty: ws === null || ws.toplevels.values.length === 0
         readonly property bool fullscreen: ws !== null && ws.id > switcher.fullscreenBase
 
-        width: active ? 2 * height : special ? height : Math.max(height, label.implicitWidth + 12)
+        width: active ? 2 * height : special ? height : Math.max(height, label.implicitWidth + Theme.px(12))
         height: Theme.workspaceSize
         radius: height / 2
         color: active ? Theme.accent : empty ? Theme.surface : Theme.occupied
@@ -101,7 +101,7 @@ Row {
             id: label
             anchors.centerIn: parent
             visible: !special
-            spacing: 3
+            spacing: Theme.px(3)
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -109,7 +109,7 @@ Row {
                 text: "\uf065" // expand
                 font.family: Theme.iconFont
                 font.weight: Font.Black
-                font.pixelSize: Theme.iconSize - 2
+                font.pixelSize: Theme.iconSize - Theme.px(2)
                 color: Theme.background
             }
 

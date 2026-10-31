@@ -54,7 +54,7 @@ KeyboardMenu {
         id: list
         visible: Networking.wifiEnabled && networkMenu.wifiDevice !== null
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: Math.min(networks.implicitHeight, 320)
+        height: Math.min(networks.implicitHeight, Theme.px(320))
         contentHeight: networks.implicitHeight
         clip: true
         boundsBehavior: Flickable.StopAtBounds
@@ -62,7 +62,7 @@ KeyboardMenu {
         Column {
             id: networks
             width: list.width
-            spacing: 2
+            spacing: Theme.px(2)
 
             Repeater {
                 // Connected network first, then known (saved) ones, each
@@ -116,15 +116,15 @@ KeyboardMenu {
 
         Rectangle {
             width: parent.width
-            height: 32
-            radius: 8
+            height: Theme.px(32)
+            radius: Theme.px(8)
             color: hover.hovered && !entry.modelData.connected ? Theme.highlight : "transparent"
 
             Row {
                 anchors.left: parent.left
-                anchors.leftMargin: 8
+                anchors.leftMargin: Theme.px(8)
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 8
+                spacing: Theme.px(8)
 
                 WifiSignal {
                     anchors.verticalCenter: parent.verticalCenter
@@ -134,7 +134,7 @@ KeyboardMenu {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: Theme.textOffset
-                    width: Math.min(implicitWidth, entry.width - 120)
+                    width: Math.min(implicitWidth, entry.width - Theme.px(120))
                     elide: Text.ElideRight
                     text: entry.modelData.name
                     textFormat: Text.PlainText
@@ -146,16 +146,16 @@ KeyboardMenu {
 
             Row {
                 anchors.right: parent.right
-                anchors.rightMargin: 8
+                anchors.rightMargin: Theme.px(8)
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 8
+                spacing: Theme.px(8)
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: Theme.textOffset
                     visible: entry.modelData.stateChanging
                     text: entry.modelData.state === ConnectionState.Disconnecting ? "Disconnecting…" : "Connecting…"
-                    font.pixelSize: Theme.fontSize - 2
+                    font.pixelSize: Theme.fontSize - Theme.px(2)
                     color: Theme.dimTextColor
                 }
 
@@ -166,7 +166,7 @@ KeyboardMenu {
                     anchors.verticalCenterOffset: Theme.textOffset
                     visible: entry.modelData.known && !entry.modelData.connected && !entry.modelData.stateChanging
                     text: "Saved"
-                    font.pixelSize: Theme.fontSize - 2
+                    font.pixelSize: Theme.fontSize - Theme.px(2)
                     color: Theme.dimTextColor
                 }
 
@@ -185,8 +185,8 @@ KeyboardMenu {
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: entry.modelData.connected && !entry.modelData.stateChanging
-                    width: disconnectLabel.implicitWidth + 16
-                    height: 22
+                    width: disconnectLabel.implicitWidth + Theme.px(16)
+                    height: Theme.px(22)
                     radius: height / 2
                     color: disconnectHover.hovered ? Theme.highlight : Theme.surface
 
@@ -195,7 +195,7 @@ KeyboardMenu {
                         anchors.centerIn: parent
                         anchors.verticalCenterOffset: Theme.textOffset
                         text: "Disconnect"
-                        font.pixelSize: Theme.fontSize - 2
+                        font.pixelSize: Theme.fontSize - Theme.px(2)
                         color: Theme.textColor
                     }
 
@@ -219,10 +219,10 @@ KeyboardMenu {
         // Password field, shown when the network needs one
         Rectangle {
             visible: entry.askingPassword
-            x: 8
-            width: parent.width - 16
-            height: 30
-            radius: 8
+            x: Theme.px(8)
+            width: parent.width - Theme.px(16)
+            height: Theme.px(30)
+            radius: Theme.px(8)
             color: Theme.surface
             border.width: passwordInput.activeFocus ? 1 : 0
             border.color: Theme.accent
@@ -230,8 +230,8 @@ KeyboardMenu {
             TextInput {
                 id: passwordInput
                 anchors.fill: parent
-                anchors.leftMargin: 10
-                anchors.rightMargin: 10
+                anchors.leftMargin: Theme.px(10)
+                anchors.rightMargin: Theme.px(10)
                 verticalAlignment: TextInput.AlignVCenter
                 echoMode: TextInput.Password
                 clip: true
@@ -261,13 +261,13 @@ KeyboardMenu {
 
         Text {
             visible: entry.error !== ""
-            x: 8
-            width: parent.width - 16
+            x: Theme.px(8)
+            width: parent.width - Theme.px(16)
             wrapMode: Text.Wrap
-            topPadding: 2
-            bottomPadding: 4
+            topPadding: Theme.px(2)
+            bottomPadding: Theme.px(4)
             text: entry.error
-            font.pixelSize: Theme.fontSize - 2
+            font.pixelSize: Theme.fontSize - Theme.px(2)
             color: Theme.bad
         }
     }

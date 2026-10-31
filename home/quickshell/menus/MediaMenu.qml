@@ -12,7 +12,7 @@ DropdownMenu {
     readonly property bool hasProgress: player !== null && player.lengthSupported
         && player.positionSupported && player.length > 0
 
-    implicitWidth: 320
+    implicitWidth: Theme.px(320)
 
     // "1:05" or "1:02:33"
     function formatTime(seconds) {
@@ -30,7 +30,7 @@ DropdownMenu {
         property bool primary: false
         signal clicked()
 
-        width: primary ? 36 : 30
+        width: primary ? Theme.px(36) : Theme.px(30)
         height: width
         radius: width / 2
         color: primary ? (hover.hovered ? Qt.lighter(Theme.accent, 1.15) : Theme.accent)
@@ -67,17 +67,17 @@ DropdownMenu {
     // Album art beside the track details
     Row {
         width: parent.width - parent.leftPadding - parent.rightPadding
-        spacing: 12
+        spacing: Theme.px(12)
 
         Item {
             id: art
-            width: 64
-            height: 64
+            width: Theme.px(64)
+            height: Theme.px(64)
 
             // Placeholder until the art loads, or when there is none
             Rectangle {
                 anchors.fill: parent
-                radius: 8
+                radius: Theme.px(8)
                 color: Theme.surface
                 visible: !cover.visible
 
@@ -86,7 +86,7 @@ DropdownMenu {
                     text: "\uf001" // music
                     font.family: Theme.iconFont
                     font.weight: Font.Black
-                    font.pixelSize: 20
+                    font.pixelSize: Theme.px(20)
                     color: Theme.dimTextColor
                 }
             }
@@ -97,7 +97,7 @@ DropdownMenu {
                 source: mediaMenu.player?.trackArtUrl ?? ""
                 visible: source != "" && status === Image.Ready
                 fillMode: Image.PreserveAspectCrop
-                sourceSize: Qt.size(128, 128)
+                sourceSize: Qt.size(Theme.px(128), Theme.px(128))
                 // Rounded corners
                 layer.enabled: true
                 layer.effect: MultiEffect {
@@ -111,14 +111,14 @@ DropdownMenu {
                 anchors.fill: parent
                 layer.enabled: true
                 visible: false
-                Rectangle { anchors.fill: parent; radius: 8 }
+                Rectangle { anchors.fill: parent; radius: Theme.px(8) }
             }
         }
 
         Column {
             width: parent.width - art.width - parent.spacing
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 2
+            spacing: Theme.px(2)
 
             Text {
                 width: parent.width
@@ -138,7 +138,7 @@ DropdownMenu {
                 text: mediaMenu.player?.trackArtist ?? ""
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
-                font.pixelSize: Theme.fontSize - 1
+                font.pixelSize: Theme.fontSize - Theme.px(1)
                 color: Theme.textColor
             }
 
@@ -148,7 +148,7 @@ DropdownMenu {
                 text: mediaMenu.player?.trackAlbum ?? ""
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
-                font.pixelSize: Theme.fontSize - 2
+                font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
         }
@@ -158,7 +158,7 @@ DropdownMenu {
     Column {
         visible: mediaMenu.hasProgress
         width: parent.width - parent.leftPadding - parent.rightPadding
-        spacing: 2
+        spacing: Theme.px(2)
 
         MenuSlider {
             id: progress
@@ -189,14 +189,14 @@ DropdownMenu {
                 id: elapsed
                 anchors.left: parent.left
                 text: mediaMenu.formatTime(progress.value)
-                font.pixelSize: Theme.fontSize - 2
+                font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
 
             Text {
                 anchors.right: parent.right
                 text: mediaMenu.formatTime(mediaMenu.player?.length ?? 0)
-                font.pixelSize: Theme.fontSize - 2
+                font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
         }
@@ -210,7 +210,7 @@ DropdownMenu {
         Row {
             id: controls
             anchors.centerIn: parent
-            spacing: 12
+            spacing: Theme.px(12)
 
             ControlButton {
                 anchors.verticalCenter: parent.verticalCenter

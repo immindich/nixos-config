@@ -15,8 +15,8 @@ Rectangle {
     readonly property var defaultAction: notification.actions.find(a => a.identifier === "default") ?? null
     readonly property var buttons: notification.actions.filter(a => a.identifier !== "default")
 
-    implicitHeight: content.implicitHeight + 24
-    radius: 12
+    implicitHeight: content.implicitHeight + Theme.px(24)
+    radius: Theme.px(12)
     color: Theme.background
     border.width: notification.urgency === NotificationUrgency.Critical ? 1 : 0
     border.color: Theme.bad
@@ -34,22 +34,22 @@ Rectangle {
 
     Column {
         id: content
-        x: 12
-        y: 12
-        width: parent.width - 24
-        spacing: 4
+        x: Theme.px(12)
+        y: Theme.px(12)
+        width: parent.width - Theme.px(24)
+        spacing: Theme.px(4)
 
         // Header: icon, app name, close button
         Item {
             width: parent.width
-            height: 20
+            height: Theme.px(20)
 
             IconImage {
                 id: appIcon
                 readonly property string icon: card.notification.appIcon
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                implicitSize: 16
+                implicitSize: Theme.px(16)
                 // URLs as-is, absolute paths as file URLs (a bare path would
                 // resolve against this file's qrc: location), otherwise look
                 // up the icon name
@@ -64,7 +64,7 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 visible: !appIcon.visible
-                width: 16
+                width: Theme.px(16)
                 horizontalAlignment: Text.AlignHCenter
                 text: "\uf0f3" // bell
                 font.family: Theme.iconFont
@@ -75,15 +75,15 @@ Rectangle {
 
             Text {
                 anchors.left: parent.left
-                anchors.leftMargin: 24
+                anchors.leftMargin: Theme.px(24)
                 anchors.right: closeButton.left
-                anchors.rightMargin: 8
+                anchors.rightMargin: Theme.px(8)
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: Theme.textOffset
                 elide: Text.ElideRight
                 text: card.notification.appName
                 textFormat: Text.PlainText
-                font.pixelSize: Theme.fontSize - 2
+                font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
 
@@ -91,8 +91,8 @@ Rectangle {
                 id: closeButton
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                width: 20
-                height: 20
+                width: Theme.px(20)
+                height: Theme.px(20)
                 radius: width / 2
                 color: closeHover.hovered ? Theme.highlight : "transparent"
 
@@ -101,7 +101,7 @@ Rectangle {
                     text: "\uf00d" // xmark
                     font.family: Theme.iconFont
                     font.weight: Font.Black
-                    font.pixelSize: Theme.iconSize - 2
+                    font.pixelSize: Theme.iconSize - Theme.px(2)
                     color: Theme.dimTextColor
                 }
 
@@ -131,7 +131,7 @@ Rectangle {
             elide: Text.ElideRight
             textFormat: Text.PlainText
             text: card.notification.body
-            font.pixelSize: Theme.fontSize - 1
+            font.pixelSize: Theme.fontSize - Theme.px(1)
             color: Theme.textColor
         }
 
@@ -140,16 +140,16 @@ Rectangle {
             visible: card.notification.image !== "" && status === Image.Ready
             source: card.notification.image
             fillMode: Image.PreserveAspectFit
-            width: Math.min(implicitWidth, 64)
-            height: Math.min(implicitHeight, 64)
-            sourceSize.height: 128
+            width: Math.min(implicitWidth, Theme.px(64))
+            height: Math.min(implicitHeight, Theme.px(64))
+            sourceSize.height: Theme.px(128)
         }
 
         Flow {
             width: parent.width
             visible: card.buttons.length > 0
-            spacing: 6
-            topPadding: 4
+            spacing: Theme.px(6)
+            topPadding: Theme.px(4)
 
             Repeater {
                 model: card.buttons
@@ -158,7 +158,7 @@ Rectangle {
                     id: actionButton
                     required property var modelData
                     width: actionLabel.implicitWidth + 20
-                    height: 24
+                    height: Theme.px(24)
                     radius: height / 2
                     color: actionHover.hovered ? Qt.lighter(card.buttonColor, 1.3) : card.buttonColor
 
@@ -168,7 +168,7 @@ Rectangle {
                         anchors.verticalCenterOffset: Theme.textOffset
                         text: actionButton.modelData.text
                         textFormat: Text.PlainText
-                        font.pixelSize: Theme.fontSize - 2
+                        font.pixelSize: Theme.fontSize - Theme.px(2)
                         color: Theme.textColor
                     }
 

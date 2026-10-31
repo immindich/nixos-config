@@ -33,11 +33,11 @@ Column {
             Item {
                 visible: entry.modelData.isSeparator
                 width: parent.width
-                height: 9
+                height: Theme.px(9)
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width
-                    height: 1
+                    height: Theme.px(1)
                     color: Theme.surface
                 }
             }
@@ -46,17 +46,17 @@ Column {
             Rectangle {
                 visible: !entry.modelData.isSeparator
                 width: parent.width
-                height: Math.max(28, row.implicitHeight + 10)
-                radius: 8
+                height: Math.max(Theme.px(28), row.implicitHeight + Theme.px(10))
+                radius: Theme.px(8)
                 color: hover.hovered && entry.modelData.enabled ? Theme.highlight : "transparent"
                 opacity: entry.modelData.enabled ? 1 : 0.5
 
                 RowLayout {
                     id: row
                     anchors.fill: parent
-                    anchors.leftMargin: 8 + entries.depth * 12
-                    anchors.rightMargin: 8
-                    spacing: 8
+                    anchors.leftMargin: Theme.px(8 + entries.depth * 12)
+                    anchors.rightMargin: Theme.px(8)
+                    spacing: Theme.px(8)
 
                     // Checkbox / radio button state
                     Text {
@@ -65,7 +65,7 @@ Column {
                         font.weight: Font.Black
                         font.pixelSize: Theme.iconSize
                         color: Theme.accent
-                        Layout.preferredWidth: Theme.iconSize + 2
+                        Layout.preferredWidth: Theme.iconSize + Theme.px(2)
                         horizontalAlignment: Text.AlignHCenter
                         text: entry.modelData.checkState !== Qt.Checked ? ""
                             : entry.modelData.buttonType === QsMenuButtonType.RadioButton ? "\uf192" // circle-dot
@@ -78,7 +78,7 @@ Column {
                         id: icon
                         visible: entry.modelData.icon !== "" && status !== Image.Error
                         source: entry.modelData.icon
-                        implicitSize: 16
+                        implicitSize: Theme.px(16)
                     }
 
                     Text {
@@ -99,7 +99,7 @@ Column {
                         visible: entry.modelData.hasChildren
                         font.family: Theme.iconFont
                         font.weight: Font.Black
-                        font.pixelSize: Theme.iconSize - 2
+                        font.pixelSize: Theme.iconSize - Theme.px(2)
                         color: Theme.dimTextColor
                         text: entry.expanded ? "\uf078" : "\uf054" // chevron-down : chevron-right
                     }

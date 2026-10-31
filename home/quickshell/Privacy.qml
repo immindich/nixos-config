@@ -6,9 +6,9 @@ import Quickshell.Services.Pipewire
 // keeps valid.
 Row {
     id: privacy
-    spacing: 8
-    leftPadding: 6
-    rightPadding: 6
+    spacing: Theme.px(8)
+    leftPadding: Theme.px(6)
+    rightPadding: Theme.px(6)
     visible: micInUse || cameraInUse || screenInUse
 
     readonly property bool micInUse: Pipewire.nodes.values.some(n => n.properties?.["media.class"] === "Stream/Input/Audio")

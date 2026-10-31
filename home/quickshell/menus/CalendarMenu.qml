@@ -12,7 +12,7 @@ DropdownMenu {
     // First day of the month on display
     property date shown: new Date()
 
-    implicitWidth: 280
+    implicitWidth: Theme.px(280)
 
     function reset() {
         shown = new Date(today.getFullYear(), today.getMonth(), 1)
@@ -34,8 +34,8 @@ DropdownMenu {
         property alias icon: glyph.text
         signal clicked()
 
-        width: 28
-        height: 22
+        width: Theme.px(28)
+        height: Theme.px(22)
         radius: height / 2
         color: hover.hovered ? Theme.highlight : Theme.surface
 
@@ -46,7 +46,7 @@ DropdownMenu {
             anchors.centerIn: parent
             font.family: Theme.iconFont
             font.weight: Font.Black
-            font.pixelSize: Theme.iconSize - 2
+            font.pixelSize: Theme.iconSize - Theme.px(2)
             color: Theme.textColor
         }
 
@@ -57,7 +57,7 @@ DropdownMenu {
     // Month name with previous/next buttons
     Item {
         width: parent.width - parent.leftPadding - parent.rightPadding
-        implicitHeight: Math.max(heading.implicitHeight, 22)
+        implicitHeight: Math.max(heading.implicitHeight, Theme.px(22))
 
         MenuHeading {
             id: heading
@@ -70,7 +70,7 @@ DropdownMenu {
         Row {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 4
+            spacing: Theme.px(4)
 
             NavButton { icon: "\uf053"; onClicked: calendar.step(-1) } // chevron-left
             NavButton { icon: "\uf054"; onClicked: calendar.step(1) }  // chevron-right
@@ -82,7 +82,7 @@ DropdownMenu {
     // explicit heights rather than taking them from the delegates
     DayOfWeekRow {
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: 20
+        height: Theme.px(20)
         spacing: 0
         locale: grid.locale
 
@@ -91,7 +91,7 @@ DropdownMenu {
             text: shortName
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.pixelSize: Theme.fontSize - 2
+            font.pixelSize: Theme.fontSize - Theme.px(2)
             color: Theme.dimTextColor
         }
     }
@@ -101,7 +101,7 @@ DropdownMenu {
     MonthGrid {
         id: grid
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: 6 * 28
+        height: 6 * Theme.px(28)
         spacing: 0
         month: calendar.shown.getMonth()
         year: calendar.shown.getFullYear()
@@ -116,8 +116,8 @@ DropdownMenu {
 
             Rectangle {
                 anchors.centerIn: parent
-                width: 26
-                height: 26
+                width: Theme.px(26)
+                height: Theme.px(26)
                 radius: height / 2
                 color: Theme.accent
                 visible: day.isToday
@@ -127,7 +127,7 @@ DropdownMenu {
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: Theme.textOffset
                 text: day.model.day
-                font.pixelSize: Theme.fontSize - 1
+                font.pixelSize: Theme.fontSize - Theme.px(1)
                 color: day.isToday ? Theme.background
                     : day.model.month === grid.month ? Theme.textColor : Theme.dimTextColor
             }

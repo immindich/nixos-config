@@ -32,15 +32,15 @@ PanelWindow {
 
     screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
     anchors.bottom: true
-    margins.bottom: 80
+    margins.bottom: Theme.px(80)
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     // Empty input region: clicks go to whatever is underneath
     mask: Region {}
 
     visible: bubble.opacity > 0
-    implicitWidth: 260
-    implicitHeight: Theme.bubbleHeight + 12
+    implicitWidth: Theme.px(260)
+    implicitHeight: Theme.bubbleHeight + Theme.px(12)
     color: "transparent"
 
     Timer { running: true; interval: 1000; onTriggered: osd.armed = true }
@@ -68,9 +68,9 @@ PanelWindow {
         Text {
             id: icon
             anchors.left: parent.left
-            anchors.leftMargin: 16
+            anchors.leftMargin: Theme.px(16)
             anchors.verticalCenter: parent.verticalCenter
-            width: 18
+            width: Theme.px(18)
             horizontalAlignment: Text.AlignHCenter
             readonly property int percent: Math.round(osd.level * 100)
             text: osd.kind === "brightness" ? "\uf185" // sun
@@ -80,7 +80,7 @@ PanelWindow {
                 : "\uf028"                             // volume-high
             font.family: Theme.iconFont
             font.weight: Font.Black
-            font.pixelSize: Theme.iconSize + 2
+            font.pixelSize: Theme.iconSize + Theme.px(2)
             color: osd.muted ? Theme.dimTextColor : Theme.textColor
         }
 
@@ -88,11 +88,11 @@ PanelWindow {
         Rectangle {
             id: track
             anchors.left: icon.right
-            anchors.leftMargin: 12
+            anchors.leftMargin: Theme.px(12)
             anchors.right: value.left
-            anchors.rightMargin: 12
+            anchors.rightMargin: Theme.px(12)
             anchors.verticalCenter: parent.verticalCenter
-            height: 6
+            height: Theme.px(6)
             radius: height / 2
             color: Theme.surface
 
@@ -109,10 +109,10 @@ PanelWindow {
         Text {
             id: value
             anchors.right: parent.right
-            anchors.rightMargin: 16
+            anchors.rightMargin: Theme.px(16)
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: Theme.textOffset
-            width: 36
+            width: Theme.px(36)
             horizontalAlignment: Text.AlignRight
             text: osd.muted ? "Muted" : Math.round(osd.level * 100) + "%"
             font.pixelSize: Theme.fontSize

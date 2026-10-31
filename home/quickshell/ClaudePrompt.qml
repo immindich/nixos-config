@@ -58,7 +58,7 @@ PanelWindow {
     // to hand the pointer back
     property bool mapped: false
     WlrLayershell.keyboardFocus: mapped ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
-    implicitWidth: 560
+    implicitWidth: Theme.px(560)
     implicitHeight: column.implicitHeight
     color: "transparent"
 
@@ -86,14 +86,14 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        radius: 14
+        radius: Theme.px(14)
         color: Theme.background
 
         Column {
             id: column
             width: parent.width
-            padding: 12
-            spacing: 8
+            padding: Theme.px(12)
+            spacing: Theme.px(8)
 
             Text {
                 text: "Ask Claude"
@@ -105,8 +105,8 @@ PanelWindow {
             Rectangle {
                 width: parent.width - parent.leftPadding - parent.rightPadding
                 // Grows with the text up to ten lines, then scrolls
-                height: Math.min(input.implicitHeight, input.font.pixelSize * 1.4 * 10) + 16
-                radius: 8
+                height: Math.min(input.implicitHeight, input.font.pixelSize * 1.4 * 10) + Theme.px(16)
+                radius: Theme.px(8)
                 color: Theme.surface
                 border.width: input.activeFocus ? 1 : 0
                 border.color: Theme.accent
@@ -114,9 +114,9 @@ PanelWindow {
                 Flickable {
                     id: flick
                     anchors.fill: parent
-                    anchors.margins: 8
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
+                    anchors.margins: Theme.px(8)
+                    anchors.leftMargin: Theme.px(10)
+                    anchors.rightMargin: Theme.px(10)
                     contentWidth: width
                     contentHeight: input.implicitHeight
                     clip: true
@@ -169,7 +169,7 @@ PanelWindow {
 
             Text {
                 text: "Enter to send · Shift+Enter for a new line"
-                font.pixelSize: Theme.fontSize - 2
+                font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
         }

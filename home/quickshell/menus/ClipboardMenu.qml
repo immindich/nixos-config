@@ -12,7 +12,7 @@ import qs
 KeyboardMenu {
     id: clipboardMenu
 
-    implicitWidth: 380
+    implicitWidth: Theme.px(380)
 
     // Image entries are decoded here for their thumbnails, once per login
     readonly property string thumbDir: Quickshell.env("XDG_RUNTIME_DIR") + "/cliphist-thumbs"
@@ -99,7 +99,7 @@ KeyboardMenu {
     // Heading with the Clear button
     Item {
         width: parent.width - parent.leftPadding - parent.rightPadding
-        implicitHeight: Math.max(heading.implicitHeight, 24)
+        implicitHeight: Math.max(heading.implicitHeight, Theme.px(24))
 
         MenuHeading {
             id: heading
@@ -111,8 +111,8 @@ KeyboardMenu {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             visible: clipboardMenu.entries.length > 0
-            width: clearLabel.implicitWidth + 20
-            height: 24
+            width: clearLabel.implicitWidth + Theme.px(20)
+            height: Theme.px(24)
             radius: height / 2
             color: clearHover.hovered ? Theme.highlight : Theme.surface
 
@@ -121,7 +121,7 @@ KeyboardMenu {
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: Theme.textOffset
                 text: "Clear"
-                font.pixelSize: Theme.fontSize - 2
+                font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.textColor
             }
 
@@ -133,15 +133,15 @@ KeyboardMenu {
     // Search field, as in the start menu
     Rectangle {
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: 30
-        radius: 8
+        height: Theme.px(30)
+        radius: Theme.px(8)
         color: Theme.surface
         border.width: searchInput.activeFocus ? 1 : 0
         border.color: Theme.accent
 
         Text {
             anchors.left: parent.left
-            anchors.leftMargin: 10
+            anchors.leftMargin: Theme.px(10)
             anchors.verticalCenter: parent.verticalCenter
             text: "\uf002" // magnifying-glass
             font.family: Theme.iconFont
@@ -153,8 +153,8 @@ KeyboardMenu {
         TextInput {
             id: searchInput
             anchors.fill: parent
-            anchors.leftMargin: 32
-            anchors.rightMargin: 10
+            anchors.leftMargin: Theme.px(32)
+            anchors.rightMargin: Theme.px(10)
             verticalAlignment: TextInput.AlignVCenter
             clip: true
             font.pixelSize: Theme.fontSize
@@ -191,7 +191,7 @@ KeyboardMenu {
         id: list
         visible: clipboardMenu.results.length > 0
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: Math.min(rows.implicitHeight, 400)
+        height: Math.min(rows.implicitHeight, Theme.px(400))
         contentHeight: rows.implicitHeight
         clip: true
         boundsBehavior: Flickable.StopAtBounds
@@ -213,7 +213,7 @@ KeyboardMenu {
         Column {
             id: rows
             width: list.width
-            spacing: 2
+            spacing: Theme.px(2)
 
             Repeater {
                 model: clipboardMenu.results
@@ -223,8 +223,8 @@ KeyboardMenu {
                     required property var modelData
                     required property int index
                     width: rows.width
-                    height: modelData.image ? 48 : 32
-                    radius: 8
+                    height: modelData.image ? Theme.px(48) : Theme.px(32)
+                    radius: Theme.px(8)
                     // Only while Enter would copy it
                     color: index === clipboardMenu.selected && searchInput.activeFocus ? Theme.highlight : "transparent"
 
@@ -242,15 +242,15 @@ KeyboardMenu {
                     Image {
                         id: thumb
                         anchors.left: parent.left
-                        anchors.leftMargin: 8
+                        anchors.leftMargin: Theme.px(8)
                         anchors.verticalCenter: parent.verticalCenter
                         visible: row.modelData.image
-                        width: 64
-                        height: 40
+                        width: Theme.px(64)
+                        height: Theme.px(40)
                         fillMode: Image.PreserveAspectFit
                         horizontalAlignment: Image.AlignLeft
                         // Decoded small; the originals can be large screenshots
-                        sourceSize: Qt.size(128, 80)
+                        sourceSize: Qt.size(Theme.px(128), Theme.px(80))
                         asynchronous: true
                         source: row.thumbReady ? "file://" + row.thumbPath : ""
                     }
@@ -259,7 +259,7 @@ KeyboardMenu {
                     Text {
                         id: imageIcon
                         anchors.left: parent.left
-                        anchors.leftMargin: 10
+                        anchors.leftMargin: Theme.px(10)
                         anchors.verticalCenter: parent.verticalCenter
                         visible: row.modelData.image && thumb.status !== Image.Ready
                         text: "\uf03e" // image
@@ -271,9 +271,9 @@ KeyboardMenu {
 
                     Text {
                         anchors.left: parent.left
-                        anchors.leftMargin: row.modelData.image ? 8 + thumb.width + 10 : 10
+                        anchors.leftMargin: row.modelData.image ? Theme.px(8) + thumb.width + Theme.px(10) : Theme.px(10)
                         anchors.right: deleteButton.left
-                        anchors.rightMargin: 4
+                        anchors.rightMargin: Theme.px(4)
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.verticalCenterOffset: Theme.textOffset
                         text: row.modelData.label
@@ -287,11 +287,11 @@ KeyboardMenu {
                     Rectangle {
                         id: deleteButton
                         anchors.right: parent.right
-                        anchors.rightMargin: 6
+                        anchors.rightMargin: Theme.px(6)
                         anchors.verticalCenter: parent.verticalCenter
                         visible: rowHover.hovered
-                        width: 20
-                        height: 20
+                        width: Theme.px(20)
+                        height: Theme.px(20)
                         radius: width / 2
                         color: deleteHover.hovered ? Theme.surface : "transparent"
 
@@ -300,7 +300,7 @@ KeyboardMenu {
                             text: "\uf00d" // xmark
                             font.family: Theme.iconFont
                             font.weight: Font.Black
-                            font.pixelSize: Theme.iconSize - 2
+                            font.pixelSize: Theme.iconSize - Theme.px(2)
                             color: Theme.dimTextColor
                         }
 

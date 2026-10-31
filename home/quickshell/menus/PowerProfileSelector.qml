@@ -7,12 +7,12 @@ import qs
 // Sized to fill a DropdownMenu's width.
 Column {
     width: parent.width - parent.leftPadding - parent.rightPadding
-    spacing: 6
+    spacing: Theme.px(6)
 
     Row {
         id: buttons
         width: parent.width
-        spacing: 4
+        spacing: Theme.px(4)
 
         Repeater {
             model: [
@@ -29,8 +29,8 @@ Column {
                     || PowerProfiles.hasPerformanceProfile
 
                 width: (buttons.width - buttons.spacing * 2) / 3
-                height: 48
-                radius: 8
+                height: Theme.px(48)
+                radius: Theme.px(8)
                 color: selected ? Theme.accent : hover.hovered && available ? Theme.highlight : Theme.surface
                 opacity: available ? 1 : 0.5
 
@@ -38,7 +38,7 @@ Column {
 
                 Column {
                     anchors.centerIn: parent
-                    spacing: 2
+                    spacing: Theme.px(2)
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -52,7 +52,7 @@ Column {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: button.modelData.label
-                        font.pixelSize: Theme.fontSize - 2
+                        font.pixelSize: Theme.fontSize - Theme.px(2)
                         color: button.selected ? Theme.background : Theme.textColor
                     }
                 }
@@ -71,7 +71,7 @@ Column {
         visible: PowerProfiles.degradationReason !== PerformanceDegradationReason.None
         width: parent.width
         wrapMode: Text.Wrap
-        font.pixelSize: Theme.fontSize - 2
+        font.pixelSize: Theme.fontSize - Theme.px(2)
         color: Theme.dimTextColor
         text: "Performance limited: "
             + (PowerProfiles.degradationReason === PerformanceDegradationReason.LapDetected ? "lap detected"
