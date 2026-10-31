@@ -31,6 +31,11 @@ Singleton {
     // Text is centered including descenders, which makes it look too high
     readonly property int textOffset: px(1)
 
+    // Screen edge the bar sits on: "top" or "bottom". Menus, tooltips and
+    // the workspace window list open toward the middle of the screen.
+    readonly property string barPosition: "top"
+    readonly property bool barOnBottom: barPosition === "bottom"
+
     // Sizes
     readonly property int bubbleHeight: px(26)
     // Gap between bubbles and screen edges; same as Hyprland's gaps_out, so

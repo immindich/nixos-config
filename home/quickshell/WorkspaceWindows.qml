@@ -77,17 +77,17 @@ PopupWindow {
         onTriggered: popup.visible = false
     }
 
-    // Hang below the bar, centered on the circle, like DropdownMenu. The
+    // Hang off the bar, centered on the circle, like DropdownMenu. The
     // circle is only known once hovered, so the rect is set when the anchor
     // is about to be used rather than bound (a binding made while the item
     // was still null would never pick it up).
     anchor.rect.width: Theme.px(1)
     anchor.rect.height: Theme.px(1)
     anchor.edges: Edges.Top | Edges.Left
-    anchor.gravity: Edges.Bottom | Edges.Right
+    anchor.gravity: (Theme.barOnBottom ? Edges.Top : Edges.Bottom) | Edges.Right
     anchor.onAnchoring: {
         anchor.rect.x = (anchor.item.width - implicitWidth) / 2
-        anchor.rect.y = anchor.item.height + Theme.px(8)
+        anchor.rect.y = Theme.barOnBottom ? -Theme.px(8) : anchor.item.height + Theme.px(8)
     }
 
     // As wide as the longest title, up to a limit; longer ones are elided

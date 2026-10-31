@@ -31,19 +31,21 @@ ShellRoot {
         screen: modelData
 
         anchors {
-          top: true
+          top: !Theme.barOnBottom
+          bottom: Theme.barOnBottom
           left: true
           right: true
         }
 
         implicitHeight: Theme.barHeight
-        // Reserve space only down to the bubbles; Hyprland's gaps_out supplies
-        // the gap below them, so it matches the gaps between windows
+        // Reserve space only up to the bubbles; Hyprland's gaps_out supplies
+        // the gap between them and the windows, so it matches the gaps
+        // between windows
         exclusiveZone: Theme.barHeight - Theme.barMargin
         color: "transparent"
 
         // Over a fullscreen window the bar slides out of sight, leaving a
-        // strip along the top edge; pushing the pointer into it brings the
+        // strip along the screen edge; pushing the pointer into it brings the
         // bar back, drawn over the window, until the pointer leaves again
         readonly property HyprlandMonitor monitor:
           Hyprland.monitors.values.find(m => m.name === modelData.name) ?? null
@@ -76,6 +78,7 @@ ShellRoot {
           id: hotEdgeItem
           width: parent.width
           height: Theme.px(2)
+          y: Theme.barOnBottom ? parent.height - height : 0
         }
 
         onFullscreenChanged: revealed = false
@@ -116,7 +119,7 @@ ShellRoot {
           id: content
           width: parent.width
           height: parent.height
-          y: bar.hidden ? -height : 0
+          y: bar.hidden ? (Theme.barOnBottom ? height : -height) : 0
 
           Behavior on y { NumberAnimation { duration: Theme.animationDuration; easing.type: Easing.OutCubic } }
 

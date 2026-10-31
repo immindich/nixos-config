@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import qs
 
-// Popup that opens below `anchor.item`, styled like the bar's bubbles.
+// Popup that opens below `anchor.item` (above it with the bar at the bottom), styled like the bar's bubbles.
 // Children are stacked vertically. Menus that take keyboard input use
 // KeyboardMenu instead. Clicking outside the menu or right-clicking
 // inside it closes it, and opening a menu closes any other open one.
@@ -12,22 +12,22 @@ PopupWindow {
 
     default property alias content: column.data
 
-    // Hang below the bar, centered on the anchor item; slides back on screen
-    // if it would go past the edge
+    // Hang below the bar (or stand above it), centered on the anchor item;
+    // slides back on screen if it would go past the edge
     anchor.rect.x: anchor.item ? (anchor.item.width - width) / 2 : 0
-    anchor.rect.y: anchor.item ? anchor.item.height + Theme.px(8) : 0
+    anchor.rect.y: anchor.item ? (Theme.barOnBottom ? -Theme.px(8) : anchor.item.height + Theme.px(8)) : 0
     anchor.rect.width: Theme.px(1)
     anchor.rect.height: Theme.px(1)
     anchor.edges: Edges.Top | Edges.Left
-    anchor.gravity: Edges.Bottom | Edges.Right
+    anchor.gravity: (Theme.barOnBottom ? Edges.Top : Edges.Bottom) | Edges.Right
 
     implicitWidth: Theme.px(280)
     implicitHeight: column.implicitHeight // includes the column's padding
     color: "transparent"
 
-    // Tallest the content can be before the menu runs off the bottom of the
-    // screen, for menus that scroll a long list. The menu hangs just below
-    // the bar and keeps the bar's margin from the bottom edge.
+    // Tallest the content can be before the menu runs off the far edge of
+    // the screen, for menus that scroll a long list. The menu hangs just off
+    // the bar and keeps the bar's margin from the far edge.
     readonly property int maxContentHeight: (anchor.item?.QsWindow.window?.screen?.height ?? 0)
         - Theme.barHeight - Theme.barMargin - 2 * column.padding
 

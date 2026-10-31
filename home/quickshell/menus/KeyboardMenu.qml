@@ -8,7 +8,7 @@ import qs
 // It's a layer surface rather than a popup: a popup only gets the keyboard
 // through a popup grab, which Wayland refuses until the shell has received
 // input, so a menu opened by a keybind right after login wouldn't open.
-// Looks and behaves like DropdownMenu: it hangs below `anchor.item`,
+// Looks and behaves like DropdownMenu: it hangs off `anchor.item`,
 // clicking outside or right-clicking inside closes it, and opening it closes
 // any other open menu.
 PanelWindow {
@@ -33,14 +33,20 @@ PanelWindow {
         const item = anchor.item
         if (!item)
             return
-        const pos = item.mapToItem(null, (item.width - implicitWidth) / 2, item.height + Theme.px(8))
+        const pos = item.mapToItem(null, (item.width - implicitWidth) / 2,
+            Theme.barOnBottom ? -Theme.px(8) : item.height + Theme.px(8))
         // Kept off the screen edges by the bar's own margin
         margins.left = Math.max(Theme.barMargin, Math.min(pos.x, (screen?.width ?? 0) - implicitWidth - Theme.barMargin))
-        margins.top = pos.y
+        // pos is in the bar window, which sits against the bar's screen edge
+        if (Theme.barOnBottom)
+            margins.bottom = item.QsWindow.window.height - pos.y
+        else
+            margins.top = pos.y
     }
 
     screen: anchor.item?.QsWindow.window?.screen ?? null
-    anchors.top: true
+    anchors.top: !Theme.barOnBottom
+    anchors.bottom: Theme.barOnBottom
     anchors.left: true
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
