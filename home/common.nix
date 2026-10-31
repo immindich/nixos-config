@@ -153,4 +153,45 @@ in {
       commandLineArgs = "--password-store=gnome-libsecret";
     };
   };
+
+  # mimeapps.list is a read-only store link, so apps can't make themselves
+  # the default; change defaults here instead.
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications =
+      let
+        firefox = "firefox.desktop";
+        gwenview = "org.kde.gwenview.desktop";
+      in
+      {
+        "inode/directory" = "org.kde.dolphin.desktop";
+
+        "x-scheme-handler/http" = firefox;
+        "x-scheme-handler/https" = firefox;
+        "x-scheme-handler/chrome" = firefox;
+        "text/html" = firefox;
+        "application/xhtml+xml" = firefox;
+        "application/x-extension-htm" = firefox;
+        "application/x-extension-html" = firefox;
+        "application/x-extension-shtml" = firefox;
+        "application/x-extension-xhtml" = firefox;
+        "application/x-extension-xht" = firefox;
+
+        "x-scheme-handler/claude" = "com.anthropic.Claude.desktop";
+        "x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
+      }
+      // lib.genAttrs [
+        "image/avif"
+        "image/bmp"
+        "image/gif"
+        "image/heif"
+        "image/jpeg"
+        "image/jxl"
+        "image/png"
+        "image/svg+xml"
+        "image/tiff"
+        "image/webp"
+        "image/x-ico"
+      ] (_: gwenview);
+  };
 }
