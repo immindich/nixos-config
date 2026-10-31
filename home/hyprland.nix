@@ -404,8 +404,13 @@ in
           float = true;
         }
         {
+          # Only the main window: the quick entry popup is floating and has to
+          # open where it can be seen
           name = "claude-desktop-magic";
-          match.class = "com.anthropic.Claude";
+          match = {
+            class = "com.anthropic.Claude";
+            float = false;
+          };
           workspace = "special:magic silent";
         }
         {
