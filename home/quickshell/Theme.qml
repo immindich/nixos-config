@@ -33,8 +33,8 @@ Singleton {
 
     // Screen edge the bar sits on: "top" or "bottom". Menus, tooltips and
     // the workspace window list open toward the middle of the screen.
-    // Hyprland reads this too, for the gaps around a lone window
-    // (home/hyprland.nix), so run `hyprctl reload` after changing it.
+    // Hyprland reads this and solidBar too, for the gaps around a lone
+    // window (home/hyprland.nix), so run `hyprctl reload` after changing them.
     readonly property string barPosition: "top"
     readonly property bool barOnBottom: barPosition === "bottom"
     // Fill the whole bar behind the bubbles instead of leaving the wallpaper

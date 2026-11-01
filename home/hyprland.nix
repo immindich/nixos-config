@@ -447,21 +447,24 @@ in
       }) (lib.range 1 5) ++ [
         {
           # With a single tiled window, drop the outer gaps, except on the
-          # bar's edge: the bar only reserves space down to its bubbles and
-          # relies on the gap to keep windows off them. The edge is read from
-          # the bar's Theme.qml when the config loads, so after changing
-          # barPosition run `hyprctl reload`.
+          # bar's edge when the bar is transparent: it only reserves space
+          # down to its bubbles and relies on the gap to keep windows off
+          # them. A solid bar reserves all of itself, so the window meets it
+          # flush. barPosition and solidBar are read from the bar's Theme.qml
+          # when the config loads, so run `hyprctl reload` after changing them.
           workspace = "w[tv1]";
           gaps_in = 0;
           gaps_out = inline ''
             (function()
               local f = io.open(os.getenv("HOME") .. "/.config/quickshell/Theme.qml")
-              local onBottom = f ~= nil and f:read("a"):match('barPosition:%s*"(%a+)"') == "bottom"
+              local theme = f and f:read("a") or ""
               if f then f:close() end
+              local onBottom = theme:match('barPosition:%s*"(%a+)"') == "bottom"
+              local gap = theme:match("solidBar:%s*(%a+)") == "true" and 0 or ${toString gapsOut}
               return {
-                top = onBottom and 0 or ${toString gapsOut},
+                top = onBottom and 0 or gap,
                 right = 0,
-                bottom = onBottom and ${toString gapsOut} or 0,
+                bottom = onBottom and gap or 0,
                 left = 0,
               }
             end)()
