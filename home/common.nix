@@ -89,8 +89,10 @@ in {
     # qmlls, the QML language server Emacs uses for the bar's QML. Same Qt
     # build as Quickshell, so it reads the module info Quickshell generates.
     pkgs.qt6.qtdeclarative
-    # Nix language server; Eglot runs it in nix-mode by default.
-    pkgs.nil
+    # Nix language server for nix-mode; Eglot is pointed at it in init.el
+    # with the flake's nixpkgs and option sets, so it completes packages
+    # and NixOS and home-manager options.
+    pkgs.nixd
     # Icon theme for the bar's app icons; selected in shell.qml
     pkgs.papirus-icon-theme
     # Breeze Dark colours as a system-wide kdeglobals. KDE apps merge it under
@@ -111,8 +113,6 @@ in {
       kill $! 2>/dev/null
     '')
     pkgs.nodejs
-    pkgs.nixd
-    pkgs.nil
   ];
 
   home.file.".npmrc".text = ''

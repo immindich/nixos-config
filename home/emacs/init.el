@@ -32,8 +32,19 @@
   (agent-shell-anthropic-default-session-mode-id "auto")
   (agent-shell-chat-mode-enabled nil))
 
+;; nixd evaluates this flake, so it completes `pkgs.` and NixOS and
+;; home-manager options with docs. It sees the flake as git does: a new
+;; file has to be `git add`ed before options from it show up.
 (use-package nix-mode
-  :hook (nix-mode . eglot-ensure))
+  :hook (nix-mode . eglot-ensure)
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs '(nix-mode "nixd"))
+    (let ((flake "(builtins.getFlake \"/home/isaiah/nixos-config\")"))
+      (setq-default eglot-workspace-configuration
+                    `(:nixd (:nixpkgs (:expr ,(concat "import " flake ".inputs.nixpkgs { }"))
+                             :options (:nixos (:expr ,(concat flake ".nixosConfigurations.laptop.options"))
+                                       :home-manager (:expr ,(concat flake ".nixosConfigurations.laptop.options.home-manager.users.type.getSubOptions []")))))))))
 
 ;; Flymake only runs its checkers, Eglot's included, in trusted files.
 (setq trusted-content '("~/nixos-config/"))
