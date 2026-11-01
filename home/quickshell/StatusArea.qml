@@ -66,10 +66,7 @@ Rectangle {
         color: !lit ? "transparent"
             : style === "pill" ? Theme.highlight
             : style === "filled" ? Theme.accent
-            : style === "tab" ? Theme.menuColor
             : "transparent"
-        border.width: lit && style === "ring" ? 1 : 0
-        border.color: Theme.accent
         readonly property color fgColor: !lit ? contentColor
             : style === "filled" ? Theme.background
             : style === "accent" ? Theme.accent
@@ -77,13 +74,31 @@ Rectangle {
 
         Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
 
-        // Tab: the pill runs on through the bar into the menu below it
+        // Tab: a browser-style tab from the bubble's edge to the bar's edge,
+        // joined to the menu below it
         Rectangle {
             visible: indicator.lit && indicator.style === "tab"
-            width: parent.width
-            height: Theme.barHeight / 2
-            y: Theme.barOnBottom ? parent.height / 2 - height : parent.height / 2
+            x: -Theme.px(3)
+            width: parent.width + 2 * Theme.px(3)
+            height: Theme.barHeight - Theme.barMargin
+            y: Theme.barOnBottom ? parent.height / 2 + Theme.bubbleHeight / 2 - height : parent.height / 2 - Theme.bubbleHeight / 2
+            radius: Theme.px(8)
+            topLeftRadius: Theme.barOnBottom ? 0 : radius
+            topRightRadius: Theme.barOnBottom ? 0 : radius
+            bottomLeftRadius: Theme.barOnBottom ? radius : 0
+            bottomRightRadius: Theme.barOnBottom ? radius : 0
             color: Theme.menuColor
+            border.width: Theme.menuBorder
+            border.color: Theme.borderColor
+
+            // No outline where it meets the menu
+            Rectangle {
+                x: Theme.menuBorder
+                width: parent.width - 2 * Theme.menuBorder
+                height: Theme.menuBorder
+                y: Theme.barOnBottom ? 0 : parent.height - height
+                color: parent.color
+            }
         }
 
         Row {

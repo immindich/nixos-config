@@ -46,7 +46,10 @@ PopupWindow {
         if (Theme.menuStyle === "flush")
             edge = Theme.barOnBottom ? pos.y - Theme.px(8) : pos.y + item.height + Theme.px(8)
         else {
-            const inset = Theme.menuStyle === "float" || Theme.menuStyle === "caret" ? Theme.menuGap : 0
+            // With bubbles instead of a solid bar, the bar window's edge is
+            // already a margin below them; a caret still needs room to reach
+            const inset = Theme.menuStyle === "float" || Theme.menuStyle === "caret"
+                ? (Theme.solidBar ? Theme.menuGap : Theme.menuStyle === "caret" ? Theme.px(2) : 0) : 0
             edge = Theme.barOnBottom ? -inset : Theme.barHeight + inset
         }
         const room = frame.pad + frame.caretSize

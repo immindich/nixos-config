@@ -78,17 +78,28 @@ Item {
         }
     }
 
-    // Drop shadow, drawn under the panel
-    MultiEffect {
-        visible: Theme.menuShadow
-        source: panel
-        anchors.fill: panel
+    // Drop shadow, drawn under the panel. A drawer's shadow stops at the bar.
+    Item {
         z: -1
-        shadowEnabled: true
-        shadowBlur: 1
-        shadowColor: "black"
-        shadowOpacity: 0.7
-        shadowVerticalOffset: (Theme.barOnBottom ? -1 : 1) * Theme.px(4)
+        clip: frame.squareTop
+        x: 0
+        width: frame.width
+        y: frame.squareTop && !Theme.barOnBottom ? panel.y : 0
+        height: frame.squareTop && Theme.barOnBottom ? panel.y + panel.height : frame.height - y
+
+        MultiEffect {
+            visible: Theme.menuShadow
+            source: panel
+            x: panel.x
+            y: panel.y - parent.y
+            width: panel.width
+            height: panel.height
+            shadowEnabled: true
+            shadowBlur: 1
+            shadowColor: "black"
+            shadowOpacity: 0.7
+            shadowVerticalOffset: (Theme.barOnBottom ? -1 : 1) * Theme.px(4)
+        }
     }
 
     // Caret pointing at the indicator: a rotated square centered on the

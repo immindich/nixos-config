@@ -31,7 +31,7 @@ Singleton {
     readonly property string menuStyle: "flush"
     readonly property int menuGap: px(8)       // gap below the bar for float and caret
     // Indicator with its menu open: "pill" (as before), "filled" (accent
-    // pill, dark glyph), "accent" (glyph in accent), "underline", "ring", "tab"
+    // pill, dark glyph), "accent" (glyph in accent), "underline", "tab"
     readonly property string activeStyle: "pill"
     // ---- end knobs ----
 
