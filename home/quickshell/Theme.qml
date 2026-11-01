@@ -2,43 +2,73 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import "schemes"
 
-// Shared look of the bar. Colors are Tokyo Night, as used by ashell.
+// Shared look of the bar. The colours come from the scheme named in
+// `scheme`; everything else about the look is an option below. The options
+// aren't readonly so ThemeTweaker (SUPER+SHIFT+T) can try them live; a
+// reload brings back the values here.
 Singleton {
-    // Colors
-    readonly property color background: "#1a1b26"   // bubbles; text on light pills
-    readonly property color surface: "#24273a"      // empty workspaces
-    readonly property color highlight: "#292e42"    // indicator with open menu
-    readonly property color textColor: "#a9b1d6"
-    readonly property color dimTextColor: "#565f89" // disconnected network
-    readonly property color accent: "#7aa2f7"       // active workspace
-    readonly property color occupied: "#6181c6"     // workspaces with windows
-    readonly property color good: "#9ece6a"         // charging battery
-    readonly property color bad: "#f7768e"          // low battery, privacy
+    // Colour scheme: the name of one of the files in schemes/
+    property string scheme: "Flexoki"
+    readonly property list<Scheme> schemes: [
+        AyuMirage {}, CatppuccinMocha {}, Everforest {}, Flexoki {}, Graphite {},
+        GruvboxMaterial {}, Horizon {}, KanagawaDragon {}, KanagawaWave {}, Melange {},
+        MonokaiPro {}, Nord {}, Oxocarbon {}, RosePine {}, SolarizedDark {}, TokyoNight {},
+        TomorrowNight {}, Zenburn {}
+    ]
+    readonly property Scheme colors: {
+        const found = schemes.find(s => s.name === scheme)
+        if (!found)
+            console.warn("Theme: no colour scheme named", scheme)
+        return found ?? schemes[0]
+    }
 
-    // ---- design knobs (prototype; see shell-theme-ideas) ----
-    // Popup surface and its outline
-    readonly property color menuColor: background
-    readonly property color borderColor: "#3b4261"
-    readonly property int menuBorder: 0        // outline width in device-independent px (0 = none)
-    readonly property bool menuShadow: false
-    readonly property real menuOpacity: 1
-    readonly property bool menuAccentEdge: false // accent stripe along the edge that faces the bar
-    // How a menu hangs off the bar: "flush" (as before), "float" (a bar
-    // margin below the bar), "caret" (floats with a beak at the indicator),
-    // "drawer" (flush, square top corners), "tab" (drawer joined to the
-    // indicator through the bar)
-    readonly property string menuStyle: "flush"
-    readonly property int menuGap: px(8)       // gap below the bar for float and caret
-    // Indicator with its menu open: "pill" (as before), "filled" (accent
-    // pill, dark glyph), "accent" (glyph in accent), "underline", "tab"
-    readonly property string activeStyle: "pill"
-    // ---- end knobs ----
+    // Colours (see schemes/Scheme.qml for what each is used for)
+    readonly property color background: colors.background
+    readonly property color surface: colors.surface
+    readonly property color highlight: colors.highlight
+    readonly property color textColor: colors.textColor
+    readonly property color dimTextColor: colors.dimTextColor
+    readonly property color accent: colors.accent
+    readonly property color occupied: colors.occupied
+    readonly property color good: colors.good
+    readonly property color bad: colors.bad
+    readonly property color menuColor: colors.menuColor
+    readonly property color borderColor: colors.borderColor
+
+    // How a menu hangs off the bar:
+    //   "float"  a menuGap below the bar
+    //   "caret"  floats, with a beak pointing at its indicator
+    //   "drawer" flush with the bar, square corners where they meet (needs
+    //            the solid bar; with bubbles it floats instead)
+    //   "tab"    a drawer joined to its indicator by a tab through the bar
+    //   "flush"  hangs just off the indicator, rounded (the original look)
+    property string menuStyle: "drawer"
+    // Gap between the bar and a floating menu; same as the bar's margin by
+    // default, so it doesn't scale
+    property int menuGap: barMargin
+    // Outline around menus, tooltips, notifications and the OSD, in
+    // device-independent pixels (0 for none), in borderColor
+    property int menuBorder: 1
+    property bool menuShadow: false
+    // Below 1 the menus show what's behind them, blurred by Hyprland (the
+    // layer rules in home/hyprland.nix)
+    property real menuOpacity: 1
+    // Accent stripe along the edge of a menu that faces the bar
+    property bool menuAccentEdge: false
+    // How an indicator shows that its menu is open:
+    //   "accent"    glyph in the accent colour
+    //   "filled"    accent pill with a dark glyph, like the active workspace
+    //   "underline" accent stroke under the glyph
+    //   "pill"      lighter pill behind the glyph (the original look)
+    //   "tab"       tab in the menu's colour, for menuStyle "tab"
+    property string activeStyle: "accent"
 
     // Size of the whole shell. Change this number to make everything bigger
     // or smaller: every other size (icons, bubbles, menus, popups) scales
     // with it. 14 is the size everything was designed at.
-    readonly property int fontSize: 14
+    property int fontSize: 14
     readonly property real uiScale: fontSize / 14
     // A size given as it is at fontSize 14, in whole pixels at the current scale
     function px(n: real): int { return Math.round(n * uiScale) }
@@ -54,11 +84,11 @@ Singleton {
     // the workspace window list open toward the middle of the screen.
     // The bar passes this and solidBar on to Hyprland, for the gaps around
     // a lone window (sendBarGap in shell.qml).
-    readonly property string barPosition: "top"
+    property string barPosition: "top"
     readonly property bool barOnBottom: barPosition === "bottom"
     // Fill the whole bar behind the bubbles instead of leaving the wallpaper
     // showing between them, in barColor
-    readonly property bool solidBar: false
+    property bool solidBar: false
     readonly property color barColor: background
 
     // Sizes
