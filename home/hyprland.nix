@@ -429,7 +429,7 @@ in
           workspace = "special:vm silent";
         }
         {
-          # A lone tiled window fills the screen (see the w[tv1] workspace rule)
+          # A lone tiled window fills the screen (see set_bar_gap below)
           name = "single-window-no-border";
           match = {
             float = false;
@@ -444,33 +444,33 @@ in
       workspace_rule = map (i: {
         workspace = toString i;
         persistent = true;
-      }) (lib.range 1 5) ++ [
-        {
-          # With a single tiled window, drop the outer gaps, except on the
-          # bar's edge when the bar is transparent: it only reserves space
-          # down to its bubbles and relies on the gap to keep windows off
-          # them. A solid bar reserves all of itself, so the window meets it
-          # flush. barPosition and solidBar are read from the bar's Theme.qml
-          # when the config loads, so run `hyprctl reload` after changing them.
-          workspace = "w[tv1]";
-          gaps_in = 0;
-          gaps_out = inline ''
-            (function()
-              local f = io.open(os.getenv("HOME") .. "/.config/quickshell/Theme.qml")
-              local theme = f and f:read("a") or ""
-              if f then f:close() end
-              local onBottom = theme:match('barPosition:%s*"(%a+)"') == "bottom"
-              local gap = theme:match("solidBar:%s*(%a+)") == "true" and 0 or ${toString gapsOut}
-              return {
-                top = onBottom and 0 or gap,
-                right = 0,
-                bottom = onBottom and gap or 0,
-                left = 0,
-              }
-            end)()
-          '';
-        }
-      ];
+      }) (lib.range 1 5);
     };
+
+    # With a single tiled window (w[tv1]), drop the outer gaps, except on the
+    # bar's edge when the bar is transparent: it only reserves space down to
+    # its bubbles and relies on the gap to keep windows off them. A solid bar
+    # reserves all of itself, so the window meets it flush. The bar
+    # (home/quickshell/shell.qml) calls set_bar_gap with its Theme.qml
+    # settings when it loads and after every config reload; the call below
+    # is the default until it does. Registering the rule again replaces it.
+    extraConfig = ''
+      function set_bar_gap(edge, solid)
+        local gap = solid and 0 or ${toString gapsOut}
+        hl.workspace_rule({
+          workspace = "w[tv1]",
+          gaps_in = 0,
+          gaps_out = {
+            top = edge == "top" and gap or 0,
+            right = 0,
+            bottom = edge == "bottom" and gap or 0,
+            left = 0,
+          },
+        })
+        -- So the bar can pass this call straight to Hyprland.dispatch()
+        return hl.dsp.no_op()
+      end
+      set_bar_gap("top", false)
+    '';
   };
 }

@@ -9,6 +9,25 @@ import QtQuick.Effects
 import qs.menus
 
 ShellRoot {
+  id: root
+
+  // Tell Hyprland which edge the bar is on and whether it's solid, for the
+  // gaps around a lone tiled window (set_bar_gap in home/hyprland.nix). Sent
+  // when the shell loads, which includes every save of Theme.qml, and again
+  // whenever Hyprland reloads its config, which resets the rule to its
+  // defaults.
+  function sendBarGap() {
+    Hyprland.dispatch(`set_bar_gap(${JSON.stringify(Theme.barPosition)}, ${Theme.solidBar})`)
+  }
+  Component.onCompleted: sendBarGap()
+  Connections {
+    target: Hyprland
+    function onRawEvent(event) {
+      if (event.name === "configreloaded")
+        root.sendBarGap()
+    }
+  }
+
   // One wallpaper per screen
   Variants {
     model: Quickshell.screens
