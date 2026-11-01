@@ -192,10 +192,11 @@ Rectangle {
             extraVisible: !muted
             extra: Row {
                 spacing: Theme.px(1)
-                Icon { text: "\uf026" } // volume-off (bare speaker)
+                Icon { text: "\uf026"; color: volume.fgColor } // volume-off (bare speaker)
                 VolumeArcs {
                     anchors.verticalCenter: parent.verticalCenter
                     level: volume.audio?.volume ?? 0
+                    color: volume.fgColor
                 }
             }
 
@@ -256,6 +257,7 @@ Rectangle {
             extra: WifiSignal {
                 strength: network.wifiNetwork?.signalStrength ?? 0
                 connecting: network.connecting && !network.wifi
+                color: network.fgColor
             }
         }
 
@@ -291,13 +293,13 @@ Rectangle {
                 Icon {
                     visible: IdleInhibit.enabled
                     text: "\uf7b6" // mug-hot
-                    color: power.contentColor
+                    color: power.fgColor
                 }
                 BatteryGauge {
                     anchors.verticalCenter: parent.verticalCenter
                     level: power.battery.percentage
                     charging: power.charging
-                    color: power.contentColor
+                    color: power.fgColor
                 }
             }
         }
