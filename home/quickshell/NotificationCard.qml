@@ -76,13 +76,25 @@ Rectangle {
             Text {
                 anchors.left: parent.left
                 anchors.leftMargin: Theme.px(24)
-                anchors.right: closeButton.left
+                anchors.right: age.left
                 anchors.rightMargin: Theme.px(8)
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: Theme.textOffset
                 elide: Text.ElideRight
                 text: card.notification.appName
                 textFormat: Text.PlainText
+                font.pixelSize: Theme.fontSize - Theme.px(2)
+                color: Theme.dimTextColor
+            }
+
+            // How long ago it arrived
+            Text {
+                id: age
+                anchors.right: closeButton.left
+                anchors.rightMargin: Theme.px(8)
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: Theme.textOffset
+                text: Notifications.age(card.notification)
                 font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
