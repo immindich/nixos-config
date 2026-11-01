@@ -12,7 +12,7 @@ DropdownMenu {
     readonly property var adapter: Bluetooth.defaultAdapter
 
     // Wider than the default to fit name, battery level and button on one line
-    implicitWidth: Theme.px(320)
+    menuWidth: Theme.px(320)
 
     Item {
         width: parent.width - parent.leftPadding - parent.rightPadding

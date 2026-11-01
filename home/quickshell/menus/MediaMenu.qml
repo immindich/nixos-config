@@ -12,7 +12,7 @@ DropdownMenu {
     readonly property bool hasProgress: player !== null && player.lengthSupported
         && player.positionSupported && player.length > 0
 
-    implicitWidth: Theme.px(320)
+    menuWidth: Theme.px(320)
 
     // "1:05" or "1:02:33"
     function formatTime(seconds) {

@@ -16,6 +16,25 @@ Singleton {
     readonly property color good: "#9ece6a"         // charging battery
     readonly property color bad: "#f7768e"          // low battery, privacy
 
+    // ---- design knobs (prototype; see shell-theme-ideas) ----
+    // Popup surface and its outline
+    readonly property color menuColor: background
+    readonly property color borderColor: "#3b4261"
+    readonly property int menuBorder: 0        // outline width in device-independent px (0 = none)
+    readonly property bool menuShadow: false
+    readonly property real menuOpacity: 1
+    readonly property bool menuAccentEdge: false // accent stripe along the edge that faces the bar
+    // How a menu hangs off the bar: "flush" (as before), "float" (a bar
+    // margin below the bar), "caret" (floats with a beak at the indicator),
+    // "drawer" (flush, square top corners), "tab" (drawer joined to the
+    // indicator through the bar)
+    readonly property string menuStyle: "flush"
+    readonly property int menuGap: px(8)       // gap below the bar for float and caret
+    // Indicator with its menu open: "pill" (as before), "filled" (accent
+    // pill, dark glyph), "accent" (glyph in accent), "underline", "ring", "tab"
+    readonly property string activeStyle: "pill"
+    // ---- end knobs ----
+
     // Size of the whole shell. Change this number to make everything bigger
     // or smaller: every other size (icons, bubbles, menus, popups) scales
     // with it. 14 is the size everything was designed at.

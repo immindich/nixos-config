@@ -12,7 +12,7 @@ import qs
 // Set `anchor.item` to the button.
 KeyboardMenu {
     id: sessionMenu
-    implicitWidth: Theme.px(300)
+    menuWidth: Theme.px(300)
 
     // Action awaiting confirmation, or null while showing the buttons
     property var pending: null

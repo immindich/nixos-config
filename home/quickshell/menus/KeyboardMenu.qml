@@ -14,7 +14,9 @@ import qs
 PanelWindow {
     id: menu
 
-    default property alias content: column.data
+    default property alias content: frame.content
+    // Width of the panel; the window spans the bar
+    property int menuWidth: Theme.px(280)
 
     // Same interface as PopupWindow's anchor, which DropdownMenu uses, so
     // MenuState and the bar can treat both alike. Only `item` is used.
@@ -28,26 +30,38 @@ PanelWindow {
     }
 
     // Positioned when opened, since an item's position in its window isn't a
-    // property bindings can follow
+    // property bindings can follow. Same placement as DropdownMenu.place(),
+    // but the window spans the bar's width and the frame is moved inside it.
     function place() {
         const item = anchor.item
         if (!item)
             return
-        const pos = item.mapToItem(null, (item.width - implicitWidth) / 2,
-            Theme.barOnBottom ? -Theme.px(8) : item.height + Theme.px(8))
-        // Kept off the screen edges by the bar's own margin
-        margins.left = Math.max(Theme.barMargin, Math.min(pos.x, (screen?.width ?? 0) - implicitWidth - Theme.barMargin))
+        const win = item.QsWindow.window
+        const pos = item.mapToItem(null, 0, 0)
+        const want = pos.x + (item.width - menuWidth) / 2
+        const x = Math.max(Theme.barMargin, Math.min(want, win.width - menuWidth - Theme.barMargin))
+        frame.caretOffset = want - x
+        frame.x = x - frame.pad
+        let edge
+        if (Theme.menuStyle === "flush")
+            edge = Theme.barOnBottom ? pos.y - Theme.px(8) : pos.y + item.height + Theme.px(8)
+        else {
+            const inset = Theme.menuStyle === "float" || Theme.menuStyle === "caret" ? Theme.menuGap : 0
+            edge = Theme.barOnBottom ? -inset : Theme.barHeight + inset
+        }
+        const room = frame.pad + frame.caretSize
         // pos is in the bar window, which sits against the bar's screen edge
         if (Theme.barOnBottom)
-            margins.bottom = item.QsWindow.window.height - pos.y
+            margins.bottom = win.height - (edge + room)
         else
-            margins.top = pos.y
+            margins.top = edge - room
     }
 
     screen: anchor.item?.QsWindow.window?.screen ?? null
     anchors.top: !Theme.barOnBottom
     anchors.bottom: Theme.barOnBottom
     anchors.left: true
+    anchors.right: true
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell-menu"
@@ -60,9 +74,10 @@ PanelWindow {
     WlrLayershell.keyboardFocus: mapped ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
 
     visible: false
-    implicitWidth: Theme.px(280)
-    implicitHeight: column.implicitHeight // includes the column's padding
+    implicitHeight: frame.implicitHeight
     color: "transparent"
+    // Only the panel takes input; clicks beside it go through
+    mask: Region { item: frame.panel }
 
     onVisibleChanged: {
         if (visible) {
@@ -114,26 +129,10 @@ PanelWindow {
         }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        radius: Theme.px(12)
-        color: Theme.background
-
-        // Right-clicking anywhere on the menu closes it. Entries only handle
-        // the left button, so the press falls through to here.
-        TapHandler {
-            acceptedButtons: Qt.RightButton
-            onTapped: menu.visible = false
-        }
-
-        Column {
-            id: column
-            anchors.fill: parent
-            padding: Theme.px(12)
-            spacing: Theme.px(8)
-
-            // Reached from any focused child that doesn't handle Escape itself
-            Keys.onEscapePressed: menu.visible = false
-        }
+    MenuFrame {
+        id: frame
+        width: menu.menuWidth + 2 * pad
+        height: implicitHeight
+        onCloseRequested: menu.visible = false
     }
 }

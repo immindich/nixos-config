@@ -5,7 +5,7 @@ import qs
 // Notification history with a do-not-disturb switch and "Clear all", opened
 // from the bell indicator. Set `anchor.item` to the indicator.
 DropdownMenu {
-    implicitWidth: Theme.px(380)
+    menuWidth: Theme.px(380)
 
     Item {
         width: parent.width - parent.leftPadding - parent.rightPadding

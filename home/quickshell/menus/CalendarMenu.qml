@@ -12,7 +12,7 @@ DropdownMenu {
     // First day of the month on display
     property date shown: new Date()
 
-    implicitWidth: Theme.px(280)
+    menuWidth: Theme.px(280)
 
     function reset() {
         shown = new Date(today.getFullYear(), today.getMonth(), 1)

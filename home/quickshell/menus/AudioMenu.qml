@@ -12,7 +12,7 @@ DropdownMenu {
     property int tab: 0
 
     // Wider than the default to leave room for longer device names
-    implicitWidth: Theme.px(320)
+    menuWidth: Theme.px(320)
 
     onVisibleChanged: if (visible) tab = 0
 

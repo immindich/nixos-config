@@ -58,10 +58,33 @@ Rectangle {
         implicitWidth: content.implicitWidth + Theme.px(12)
         implicitHeight: Theme.workspaceSize
         radius: height / 2
-        color: menu?.visible || active ? Theme.highlight : "transparent"
         anchors.verticalCenter: parent.verticalCenter
 
+        // How the pill shows its menu being open follows Theme.activeStyle
+        readonly property bool lit: (menu?.visible ?? false) || active
+        readonly property string style: Theme.activeStyle
+        color: !lit ? "transparent"
+            : style === "pill" ? Theme.highlight
+            : style === "filled" ? Theme.accent
+            : style === "tab" ? Theme.menuColor
+            : "transparent"
+        border.width: lit && style === "ring" ? 1 : 0
+        border.color: Theme.accent
+        readonly property color fgColor: !lit ? contentColor
+            : style === "filled" ? Theme.background
+            : style === "accent" ? Theme.accent
+            : contentColor
+
         Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
+
+        // Tab: the pill runs on through the bar into the menu below it
+        Rectangle {
+            visible: indicator.lit && indicator.style === "tab"
+            width: parent.width
+            height: Theme.barHeight / 2
+            y: Theme.barOnBottom ? parent.height / 2 - height : parent.height / 2
+            color: Theme.menuColor
+        }
 
         Row {
             id: content
@@ -73,8 +96,19 @@ Rectangle {
                 sourceComponent: indicator.extra
                 visible: indicator.extraVisible
             }
-            Icon { id: icon; color: indicator.contentColor; visible: text !== "" }
-            Label { id: label; color: indicator.contentColor; visible: text !== "" }
+            Icon { id: icon; color: indicator.fgColor; visible: text !== "" }
+            Label { id: label; color: indicator.fgColor; visible: text !== "" }
+        }
+
+        // Underline: an accent stroke along the edge facing the menu
+        Rectangle {
+            visible: indicator.lit && indicator.style === "underline"
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Theme.barOnBottom ? 0 : parent.height - height
+            width: content.width
+            height: Theme.px(2)
+            radius: height / 2
+            color: Theme.accent
         }
 
         HoverHandler { id: hover }

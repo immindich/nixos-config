@@ -12,7 +12,7 @@ import qs
 KeyboardMenu {
     id: clipboardMenu
 
-    implicitWidth: Theme.px(380)
+    menuWidth: Theme.px(380)
 
     // Image entries are decoded here for their thumbnails, once per login
     readonly property string thumbDir: Quickshell.env("XDG_RUNTIME_DIR") + "/cliphist-thumbs"

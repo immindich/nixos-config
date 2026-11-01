@@ -167,9 +167,34 @@ ShellRoot {
               width: Theme.workspaceSize
               height: Theme.workspaceSize
               radius: height / 2
-              color: sessionMenu.visible ? Theme.highlight : "transparent"
+              readonly property string style: Theme.activeStyle
+              color: !sessionMenu.visible ? "transparent"
+                : style === "pill" ? Theme.highlight
+                : style === "filled" ? Theme.accent
+                : style === "tab" ? Theme.menuColor
+                : "transparent"
+              border.width: sessionMenu.visible && style === "ring" ? 1 : 0
+              border.color: Theme.accent
 
               Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
+
+              // Tab: runs on through the bar into the menu (see StatusArea)
+              Rectangle {
+                visible: sessionMenu.visible && sessionButton.style === "tab"
+                width: parent.width
+                height: Theme.barHeight / 2
+                y: Theme.barOnBottom ? parent.height / 2 - height : parent.height / 2
+                color: Theme.menuColor
+              }
+              Rectangle {
+                visible: sessionMenu.visible && sessionButton.style === "underline"
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: Theme.barOnBottom ? 0 : parent.height - height
+                width: parent.width - Theme.px(6)
+                height: Theme.px(2)
+                radius: height / 2
+                color: Theme.accent
+              }
 
               // The white logo, recolored to match the other bar icons
               IconImage {
@@ -180,7 +205,10 @@ ShellRoot {
                 layer.enabled: true
                 layer.effect: MultiEffect {
                   colorization: 1
-                  colorizationColor: Theme.textColor
+                  colorizationColor: !sessionMenu.visible ? Theme.textColor
+                    : sessionButton.style === "filled" ? Theme.background
+                    : sessionButton.style === "accent" ? Theme.accent
+                    : Theme.textColor
                 }
               }
 
