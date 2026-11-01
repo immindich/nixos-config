@@ -45,13 +45,8 @@ PanelWindow {
         let edge
         if (Theme.menuStyle === "flush")
             edge = Theme.barOnBottom ? pos.y - Theme.px(8) : pos.y + item.height + Theme.px(8)
-        else {
-            // With bubbles instead of a solid bar, the bar window's edge is
-            // already a margin below them; a caret still needs room to reach
-            const inset = Theme.menuStyle === "float" || Theme.menuStyle === "caret"
-                ? (Theme.solidBar ? Theme.menuGap : Theme.menuStyle === "caret" ? Theme.px(2) : 0) : 0
-            edge = Theme.barOnBottom ? -inset : Theme.barHeight + inset
-        }
+        else
+            edge = Theme.barOnBottom ? -frame.barInset : Theme.barHeight + frame.barInset
         const room = frame.pad + frame.caretSize
         // pos is in the bar window, which sits against the bar's screen edge
         if (Theme.barOnBottom)

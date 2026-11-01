@@ -39,7 +39,9 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: height / 2
-        color: Theme.background
+        color: Theme.menuColor
+        border.width: Theme.menuBorder
+        border.color: Theme.borderColor
 
         Text {
             id: label

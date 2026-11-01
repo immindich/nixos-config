@@ -60,7 +60,9 @@ PanelWindow {
         id: bubble
         anchors.fill: parent
         radius: height / 2
-        color: Theme.background
+        color: Theme.menuColor
+        border.width: Theme.menuBorder
+        border.color: Theme.borderColor
         opacity: osd.shown ? 1 : 0
 
         Behavior on opacity { NumberAnimation { duration: Theme.animationDuration } }

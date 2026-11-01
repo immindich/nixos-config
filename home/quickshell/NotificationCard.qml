@@ -17,9 +17,11 @@ Rectangle {
 
     implicitHeight: content.implicitHeight + Theme.px(24)
     radius: Theme.px(12)
-    color: Theme.background
-    border.width: notification.urgency === NotificationUrgency.Critical ? 1 : 0
-    border.color: Theme.bad
+    color: Theme.menuColor
+    // Outlined in red when critical
+    readonly property bool critical: notification.urgency === NotificationUrgency.Critical
+    border.width: critical ? Math.max(1, Theme.menuBorder) : Theme.menuBorder
+    border.color: critical ? Theme.bad : Theme.borderColor
 
     // Left click: default action; middle click: dismiss
     TapHandler {

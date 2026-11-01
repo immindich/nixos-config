@@ -101,7 +101,9 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: Theme.px(12)
-        color: Theme.background
+        color: Theme.menuColor
+        border.width: Theme.menuBorder
+        border.color: Theme.borderColor
 
         ColumnLayout {
             id: list

@@ -35,9 +35,9 @@ Rectangle {
     }
 
     // Icon followed by a value, e.g. "🔈 23%", in a pill. Clicking anywhere on
-    // the pill toggles `menu` if set, otherwise emits `clicked()`. The pill is
-    // highlighted while the menu is open or `active` is true.
-    component Indicator: Rectangle {
+    // the pill toggles `menu` if set, otherwise emits `clicked()`. The pill
+    // marks the menu being open (or `active`) as Theme.activeStyle asks.
+    component Indicator: IndicatorPill {
         id: indicator
         property alias icon: icon.text
         property alias iconFont: icon.font.family // Theme.brandIconFont for brand glyphs
@@ -48,7 +48,6 @@ Rectangle {
         // parent reads as hidden itself, which would keep it hidden for good.
         property Component extra: null
         property bool extraVisible: false
-        property color contentColor: Theme.textColor
         property QtObject menu: null // DropdownMenu or KeyboardMenu
         property bool active: false
         // Shown on hover while the menu is closed
@@ -57,49 +56,9 @@ Rectangle {
 
         implicitWidth: content.implicitWidth + Theme.px(12)
         implicitHeight: Theme.workspaceSize
-        radius: height / 2
         anchors.verticalCenter: parent.verticalCenter
-
-        // How the pill shows its menu being open follows Theme.activeStyle
-        readonly property bool lit: (menu?.visible ?? false) || active
-        readonly property string style: Theme.activeStyle
-        color: !lit ? "transparent"
-            : style === "pill" ? Theme.highlight
-            : style === "filled" ? Theme.accent
-            : "transparent"
-        readonly property color fgColor: !lit ? contentColor
-            : style === "filled" ? Theme.background
-            : style === "accent" ? Theme.accent
-            : contentColor
-
-        Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
-
-        // Tab: a browser-style tab from the bubble's edge to the bar's edge,
-        // joined to the menu below it
-        Rectangle {
-            visible: indicator.lit && indicator.style === "tab"
-            x: -Theme.px(3)
-            width: parent.width + 2 * Theme.px(3)
-            height: Theme.barHeight - Theme.barMargin
-            y: Theme.barOnBottom ? parent.height / 2 + Theme.bubbleHeight / 2 - height : parent.height / 2 - Theme.bubbleHeight / 2
-            radius: Theme.px(8)
-            topLeftRadius: Theme.barOnBottom ? 0 : radius
-            topRightRadius: Theme.barOnBottom ? 0 : radius
-            bottomLeftRadius: Theme.barOnBottom ? radius : 0
-            bottomRightRadius: Theme.barOnBottom ? radius : 0
-            color: Theme.menuColor
-            border.width: Theme.menuBorder
-            border.color: Theme.borderColor
-
-            // No outline where it meets the menu
-            Rectangle {
-                x: Theme.menuBorder
-                width: parent.width - 2 * Theme.menuBorder
-                height: Theme.menuBorder
-                y: Theme.barOnBottom ? 0 : parent.height - height
-                color: parent.color
-            }
-        }
+        lit: (menu?.visible ?? false) || active
+        underlineWidth: content.width
 
         Row {
             id: content
@@ -113,17 +72,6 @@ Rectangle {
             }
             Icon { id: icon; color: indicator.fgColor; visible: text !== "" }
             Label { id: label; color: indicator.fgColor; visible: text !== "" }
-        }
-
-        // Underline: an accent stroke along the edge facing the menu
-        Rectangle {
-            visible: indicator.lit && indicator.style === "underline"
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: Theme.barOnBottom ? 0 : parent.height - height
-            width: content.width
-            height: Theme.px(2)
-            radius: height / 2
-            color: Theme.accent
         }
 
         HoverHandler { id: hover }

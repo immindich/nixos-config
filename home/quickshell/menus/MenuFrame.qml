@@ -19,7 +19,20 @@ Item {
 
     readonly property int pad: Theme.menuShadow ? Theme.px(20) : 0
     readonly property int caretSize: Theme.menuStyle === "caret" ? Theme.px(8) : 0
-    readonly property bool squareTop: Theme.menuStyle === "drawer" || Theme.menuStyle === "tab"
+    // A drawer needs the solid bar to sit flush against; with bubbles it floats
+    readonly property bool squareTop: (Theme.menuStyle === "drawer" && Theme.solidBar) || Theme.menuStyle === "tab"
+    // Distance from the bar's edge to the panel. With bubbles instead of a
+    // solid bar, the bar window's edge is already a margin below them, so
+    // only a caret needs a little room there.
+    readonly property int barInset: Theme.solidBar
+        ? (Theme.menuStyle === "float" || Theme.menuStyle === "caret" ? Theme.menuGap : 0)
+        : (Theme.menuStyle === "caret" ? Theme.px(2) : 0)
+    // The caret stays clear of the panel's rounded corners, so it can't quite
+    // reach an indicator at the screen's edge
+    readonly property real caretShift: {
+        const reach = panel.width / 2 - panel.radius - caretSize
+        return Math.max(-reach, Math.min(reach, caretOffset))
+    }
     readonly property int panelWidth: width - 2 * pad
     readonly property int panelHeight: column.implicitHeight
 
@@ -110,7 +123,7 @@ Item {
         clip: true
         readonly property int size: frame.caretSize
         readonly property real border: Theme.menuBorder * Math.SQRT2
-        x: panel.x + panel.width / 2 + frame.caretOffset - width / 2
+        x: panel.x + panel.width / 2 + frame.caretShift - width / 2
         width: 2 * (size + border) + Theme.px(4)
         height: size + Theme.menuBorder
         y: Theme.barOnBottom ? panel.y + panel.height - Theme.menuBorder : panel.y - size

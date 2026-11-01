@@ -13,13 +13,18 @@ ShellRoot {
 
   // Tell Hyprland which edge the bar is on and whether it's solid, for the
   // gaps around a lone tiled window (set_bar_gap in home/hyprland.nix). Sent
-  // when the shell loads, which includes every save of Theme.qml, and again
-  // whenever Hyprland reloads its config, which resets the rule to its
-  // defaults.
+  // when the shell loads, which includes every save of Theme.qml, when
+  // either setting changes at runtime (ThemeTweaker), and again whenever
+  // Hyprland reloads its config, which resets the rule to its defaults.
   function sendBarGap() {
     Hyprland.dispatch(`set_bar_gap(${JSON.stringify(Theme.barPosition)}, ${Theme.solidBar})`)
   }
   Component.onCompleted: sendBarGap()
+  Connections {
+    target: Theme
+    function onBarPositionChanged() { root.sendBarGap() }
+    function onSolidBarChanged() { root.sendBarGap() }
+  }
   Connections {
     target: Hyprland
     function onRawEvent(event) {
@@ -161,53 +166,13 @@ ShellRoot {
             radius: height / 2
             color: Theme.background
 
-            Rectangle {
+            IndicatorPill {
               id: sessionButton
               anchors.centerIn: parent
               width: Theme.workspaceSize
               height: Theme.workspaceSize
-              radius: height / 2
-              readonly property string style: Theme.activeStyle
-              color: !sessionMenu.visible ? "transparent"
-                : style === "pill" ? Theme.highlight
-                : style === "filled" ? Theme.accent
-                : "transparent"
-
-              Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
-
-              // Tab joined to the menu (see StatusArea)
-              Rectangle {
-                visible: sessionMenu.visible && sessionButton.style === "tab"
-                x: -Theme.px(3)
-                width: parent.width + 2 * Theme.px(3)
-                height: Theme.barHeight - Theme.barMargin
-                y: Theme.barOnBottom ? parent.height / 2 + Theme.bubbleHeight / 2 - height : parent.height / 2 - Theme.bubbleHeight / 2
-                radius: Theme.px(8)
-                topLeftRadius: Theme.barOnBottom ? 0 : radius
-                topRightRadius: Theme.barOnBottom ? 0 : radius
-                bottomLeftRadius: Theme.barOnBottom ? radius : 0
-                bottomRightRadius: Theme.barOnBottom ? radius : 0
-                color: Theme.menuColor
-                border.width: Theme.menuBorder
-                border.color: Theme.borderColor
-
-                Rectangle {
-                  x: Theme.menuBorder
-                  width: parent.width - 2 * Theme.menuBorder
-                  height: Theme.menuBorder
-                  y: Theme.barOnBottom ? 0 : parent.height - height
-                  color: parent.color
-                }
-              }
-              Rectangle {
-                visible: sessionMenu.visible && sessionButton.style === "underline"
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: Theme.barOnBottom ? 0 : parent.height - height
-                width: parent.width - Theme.px(6)
-                height: Theme.px(2)
-                radius: height / 2
-                color: Theme.accent
-              }
+              lit: sessionMenu.visible
+              underlineWidth: width - Theme.px(6)
 
               // The white logo, recolored to match the other bar icons
               IconImage {
@@ -218,10 +183,7 @@ ShellRoot {
                 layer.enabled: true
                 layer.effect: MultiEffect {
                   colorization: 1
-                  colorizationColor: !sessionMenu.visible ? Theme.textColor
-                    : sessionButton.style === "filled" ? Theme.background
-                    : sessionButton.style === "accent" ? Theme.accent
-                    : Theme.textColor
+                  colorizationColor: sessionButton.fgColor
                 }
               }
 

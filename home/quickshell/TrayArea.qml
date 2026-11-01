@@ -24,17 +24,14 @@ Rectangle {
         Repeater {
             model: SystemTray.items
 
-            // Pill like StatusArea's indicators, highlighted while its menu is open
-            Rectangle {
+            // Pill like StatusArea's indicators, marked while its menu is open
+            IndicatorPill {
                 id: trayItem
                 required property var modelData
 
                 implicitWidth: Theme.workspaceSize + Theme.px(8)
                 implicitHeight: Theme.workspaceSize
-                radius: height / 2
-                color: menu.visible ? Theme.highlight : "transparent"
-
-                Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
+                lit: menu.visible
 
                 IconImage {
                     anchors.centerIn: parent
