@@ -261,4 +261,7 @@ ShellRoot {
 
   // Prompt that starts a Claude Desktop chat, on the focused screen (no bind for now)
   ClaudePrompt {}
+
+  // SUPER+SHIFT+T: try colour schemes and look options live
+  ThemeTweaker {}
 }

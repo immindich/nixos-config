@@ -250,6 +250,8 @@ in
         # Off for now: the deep link only fills in Claude's message box, where
         # the app's own quick entry (CTRL+ALT+space) sends the message.
         # (bind "${mainMod} + A" (shellShortcut "claude-prompt"))
+        # Try colour schemes and look options live (ThemeTweaker.qml)
+        (bind "${mainMod} + SHIFT + T" (shellShortcut "theme-tweaker"))
         (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
         (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
         (bind "Print" (exec (lib.getExe screenshot)))
