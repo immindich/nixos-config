@@ -87,7 +87,7 @@ Row {
         readonly property bool empty: ws === null || ws.toplevels.values.length === 0
         readonly property bool fullscreen: ws !== null && ws.id > switcher.fullscreenBase
 
-        width: active ? 2 * height : special ? height : Math.max(height, label.implicitWidth + Theme.px(12))
+        width: special ? height : Math.max(height, label.implicitWidth + Theme.px(12))
         height: Theme.workspaceSize
         radius: height / 2
         color: active ? Theme.accent : empty ? Theme.surface : Theme.occupied
