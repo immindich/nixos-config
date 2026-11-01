@@ -8,11 +8,25 @@ let
   # Gap between windows and the screen edges; the bar's Theme.barMargin matches it
   gapsOut = 6;
 
-  # Drag to select a region; saves to ~/screenshots and copies to the clipboard.
-  # Does nothing if a selection is already in progress.
+  # Posts a notification showing the screenshot in $file, with an "Open
+  # folder" button that shows it in the file manager. notify-send waits for
+  # the button until the notification closes, so this runs in the background.
+  # (notify-send's -i also lands in the image-path hint, so there's no
+  # separate app icon.)
+  screenshotNotify = lib.trim ''
+    (
+      if [ "$(notify-send -a Screenshot -h "string:image-path:$file" \
+          -A "folder=Open folder" "Screenshot saved" "Copied to the clipboard")" = folder ]; then
+        ${fileManager} --select "$file"
+      fi
+    )
+  '';
+
+  # Drag to select a region; saves to ~/screenshots, copies to the clipboard
+  # and shows a notification. Does nothing if a selection is already in progress.
   screenshot = pkgs.writeShellApplication {
     name = "screenshot-region";
-    runtimeInputs = [ pkgs.grim pkgs.slurp pkgs.wl-clipboard pkgs.util-linux ];
+    runtimeInputs = [ pkgs.grim pkgs.slurp pkgs.wl-clipboard pkgs.util-linux pkgs.libnotify ];
     text = ''
       exec 9>"$XDG_RUNTIME_DIR/screenshot-region.lock"
       flock -n 9 || exit 0
@@ -21,16 +35,19 @@ let
       file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
       region=$(slurp) || exit 0
       grim -g "$region" "$file"
-      # wl-copy stays running to serve the clipboard; don't let it hold the lock
+      # wl-copy stays running to serve the clipboard, and the notification
+      # waits for its button; don't let either hold the lock
       wl-copy --type image/png < "$file" 9>&-
+      ${screenshotNotify} 9>&- &
     '';
   };
 
   # Capture the focused window via the compositor (works even if it's partly
-  # covered); saves to ~/screenshots, copies to the clipboard, plays a sound.
+  # covered); saves to ~/screenshots, copies to the clipboard, plays a sound
+  # and shows a notification.
   screenshotWindow = pkgs.writeShellApplication {
     name = "screenshot-window";
-    runtimeInputs = [ pkgs.grim pkgs.jq pkgs.wl-clipboard pkgs.pipewire ];
+    runtimeInputs = [ pkgs.grim pkgs.jq pkgs.wl-clipboard pkgs.pipewire pkgs.libnotify ];
     text = ''
       id=$(hyprctl activewindow -j | jq -r '.stableId // empty')
       [ -n "$id" ] || exit 0
@@ -40,6 +57,7 @@ let
       grim -T "$id" "$file"
       pw-play ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/screen-capture.oga &
       wl-copy --type image/png < "$file"
+      ${screenshotNotify} &
     '';
   };
 

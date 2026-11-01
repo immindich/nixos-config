@@ -147,14 +147,27 @@ Rectangle {
             color: Theme.textColor
         }
 
-        // e.g. a profile picture
+        // A profile picture stays small; a wide image (a screenshot
+        // thumbnail) may take the card's width. Sized to the scaled image
+        // itself so it sits at the left.
         Image {
+            id: image
+            readonly property bool wide: implicitWidth > implicitHeight * 1.5
+            readonly property int maxWidth: wide ? parent.width : Theme.px(64)
+            readonly property int maxHeight: wide ? Theme.px(120) : Theme.px(64)
+            readonly property real scale: implicitWidth > 0 && implicitHeight > 0
+                ? Math.min(1, maxWidth / implicitWidth, maxHeight / implicitHeight) : 1
             visible: card.notification.image !== "" && status === Image.Ready
-            source: card.notification.image
-            fillMode: Image.PreserveAspectFit
-            width: Math.min(implicitWidth, Theme.px(64))
-            height: Math.min(implicitHeight, Theme.px(64))
-            sourceSize.height: Theme.px(128)
+            // An image-path hint with an absolute path arrives as
+            // image://icon//path, which the icon provider can't load
+            source: {
+                const img = card.notification.image
+                const prefix = "image://icon/"
+                return img.startsWith(prefix + "/") ? "file://" + img.slice(prefix.length) : img
+            }
+            width: Math.round(implicitWidth * scale)
+            height: Math.round(implicitHeight * scale)
+            sourceSize.height: Theme.px(240)
         }
 
         Flow {
