@@ -149,7 +149,12 @@ in
         };
 
         animations.enabled = true;
-        binds.movefocus_cycles_groupfirst = true;
+        binds = {
+          # Switching workspace (keys, bar, scroll) also closes an open
+          # special workspace instead of leaving it over the new one
+          hide_special_on_workspace_change = true;
+          movefocus_cycles_groupfirst = true;
+        };
         dwindle.preserve_split = true;
         master.new_status = "master";
         scrolling.fullscreen_on_one_column = true;
