@@ -142,8 +142,10 @@ in
           };
           blur = {
             enabled = true;
-            size = 3;
-            passes = 1;
+            # Strong enough to frost the bar's menus when Theme.menuOpacity
+            # is below 1 (see the layer rules)
+            size = 8;
+            passes = 3;
             vibrancy = 0.1696;
           };
         };
@@ -464,6 +466,16 @@ in
           rounding = 0;
         }
       ];
+
+      # Blur what shows through the bar's menus when Theme.menuOpacity is
+      # below 1: the layer surfaces themselves (the bar and the keyboard
+      # menus) and the popups hanging off them. No effect while they're opaque.
+      layer_rule = map (namespace: {
+        match.namespace = namespace;
+        blur = true;
+        blur_popups = true;
+        ignore_alpha = 0.2;
+      }) [ "quickshell" "quickshell-menu" ];
 
       # Keep 1-5 around when empty, so the workspace swipe can reach them
       workspace_rule = map (i: {
