@@ -5,10 +5,18 @@
 
   programs.claude-desktop = {
     enable = true;
-    package = pkgs.claude-desktop.override {
+    # Electron only picks the libsecret backend for desktops it recognises;
+    # under Hyprland its safeStorage falls back to basic_text, so OAuth tokens
+    # and the device key don't persist and the app keeps asking to sign in.
+    package = (pkgs.claude-desktop.override {
       libpipewire = pkgs.pipewire;
       qemu-cowork = pkgs.qemu_kvm;
-    };
+    }).overrideAttrs (old: {
+      postFixup = old.postFixup + ''
+        wrapProgramShell "$out/bin/claude-desktop" \
+          --add-flags "--password-store=gnome-libsecret"
+      '';
+    });
     cowork = {
       enable = true;
       users = [ "isaiah" ];
