@@ -25,17 +25,24 @@ let
   '';
 
   # Drag to select a region; saves to ~/screenshots, copies to the clipboard
-  # and shows a notification. Does nothing if a selection is already in progress.
+  # and shows a notification. Running it again while a selection is in
+  # progress cancels the selection.
   screenshot = pkgs.writeShellApplication {
     name = "screenshot-region";
     runtimeInputs = [ pkgs.grim pkgs.slurp pkgs.wl-clipboard pkgs.util-linux pkgs.libnotify ];
     text = ''
+      pidfile="$XDG_RUNTIME_DIR/screenshot-region.pid"
       exec 9>"$XDG_RUNTIME_DIR/screenshot-region.lock"
-      flock -n 9 || exit 0
+      if ! flock -n 9; then
+        pid=$(cat "$pidfile" 2>/dev/null) || exit 0
+        kill "$pid" 2>/dev/null || true
+        exit 0
+      fi
       dir="$HOME/screenshots"
       mkdir -p "$dir"
       file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
-      region=$(slurp) || exit 0
+      region=$(slurp & echo $! > "$pidfile"; wait $!) || { rm -f "$pidfile"; exit 0; }
+      rm -f "$pidfile"
       grim -g "$region" "$file"
       # wl-copy stays running to serve the clipboard, and the notification
       # waits for its button; don't let either hold the lock
