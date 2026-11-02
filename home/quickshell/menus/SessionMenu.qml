@@ -6,16 +6,16 @@ import Quickshell.Widgets
 import qs
 
 // Start menu, opened from the NixOS button: an application search field
-// (type, pick with Up/Down, launch with Enter) above a row of lock, sleep,
-// power and exit Hyprland buttons. All but lock open a second step with
-// the choices behind them (sleep or hibernate, restart or shut down) or a
-// confirmation. Tab cycles between the search field and the buttons.
+// (type, pick with Up/Down, launch with Enter) above two rows of session
+// buttons: lock, sleep and hibernate, then shut down, restart and log out,
+// which ask for confirmation first. Tab cycles between the search field and
+// the buttons.
 // Set `anchor.item` to the button.
 KeyboardMenu {
     id: sessionMenu
     menuWidth: Theme.px(300)
 
-    // Action whose choices are showing, or null while showing the buttons
+    // Action awaiting confirmation, or null while showing the buttons
     property var pending: null
     // Button that set `pending`, to give focus back to on Cancel
     property Item pendingButton: null
@@ -30,23 +30,20 @@ KeyboardMenu {
             searchInput.forceActiveFocus()
     }
 
-    // An action with `choices` shows `prompt` and a button per choice
-    // instead of running a command; `danger` draws a choice in Theme.bad
-    readonly property var actions: [
-        { icon: "\uf023", label: "Lock", command: "loginctl lock-session" }, // lock
-        { icon: "\uf186", label: "Sleep", prompt: "Sleep or hibernate?", choices: [ // moon
-            { label: "Sleep", command: "systemctl suspend" },
-            { label: "Hibernate", command: "systemctl hibernate" },
-        ] },
-        { icon: "\uf011", label: "Power", prompt: "Restart or shut down?", choices: [ // power-off
-            { label: "Restart", command: "systemctl reboot", danger: true },
-            { label: "Shut down", command: "systemctl poweroff", danger: true },
-        ] },
-        { icon: "\uf2f5", label: "Exit Hyprland", prompt: "Exit Hyprland?", choices: [ // right-from-bracket
+    // Pausing the session on top, ending it below
+    readonly property var actionRows: [
+        [
+            { icon: "\uf023", label: "Lock", command: "loginctl lock-session", confirm: false }, // lock
+            { icon: "\uf186", label: "Sleep", command: "systemctl suspend", confirm: false }, // moon
+            { icon: "\uf2dc", label: "Hibernate", command: "systemctl hibernate", confirm: false }, // snowflake
+        ],
+        [
+            { icon: "\uf011", label: "Shut down", command: "systemctl poweroff", confirm: true }, // power-off
+            { icon: "\uf2f9", label: "Restart", command: "systemctl reboot", confirm: true }, // rotate-right
             // Same as the SUPER+M bind
-            { label: "Exit", danger: true,
+            { icon: "\uf2f5", label: "Log out", confirm: true, // right-from-bracket
               command: "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'" },
-        ] },
+        ],
     ]
 
     // Applications matching the search, best first: names starting with the
@@ -103,19 +100,20 @@ KeyboardMenu {
         })
     }
 
-    // Rounded button with an optional Font Awesome icon before its label;
-    // content is left-aligned unless `centered`. Reachable with Tab and
-    // pressed with Enter or Space.
+    // Rounded button with an optional Font Awesome icon before its label, or
+    // above it if `stacked`; content is left-aligned unless `centered`.
+    // Reachable with Tab and pressed with Enter or Space.
     component MenuButton: Rectangle {
         id: button
         property alias icon: iconText.text
         property alias text: labelText.text
         property color contentColor: Theme.textColor
         property bool centered: false
+        property bool stacked: false
         signal clicked()
 
-        implicitHeight: Theme.px(28)
-        radius: height / 2
+        implicitHeight: stacked ? Theme.px(52) : Theme.px(28)
+        radius: stacked ? Theme.px(12) : height / 2
         color: hover.hovered ? Theme.highlight : Theme.surface
         border.width: activeFocus ? 1 : 0
         border.color: Theme.accent
@@ -125,19 +123,22 @@ KeyboardMenu {
         Keys.onEnterPressed: button.clicked()
         Keys.onSpacePressed: button.clicked()
 
-        Row {
+        Grid {
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: button.centered ? parent.horizontalCenter : undefined
             anchors.left: button.centered ? undefined : parent.left
             anchors.leftMargin: Theme.px(12)
-            spacing: Theme.px(10)
+            columns: button.stacked ? 1 : 2
+            columnSpacing: Theme.px(10)
+            rowSpacing: Theme.px(6)
+            horizontalItemAlignment: Grid.AlignHCenter
+            verticalItemAlignment: Grid.AlignVCenter
 
             Text {
                 id: iconText
                 visible: text !== ""
                 width: Theme.px(16)
                 horizontalAlignment: Text.AlignHCenter
-                anchors.verticalCenter: parent.verticalCenter
                 font.family: Theme.iconFont
                 font.weight: Font.Black
                 font.pixelSize: Theme.iconSize
@@ -147,8 +148,7 @@ KeyboardMenu {
             Text {
                 id: labelText
                 visible: text !== ""
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.verticalCenterOffset: Theme.textOffset
+                transform: Translate { y: Theme.textOffset }
                 font.pixelSize: Theme.fontSize
                 color: button.contentColor
             }
@@ -251,30 +251,38 @@ KeyboardMenu {
     }
 
     // Session buttons
-    Row {
-        visible: sessionMenu.pending === null
-        width: parent.width - parent.leftPadding - parent.rightPadding
-        spacing: Theme.px(8)
+    Repeater {
+        model: sessionMenu.actionRows
 
-        Repeater {
-            model: sessionMenu.actions
+        Row {
+            id: actionRow
+            required property var modelData
+            visible: sessionMenu.pending === null
+            width: parent.width - parent.leftPadding - parent.rightPadding
+            spacing: Theme.px(8)
 
-            MenuButton {
-                id: actionButton
-                required property var modelData
-                width: (parent.width - 3 * parent.spacing) / 4
-                icon: modelData.icon
-                centered: true
-                onClicked: {
-                    if (modelData.choices) {
-                        // This button is about to hide; keep keyboard focus in the menu
-                        const hadFocus = activeFocus
-                        sessionMenu.pendingButton = actionButton
-                        sessionMenu.pending = modelData
-                        if (hadFocus)
-                            cancelButton.forceActiveFocus()
-                    } else {
-                        sessionMenu.run(modelData)
+            Repeater {
+                model: actionRow.modelData
+
+                MenuButton {
+                    id: actionButton
+                    required property var modelData
+                    width: (actionRow.width - (actionRow.modelData.length - 1) * actionRow.spacing) / actionRow.modelData.length
+                    icon: modelData.icon
+                    text: modelData.label
+                    centered: true
+                    stacked: true
+                    onClicked: {
+                        if (modelData.confirm) {
+                            // This button is about to hide; keep keyboard focus in the menu
+                            const hadFocus = activeFocus
+                            sessionMenu.pendingButton = actionButton
+                            sessionMenu.pending = modelData
+                            if (hadFocus)
+                                cancelButton.forceActiveFocus()
+                        } else {
+                            sessionMenu.run(modelData)
+                        }
                     }
                 }
             }
@@ -283,7 +291,7 @@ KeyboardMenu {
 
     MenuHeading {
         visible: sessionMenu.pending !== null
-        text: sessionMenu.pending?.prompt ?? ""
+        text: sessionMenu.pending ? sessionMenu.pending.label + "?" : ""
     }
 
     Row {
@@ -291,15 +299,9 @@ KeyboardMenu {
         width: parent.width - parent.leftPadding - parent.rightPadding
         spacing: Theme.px(8)
 
-        // Cancel plus one button per choice, all the same width
-        readonly property real buttonWidth: {
-            const count = 1 + (sessionMenu.pending?.choices.length ?? 1)
-            return (width - (count - 1) * spacing) / count
-        }
-
         MenuButton {
             id: cancelButton
-            width: parent.buttonWidth
+            width: (parent.width - parent.spacing) / 2
             text: "Cancel"
             centered: true
             onClicked: {
@@ -311,18 +313,13 @@ KeyboardMenu {
             }
         }
 
-        Repeater {
-            model: sessionMenu.pending?.choices ?? []
-
-            MenuButton {
-                required property var modelData
-                width: parent.buttonWidth
-                // No icon: three labelled buttons only just fit the menu
-                text: modelData.label
-                centered: true
-                contentColor: modelData.danger ? Theme.bad : Theme.textColor
-                onClicked: sessionMenu.run(modelData)
-            }
+        MenuButton {
+            width: (parent.width - parent.spacing) / 2
+            icon: sessionMenu.pending?.icon ?? ""
+            text: "Confirm"
+            centered: true
+            contentColor: Theme.bad
+            onClicked: sessionMenu.run(sessionMenu.pending)
         }
     }
 }
