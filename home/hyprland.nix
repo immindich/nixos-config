@@ -12,12 +12,14 @@ let
   # folder" button that shows it in the file manager. notify-send waits for
   # the button until the notification closes, so this runs in the background.
   # (notify-send's -i also lands in the image-path hint, so there's no
-  # separate app icon.)
+  # separate app icon.) Hyprland tags everything started by exec_cmd with
+  # HL_INITIAL_WORKSPACE_TOKEN and opens its first window on the workspace it
+  # was started from; clear it so the file manager opens where you are now.
   screenshotNotify = lib.trim ''
     (
       if [ "$(notify-send -a Screenshot -h "string:image-path:$file" \
           -A "folder=Open folder" "Screenshot saved" "Copied to the clipboard")" = folder ]; then
-        ${fileManager} --select "$file"
+        env -u HL_INITIAL_WORKSPACE_TOKEN ${fileManager} --select "$file"
       fi
     )
   '';
