@@ -11,11 +11,12 @@ let
     text = ''
       die() { echo "umu-add-game: $*" >&2; exit 1; }
 
-      # Prompt with an editable default; an empty answer keeps the default
+      # Prompt with an editable default; an empty answer keeps the default.
+      # Runs in bashInteractive: the script's own bash has no readline, and
+      # without it read ignores -i and shows an empty prompt.
       ask() {
-        local reply
-        read -e -r -p "$1: " -i "$2" reply || exit 1
-        printf '%s' "''${reply:-$2}"
+        # shellcheck disable=SC2016
+        ${pkgs.bashInteractive}/bin/bash -c 'read -e -r -p "$1: " -i "$2" reply || exit 1; printf "%s" "''${reply:-$2}"' ask "$1" "$2"
       }
 
       # Saves the exe's own icon (its first icon group, largest image) as $1
