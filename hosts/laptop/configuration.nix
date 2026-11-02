@@ -41,6 +41,12 @@
   # restarts. Stopping it before sleep means hyprlock starts a fresh one
   # over D-Bus after resume, which finds the sensor as it is now.
   powerManagement.powerDownCommands = "systemctl stop fprintd.service";
+  # A lock screen already up before the suspend held a claim on the old
+  # device; without this it never asks fprintd again after resume, so the
+  # fingerprint stays off until the next lock.
+  programs.hyprlock.package = pkgs.hyprlock.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./hyprlock-fingerprint-reclaim-after-sleep.patch ];
+  });
 
   services.libinput = {
     enable = true;

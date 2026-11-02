@@ -1,0 +1,58 @@
+diff --git a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
+index 780c079..62460e8 100644
+--- a/src/auth/Fingerprint.cpp
++++ b/src/auth/Fingerprint.cpp
+@@ -70,8 +70,41 @@ void CFingerprint::init() {
+     m_sDBUSState.login->uponSignal("PrepareForSleep").onInterface(LOGIN_MANAGER).call([this](bool start) {
+         Log::logger->log(Log::INFO, "fprint: PrepareForSleep (start: {})", start);
+         m_sDBUSState.sleeping = start;
+-        if (!m_sDBUSState.sleeping && !m_sDBUSState.verifying)
+-            startVerify();
++        if (!m_sDBUSState.sleeping)
++            reclaimAfterSleep();
++    });
++}
++
++// The reader can come back from suspend as a new USB device, and fprintd may
++// have been restarted while asleep, so the device claimed before the suspend
++// may be gone, with no VerifyStatus to say so. Let go of it (ignoring errors)
++// and claim the current default device again.
++void CFingerprint::reclaimAfterSleep() {
++    m_sDBUSState.abort = false;
++    m_sDBUSState.done  = false;
++    if (!m_sDBUSState.device) {
++        startVerify();
++        return;
++    }
++
++    Log::logger->log(Log::INFO, "fprint: claiming the device again after sleep");
++    m_sDBUSState.verifying = false;
++    m_sDBUSState.device->callMethodAsync("VerifyStop").onInterface(DEVICE).uponReplyInvoke([this](std::optional<sdbus::Error> e) {
++        // Already dropped by an earlier wake whose release finished first
++        if (!m_sDBUSState.device)
++            return;
++        m_sDBUSState.device->callMethodAsync("Release").onInterface(DEVICE).uponReplyInvoke([this](std::optional<sdbus::Error> e) {
++            // Not from inside the proxy's own reply handler
++            g_pHyprlock->addTimer(
++                std::chrono::milliseconds(0),
++                [](ASP<CTimer> self, void* data) {
++                    auto* fprint = (CFingerprint*)data;
++                    fprint->m_sDBUSState.device.reset();
++                    if (!fprint->m_sDBUSState.sleeping)
++                        fprint->startVerify();
++                },
++                this);
++        });
+     });
+ }
+ 
+diff --git a/src/auth/Fingerprint.hpp b/src/auth/Fingerprint.hpp
+index 404a5ca..c805e1e 100644
+--- a/src/auth/Fingerprint.hpp
++++ b/src/auth/Fingerprint.hpp
+@@ -50,4 +50,5 @@ class CFingerprint : public IAuthImplementation {
+     void        startVerify(bool isRetry = false);
+     bool        stopVerify();
+     bool        releaseDevice();
++    void        reclaimAfterSleep();
+ };
