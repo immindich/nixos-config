@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   nixpkgs.config.allowUnfree = true;
@@ -82,6 +82,7 @@
     sox
     kdePackages.dolphin
     kdePackages.gwenview
+    umu-launcher
   ];
 
   # Select internationalisation properties.
