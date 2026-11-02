@@ -10,7 +10,7 @@ import "schemes"
 // reload brings back the values here.
 Singleton {
     // Colour scheme: the name of one of the files in schemes/
-    property string scheme: "Flexoki"
+    property string scheme: "Graphite"
     readonly property list<Scheme> schemes: [
         AyuMirage {}, CatppuccinMocha {}, Everforest {}, Flexoki {}, Graphite {},
         GruvboxMaterial {}, Horizon {}, KanagawaDragon {}, KanagawaWave {}, Melange {},
@@ -54,7 +54,7 @@ Singleton {
     property bool menuShadow: false
     // Below 1 the menus show what's behind them, blurred by Hyprland (the
     // layer rules in home/hyprland.nix)
-    property real menuOpacity: 1
+    property real menuOpacity: 0.85
     // Accent stripe along the edge of a menu that faces the bar
     property bool menuAccentEdge: false
     // How an indicator shows that its menu is open:
@@ -88,7 +88,7 @@ Singleton {
     readonly property bool barOnBottom: barPosition === "bottom"
     // Fill the whole bar behind the bubbles instead of leaving the wallpaper
     // showing between them, in barColor
-    property bool solidBar: false
+    property bool solidBar: true
     readonly property color barColor: background
 
     // Sizes
