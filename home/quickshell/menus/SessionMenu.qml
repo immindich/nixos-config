@@ -7,14 +7,15 @@ import qs
 
 // Start menu, opened from the NixOS button: an application search field
 // (type, pick with Up/Down, launch with Enter) above a row of lock, sleep,
-// shut down and exit Hyprland buttons. Shut down and exit ask for
-// confirmation first. Tab cycles between the search field and the buttons.
+// power and exit Hyprland buttons. All but lock open a second step with
+// the choices behind them (sleep or hibernate, restart or shut down) or a
+// confirmation. Tab cycles between the search field and the buttons.
 // Set `anchor.item` to the button.
 KeyboardMenu {
     id: sessionMenu
     menuWidth: Theme.px(300)
 
-    // Action awaiting confirmation, or null while showing the buttons
+    // Action whose choices are showing, or null while showing the buttons
     property var pending: null
     // Button that set `pending`, to give focus back to on Cancel
     property Item pendingButton: null
@@ -29,13 +30,23 @@ KeyboardMenu {
             searchInput.forceActiveFocus()
     }
 
+    // An action with `choices` shows `prompt` and a button per choice
+    // instead of running a command; `danger` draws a choice in Theme.bad
     readonly property var actions: [
-        { icon: "\uf023", label: "Lock", command: "loginctl lock-session", confirm: false },
-        { icon: "\uf186", label: "Sleep", command: "systemctl suspend", confirm: false },
-        { icon: "\uf011", label: "Shut down", command: "systemctl poweroff", confirm: true },
-        // Same as the SUPER+M bind
-        { icon: "\uf2f5", label: "Exit Hyprland", confirm: true,
-          command: "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'" },
+        { icon: "\uf023", label: "Lock", command: "loginctl lock-session" }, // lock
+        { icon: "\uf186", label: "Sleep", prompt: "Sleep or hibernate?", choices: [ // moon
+            { label: "Sleep", command: "systemctl suspend" },
+            { label: "Hibernate", command: "systemctl hibernate" },
+        ] },
+        { icon: "\uf011", label: "Power", prompt: "Restart or shut down?", choices: [ // power-off
+            { label: "Restart", command: "systemctl reboot", danger: true },
+            { label: "Shut down", command: "systemctl poweroff", danger: true },
+        ] },
+        { icon: "\uf2f5", label: "Exit Hyprland", prompt: "Exit Hyprland?", choices: [ // right-from-bracket
+            // Same as the SUPER+M bind
+            { label: "Exit", danger: true,
+              command: "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'" },
+        ] },
     ]
 
     // Applications matching the search, best first: names starting with the
@@ -255,7 +266,7 @@ KeyboardMenu {
                 icon: modelData.icon
                 centered: true
                 onClicked: {
-                    if (modelData.confirm) {
+                    if (modelData.choices) {
                         // This button is about to hide; keep keyboard focus in the menu
                         const hadFocus = activeFocus
                         sessionMenu.pendingButton = actionButton
@@ -272,7 +283,7 @@ KeyboardMenu {
 
     MenuHeading {
         visible: sessionMenu.pending !== null
-        text: sessionMenu.pending ? sessionMenu.pending.label + "?" : ""
+        text: sessionMenu.pending?.prompt ?? ""
     }
 
     Row {
@@ -280,9 +291,15 @@ KeyboardMenu {
         width: parent.width - parent.leftPadding - parent.rightPadding
         spacing: Theme.px(8)
 
+        // Cancel plus one button per choice, all the same width
+        readonly property real buttonWidth: {
+            const count = 1 + (sessionMenu.pending?.choices.length ?? 1)
+            return (width - (count - 1) * spacing) / count
+        }
+
         MenuButton {
             id: cancelButton
-            width: (parent.width - parent.spacing) / 2
+            width: parent.buttonWidth
             text: "Cancel"
             centered: true
             onClicked: {
@@ -294,13 +311,18 @@ KeyboardMenu {
             }
         }
 
-        MenuButton {
-            width: (parent.width - parent.spacing) / 2
-            icon: sessionMenu.pending?.icon ?? ""
-            text: "Confirm"
-            centered: true
-            contentColor: Theme.bad
-            onClicked: sessionMenu.run(sessionMenu.pending)
+        Repeater {
+            model: sessionMenu.pending?.choices ?? []
+
+            MenuButton {
+                required property var modelData
+                width: parent.buttonWidth
+                // No icon: three labelled buttons only just fit the menu
+                text: modelData.label
+                centered: true
+                contentColor: modelData.danger ? Theme.bad : Theme.textColor
+                onClicked: sessionMenu.run(modelData)
+            }
         }
     }
 }
