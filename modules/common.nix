@@ -147,17 +147,19 @@
   # PROMPT_SP does, print "%" and pad to the line's end before each prompt: on
   # an empty line the prompt overwrites it, and after output with no trailing
   # newline the padding wraps, leaving the "%" as a marker and the prompt on a
-  # fresh line.
+  # fresh line. The marker is printed from PROMPT_COMMAND rather than PS1:
+  # readline reprints the prompt when it redraws a wrapped line, and the
+  # padding would then blank out the line being edited.
   programs.bash.promptInit = ''
     if [ "$TERM" != "dumb" ] || [ -n "$INSIDE_EMACS" ]; then
       PROMPT_COLOR="1;31m"
       ((UID)) && PROMPT_COLOR="1;32m"
-      PS1='\[$(printf "%%%*s\r" $((COLUMNS-1)) "")\]'
+      PROMPT_COMMAND+=('printf "%%%*s\r" $((COLUMNS-1)) ""')
       if [ -n "$INSIDE_EMACS" ]; then
         # Emacs term mode doesn't support xterm title escape sequence (\e]0;)
-        PS1+="\[\033[$PROMPT_COLOR\][\u@\h:\w]\\$\[\033[0m\] "
+        PS1="\[\033[$PROMPT_COLOR\][\u@\h:\w]\\$\[\033[0m\] "
       else
-        PS1+="\[\033[$PROMPT_COLOR\][\[\e]0;\u@\h: \w\a\]\u@\h:\w]\\$\[\033[0m\] "
+        PS1="\[\033[$PROMPT_COLOR\][\[\e]0;\u@\h: \w\a\]\u@\h:\w]\\$\[\033[0m\] "
       fi
       if test "$TERM" = "xterm"; then
         PS1="\[\033]2;\h:\u:\w\007\]$PS1"
