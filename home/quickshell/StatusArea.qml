@@ -282,7 +282,7 @@ Rectangle {
             readonly property bool charging: battery.state === UPowerDeviceState.Charging
                 || battery.state === UPowerDeviceState.FullyCharged
             visible: battery.isLaptopBattery
-            contentColor: charging ? Theme.good : percent <= 15 ? Theme.bad : Theme.textColor
+            contentColor: percent <= 15 ? Theme.bad : Theme.textColor
             icon: ""
             text: ""
             tooltip: percent + "%"
