@@ -101,6 +101,7 @@ Singleton {
     readonly property int bubbleSpacing: px(4)  // gap between bubbles
     readonly property int workspaceSize: px(20) // height of a workspace circle
     readonly property int animationDuration: 150
+    readonly property int menuOpenDuration: 90 // menus fade and slide in
 
     // Wallpaper
     readonly property string wallpaper: Quickshell.env("HOME") + "/Pictures/wallpaper.jpg"

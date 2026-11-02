@@ -38,6 +38,21 @@ Item {
 
     implicitHeight: panelHeight + 2 * pad + caretSize
 
+    // Opening animation: a quick fade while sliding out from the bar.
+    // Called by the menu each time it's shown.
+    function playOpen() {
+        openAnim.stop()
+        opacity = 0
+        slide.y = (Theme.barOnBottom ? 1 : -1) * Theme.px(6)
+        openAnim.start()
+    }
+    transform: Translate { id: slide }
+    ParallelAnimation {
+        id: openAnim
+        NumberAnimation { target: frame; property: "opacity"; to: 1; duration: Theme.menuOpenDuration }
+        NumberAnimation { target: slide; property: "y"; to: 0; duration: Theme.menuOpenDuration; easing.type: Easing.OutCubic }
+    }
+
     Rectangle {
         id: panel
         x: frame.pad

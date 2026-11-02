@@ -64,6 +64,7 @@ PopupWindow {
 
     onVisibleChanged: {
         if (visible) {
+            frame.playOpen()
             if (MenuState.openMenu && MenuState.openMenu !== menu)
                 MenuState.openMenu.visible = false
             MenuState.openMenu = menu
