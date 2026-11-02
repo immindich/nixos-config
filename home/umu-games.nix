@@ -68,7 +68,7 @@ let
       if [ -n "$found" ]; then
         echo "Found $found in the umu database."
       else
-        echo "Not in the umu database. If the game is on Steam, umu-<steam appid> gets its fixes; otherwise 0."
+        echo "Not in the umu database; 0 runs it with plain Proton."
       fi
       gameid=$(ask "GAMEID" "''${found:-0}")
 
