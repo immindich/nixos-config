@@ -6,7 +6,7 @@ let
     config.allowUnfree = true;
   };
 in {
-  imports = [ ./hyprland.nix ./hyprlock.nix ./hypridle.nix ];
+  imports = [ ./hyprland.nix ./hyprlock.nix ./hypridle.nix ./umu-games.nix ];
 
   home.username = "isaiah";
   home.homeDirectory = "/home/isaiah";
