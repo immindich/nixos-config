@@ -73,7 +73,31 @@ KeyboardMenu {
         return matches.slice(0, 8).map(m => m.entry)
     }
 
-    onResultsChanged: selected = 0
+    // A new list of results puts fresh rows under the pointer, which report
+    // being hovered without it moving. Until the pointer actually moves, keep
+    // the selection on the top result instead of following it.
+    property bool pointerStill: false
+    property point stillAt
+
+    onResultsChanged: {
+        selected = 0
+        pointerStill = true
+        stillAt = menuHover.point.scenePosition
+    }
+
+    HoverHandler {
+        id: menuHover
+        onPointChanged: {
+            const at = point.scenePosition
+            if (!sessionMenu.pointerStill || (at.x === sessionMenu.stillAt.x && at.y === sessionMenu.stillAt.y))
+                return
+            sessionMenu.pointerStill = false
+            for (let i = 0; i < resultRows.count; i++) {
+                if (resultRows.itemAt(i)?.hovered)
+                    sessionMenu.selected = i
+            }
+        }
+    }
 
     // `qs ipc call startmenu toggle`, bound to the Super key in Hyprland.
     // Only the menu on the focused screen answers.
@@ -211,12 +235,14 @@ KeyboardMenu {
 
     // Search results
     Repeater {
+        id: resultRows
         model: sessionMenu.results
 
         Rectangle {
             id: result
             required property var modelData
             required property int index
+            readonly property bool hovered: rowHover.hovered
             width: parent.width - parent.leftPadding - parent.rightPadding
             height: Theme.px(32)
             radius: Theme.px(8)
@@ -245,7 +271,10 @@ KeyboardMenu {
                 color: Theme.textColor
             }
 
-            HoverHandler { onHoveredChanged: if (hovered) sessionMenu.selected = result.index }
+            HoverHandler {
+                id: rowHover
+                onHoveredChanged: if (hovered && !sessionMenu.pointerStill) sessionMenu.selected = result.index
+            }
             TapHandler { onTapped: sessionMenu.launch(result.modelData) }
         }
     }
