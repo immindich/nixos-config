@@ -83,6 +83,7 @@
     kdePackages.dolphin
     kdePackages.gwenview
     umu-launcher
+    mpv
   ];
 
   # Select internationalisation properties.
