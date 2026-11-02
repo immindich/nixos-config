@@ -35,6 +35,12 @@
   # defaults to true for every PAM service when fprintd is enabled, and
   # pam_fprintd blocks password entry until the fingerprint times out.
   services.fprintd.enable = true;
+  # The sensor comes back from suspend as a new USB device (libfprint turns
+  # USB persist off for it), and fprintd doesn't notice when the old one was
+  # claimed: every later Claim fails with "already claimed" until fprintd
+  # restarts. Stopping it before sleep means hyprlock starts a fresh one
+  # over D-Bus after resume, which finds the sensor as it is now.
+  powerManagement.powerDownCommands = "systemctl stop fprintd.service";
 
   services.libinput = {
     enable = true;
