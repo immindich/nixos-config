@@ -76,10 +76,12 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  security.tpm2.enable = true;
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.isaiah = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "networkmanager" "video" "tss" ]; # Enable ‘sudo’ for the user.
     packages = with pkgs; [
       tree
     ];
