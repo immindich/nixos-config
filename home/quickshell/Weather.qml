@@ -32,6 +32,10 @@ Singleton {
     property int high: 0
     property int low: 0
     property int precipitationChance: 0 // percent, max over the day
+    // Today's sunrise and sunset in minutes after local midnight, -1 until the
+    // first forecast arrives (used by NightLight)
+    property int sunriseMinutes: -1
+    property int sunsetMinutes: -1
     // The next few hours, as {label, code, day, temperature}
     property var hours: []
 
@@ -145,7 +149,7 @@ Singleton {
             + "?latitude=" + latitude + "&longitude=" + longitude
             + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code,is_day"
             + "&hourly=temperature_2m,weather_code,is_day"
-            + "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+            + "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
             + "&temperature_unit=" + temperatureUnit + "&wind_speed_unit=" + windSpeedUnit
             + "&timezone=auto&forecast_days=2")
         xhr.send()
@@ -163,6 +167,20 @@ Singleton {
         high = Math.round(data.daily.temperature_2m_max[0])
         low = Math.round(data.daily.temperature_2m_min[0])
         precipitationChance = data.daily.precipitation_probability_max[0] ?? 0
+
+        // Sunrise and sunset in the system's time zone, which needn't be the
+        // location's (the API's times are the location's local time). Taken
+        // from whichever day is today here: for a while after midnight that's
+        // the second day of the last forecast.
+        const local = t => new Date(Date.UTC(parseInt(t.slice(0, 4)), parseInt(t.slice(5, 7)) - 1,
+                                             parseInt(t.slice(8, 10)), parseInt(t.slice(11, 13)),
+                                             parseInt(t.slice(14, 16))) - data.utc_offset_seconds * 1000)
+        const today = new Date().toDateString()
+        const rises = data.daily.sunrise.map(local)
+        const d = Math.max(0, rises.findIndex(r => r.toDateString() === today))
+        const set = local(data.daily.sunset[d])
+        sunriseMinutes = rises[d].getHours() * 60 + rises[d].getMinutes()
+        sunsetMinutes = set.getHours() * 60 + set.getMinutes()
 
         // Times are local ISO strings like "2026-10-23T14:00". Start the hourly
         // list from the hour after the current reading's.
