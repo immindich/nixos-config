@@ -76,6 +76,25 @@ let
     '';
   };
 
+  # Capture the focused monitor; saves to ~/screenshots, copies to the
+  # clipboard, plays a sound and shows a notification whose Edit button
+  # opens the shot fullscreen in Satty for cropping.
+  screenshotScreen = pkgs.writeShellApplication {
+    name = "screenshot-screen";
+    runtimeInputs = [ pkgs.grim pkgs.jq pkgs.wl-clipboard pkgs.pipewire pkgs.libnotify ];
+    text = ''
+      output=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
+      [ -n "$output" ] || exit 0
+      dir="$HOME/screenshots"
+      mkdir -p "$dir"
+      file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+      grim -o "$output" "$file"
+      pw-play ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/screen-capture.oga &
+      wl-copy --type image/png < "$file"
+      ${screenshotNotify { edit = true; editArgs = "--fullscreen"; }} &
+    '';
+  };
+
   bind = key: dsp: { _args = [ key (inline dsp) ]; };
   bindWith = key: dsp: opts: { _args = [ key (inline dsp) opts ]; };
   exec = cmd: "hl.dsp.exec_cmd(${builtins.toJSON cmd})";
@@ -273,6 +292,7 @@ in
         (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
         (bind "Print" (exec (lib.getExe screenshot)))
         (bind "SHIFT + Print" (exec (lib.getExe screenshotWindow)))
+        (bind "ALT + Print" (exec (lib.getExe screenshotScreen)))
         (bind "${mainMod} + SHIFT + P" (exec (lib.getExe screenshot)))
 
         (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
