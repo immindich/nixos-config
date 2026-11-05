@@ -10,20 +10,20 @@ import Quickshell.Io
 // pushes it to hyprsunset whenever it changes; hyprsunset has no profiles of
 // its own.
 //
-// In automatic mode the filter follows the sun: it fades in over the
+// `enabled` turns the night light on or off altogether. While it's on,
+// automatic mode makes the filter follow the sun: it fades in over the
 // `fadeMinutes` around sunset and out around sunrise, using Weather's times
-// for the current location (fixed fallback times until there is one).
-// Switching it on or off by hand overrides the schedule until the end of its
-// next fade, by which time the schedule has come round to the same state.
-// With automatic mode off, `enabled` decides. All of it is kept across config
-// reloads.
+// for the current location (fixed fallback times until there is one). In
+// manual mode the filter sits at `temperature` the whole time it's on. All of
+// it is kept across config reloads; a fresh shell starts on, in automatic
+// mode.
 Singleton {
     id: nightLight
 
     // False until hyprsunset answers; hides the controls when it isn't running
     property bool available: false
-    property alias auto: persist.auto
-    property alias enabled: persist.enabled         // used while auto is off
+    property alias enabled: persist.enabled
+    property alias auto: persist.auto               // follow the sun while enabled
     property alias temperature: persist.temperature // kelvin, at full night
 
     readonly property int minTemperature: 2000
@@ -40,14 +40,8 @@ Singleton {
 
     // The schedule's next change, as { time: Date, on: bool }
     readonly property var next: nextTransition(now)
-    // True while a manual on/off is overriding the schedule, until
-    // `overrideUntil` (ms)
-    readonly property bool paused: auto && persist.overrideUntil > now
-    readonly property double overrideUntil: persist.overrideUntil
     // How far into night the filter is, 0 (off) to 1 (full temperature)
-    readonly property real factor: !auto ? (enabled ? 1 : 0)
-        : paused ? (persist.overrideOn ? 1 : 0)
-        : nightFactor(now)
+    readonly property real factor: !enabled ? 0 : auto ? nightFactor(now) : 1
     readonly property bool active: factor > 0
     readonly property int appliedTemperature:
         Math.round((maxTemperature - factor * (maxTemperature - temperature)) / 50) * 50
@@ -55,11 +49,9 @@ Singleton {
     PersistentProperties {
         id: persist
         reloadableId: "nightLight"
+        property bool enabled: true
         property bool auto: true
-        property bool enabled: false
         property int temperature: 4000
-        property bool overrideOn: false
-        property double overrideUntil: 0
     }
 
     onActiveChanged: apply.start()
@@ -68,30 +60,6 @@ Singleton {
     // Also push the state when hyprsunset first shows up, since the default
     // 6000K it starts with is a visible tint
     onAvailableChanged: if (available) apply.start()
-
-    // Switches automatic mode, keeping the filter on or off as it is now
-    function setAuto(on) {
-        if (!on)
-            enabled = active
-        persist.overrideUntil = 0
-        auto = on
-    }
-
-    // Turns the filter on or off by hand: in automatic mode until the end of
-    // the next fade (or straight back to the schedule if it agrees, which
-    // also covers switching on partway into the evening fade), otherwise for
-    // good. The next fade always heads toward the state switched to, so
-    // handing back at its end is seamless.
-    function setManual(on) {
-        if (!auto) {
-            enabled = on
-        } else if (on === nightFactor(now) > 0) {
-            persist.overrideUntil = 0
-        } else {
-            persist.overrideOn = on
-            persist.overrideUntil = next.time.getTime() + fadeMinutes * 60 * 1000
-        }
-    }
 
     // 0 by day, 1 by night, ramping linearly across the fade around sunrise
     // and sunset
@@ -122,11 +90,7 @@ Singleton {
         interval: 60 * 1000
         repeat: true
         running: true
-        onTriggered: {
-            nightLight.now = Date.now()
-            if (persist.overrideUntil > 0 && persist.overrideUntil <= nightLight.now)
-                persist.overrideUntil = 0
-        }
+        onTriggered: nightLight.now = Date.now()
     }
 
     Process {

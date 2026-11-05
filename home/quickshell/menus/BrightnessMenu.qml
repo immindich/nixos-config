@@ -6,7 +6,7 @@ import qs
 // indicator. Set `anchor.item` to the indicator and pass in the backlight's
 // raw `current` and `max` values; the menu sets brightness itself with
 // brightnessctl. The night light section follows NightLight (on/off,
-// automatic sunset-to-sunrise schedule, night temperature) and is hidden
+// automatic or manual, target temperature) and is hidden
 // when hyprsunset isn't running.
 DropdownMenu {
     id: brightnessMenu
@@ -75,14 +75,16 @@ DropdownMenu {
             id: nightLightSwitch
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            checked: NightLight.active
-            onToggled: NightLight.setManual(!NightLight.active)
+            checked: NightLight.enabled
+            onToggled: NightLight.enabled = !NightLight.enabled
         }
     }
 
-    // Following the sun, or only the switch above
+    // Automatic: follow the sun while on. Manual: full temperature while on.
     Item {
         visible: NightLight.available
+        enabled: NightLight.enabled
+        opacity: enabled ? 1 : 0.5
         width: parent.width - parent.leftPadding - parent.rightPadding
         implicitHeight: Math.max(autoLabel.implicitHeight, autoSwitch.implicitHeight)
 
@@ -100,14 +102,17 @@ DropdownMenu {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             checked: NightLight.auto
-            onToggled: NightLight.setAuto(!NightLight.auto)
+            onToggled: NightLight.auto = !NightLight.auto
         }
     }
 
-    // Sets the temperature at full night; the filter fades toward it
+    // Sets the target temperature; in automatic mode the filter fades toward
+    // it at sunset
     MenuSlider {
         id: temperatureSlider
         visible: NightLight.available
+        enabled: NightLight.enabled
+        opacity: enabled ? 1 : 0.5
         from: NightLight.minTemperature
         to: NightLight.maxTemperature
         stepSize: 100
@@ -130,10 +135,8 @@ DropdownMenu {
     }
 
     MenuInfoRow {
-        visible: NightLight.available && NightLight.auto
+        visible: NightLight.available && NightLight.enabled && NightLight.auto
         label: "Schedule"
-        value: NightLight.paused
-            ? "Paused until " + Qt.formatTime(new Date(NightLight.overrideUntil), "h:mm ap")
-            : (NightLight.next.on ? "On at " : "Off at ") + Qt.formatTime(NightLight.next.time, "h:mm ap")
+        value: (NightLight.next.on ? "On at " : "Off at ") + Qt.formatTime(NightLight.next.time, "h:mm ap")
     }
 }
