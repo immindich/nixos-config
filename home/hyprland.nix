@@ -11,21 +11,21 @@ let
   # Posts a notification showing the screenshot in $file, with an "Open
   # folder" button that shows it in the file manager and, with `edit`, an
   # "Edit" button that opens it in Satty with the crop tool selected (Enter
-  # saves over the file and copies the result; Escape closes). `editArgs` are
-  # extra Satty flags. notify-send waits for the button until the
-  # notification closes, so this runs in the background. (notify-send's -i
+  # saves over the file and copies the result; Escape closes; it opens as a
+  # floating window, see the satty-float rule). notify-send waits for the
+  # button until the notification closes, so this runs in the background. (notify-send's -i
   # also lands in the image-path hint, so there's no separate app icon.)
   # Hyprland tags everything started by exec_cmd with
   # HL_INITIAL_WORKSPACE_TOKEN and opens its first window on the workspace it
   # was started from; clear it so the window opens where you are now.
-  screenshotNotify = { edit ? false, editArgs ? "" }: lib.trim ''
+  screenshotNotify = { edit ? false }: lib.trim ''
     (
       case "$(notify-send -a Screenshot -h "string:image-path:$file" \
           -A "folder=Open folder" ${lib.optionalString edit ''-A "edit=Edit" ''}"Screenshot saved" "Copied to the clipboard")" in
         folder) env -u HL_INITIAL_WORKSPACE_TOKEN ${fileManager} --select "$file" ;;
         edit) env -u HL_INITIAL_WORKSPACE_TOKEN ${lib.getExe pkgs.satty} --filename "$file" --output-filename "$file" \
             --initial-tool crop --copy-command wl-copy --actions-on-enter save-to-clipboard,save-to-file,exit \
-            --disable-notifications ${editArgs} ;;
+            --disable-notifications ;;
       esac
     )
   '';
@@ -78,7 +78,7 @@ let
 
   # Capture the focused monitor; saves to ~/screenshots, copies to the
   # clipboard, plays a sound and shows a notification whose Edit button
-  # opens the shot fullscreen in Satty for cropping.
+  # opens the shot in Satty for cropping.
   screenshotScreen = pkgs.writeShellApplication {
     name = "screenshot-screen";
     runtimeInputs = [ pkgs.grim pkgs.jq pkgs.wl-clipboard pkgs.pipewire pkgs.libnotify ];
@@ -91,7 +91,7 @@ let
       grim -o "$output" "$file"
       pw-play ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/screen-capture.oga &
       wl-copy --type image/png < "$file"
-      ${screenshotNotify { edit = true; editArgs = "--fullscreen"; }} &
+      ${screenshotNotify { edit = true; }} &
     '';
   };
 
@@ -480,6 +480,14 @@ in
             float = false;
           };
           workspace = "special:magic silent";
+        }
+        {
+          # The screenshot editor (Edit on a screenshot notification) floats
+          name = "satty-float";
+          match.class = "^com\\.gabm\\.satty$";
+          float = true;
+          size = "monitor_w*0.7 monitor_h*0.7";
+          center = true;
         }
         {
           # The test VM (modules/vm.nix) opens out of the way; SUPER+SHIFT+M shows it
