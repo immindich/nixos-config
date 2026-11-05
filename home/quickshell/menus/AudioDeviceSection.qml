@@ -97,7 +97,7 @@ Column {
                 width: parent.width
                 height: Theme.px(32)
                 radius: Theme.px(8)
-                color: hover.hovered && !selected ? Theme.highlight : "transparent"
+                color: selected ? Theme.selectedRow : hover.hovered ? Theme.highlight : "transparent"
 
                 Text {
                     id: typeIcon
@@ -113,7 +113,7 @@ Column {
                     font.family: Theme.iconFont
                     font.weight: Font.Black
                     font.pixelSize: Theme.iconSize
-                    color: row.selected ? Theme.accent : Theme.textColor
+                    color: row.selected ? Theme.selectedText : Theme.textColor
                 }
 
                 Text {
@@ -128,7 +128,7 @@ Column {
                     textFormat: Text.PlainText
                     font.pixelSize: Theme.fontSize
                     font.bold: row.selected
-                    color: row.selected ? Theme.accent : Theme.textColor
+                    color: row.selected ? Theme.selectedText : Theme.textColor
                 }
 
                 Text {
@@ -140,7 +140,7 @@ Column {
                     font.family: Theme.iconFont
                     font.weight: Font.Black
                     font.pixelSize: Theme.iconSize
-                    color: Theme.accent
+                    color: Theme.selectedMark
                 }
 
                 HoverHandler { id: hover }

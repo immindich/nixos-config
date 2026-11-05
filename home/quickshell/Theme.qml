@@ -36,6 +36,37 @@ Singleton {
     readonly property color bad: colors.bad
     readonly property color menuColor: colors.menuColor
     readonly property color borderColor: colors.borderColor
+    readonly property color accentText: colors.accentText
+    readonly property color occupiedText: colors.occupiedText
+    readonly property color sliderFill: colors.sliderFill
+    readonly property color sliderKnob: colors.sliderKnob
+    readonly property color activeWorkspace: colors.activeWorkspace
+    // Colour of an occupied workspace with the given id
+    function workspaceColor(id: int): color {
+        const own = colors.workspaceColors
+        return own.length > 0 && id > 0 ? own[(id - 1) % own.length] : occupied
+    }
+
+    // `c` at opacity `a`, for faint fills
+    function tint(c: color, a: real): color { return Qt.rgba(c.r, c.g, c.b, a) }
+
+    // How workspaces, chosen list entries and filled controls are
+    // highlighted (see schemes/Scheme.qml); empty for the scheme's own choice
+    property string workspaceStyle: ""
+    property string selectionStyle: ""
+    property string fillStyle: ""
+    readonly property string workspaceLook: workspaceStyle || colors.workspaceStyle
+    readonly property string selectionLook: selectionStyle || colors.selectionStyle
+    readonly property string fillLook: fillStyle || colors.fillStyle
+
+    // A chosen list entry: its text and icon, the check beside it, and the
+    // row behind it
+    readonly property color selectedText: selectionLook === "accent" ? colors.selected : textColor
+    readonly property color selectedMark: colors.selected
+    readonly property color selectedRow: selectionLook === "row" ? tint(colors.selected, 0.16) : "transparent"
+    // A tab, toggle button or switch that's on, and what's drawn on it
+    readonly property color controlFill: fillLook === "tint" ? tint(accent, 0.32) : accent
+    readonly property color controlText: fillLook === "tint" ? accent : accentText
 
     // How a menu hangs off the bar:
     //   "float"  a menuGap below the bar

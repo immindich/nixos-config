@@ -13,7 +13,7 @@ Rectangle {
     implicitWidth: Theme.px(36)
     implicitHeight: Theme.px(20)
     radius: height / 2
-    color: checked ? Theme.accent : Theme.surface
+    color: checked ? Theme.controlFill : Theme.surface
     opacity: enabled ? 1 : 0.5
 
     Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
@@ -24,7 +24,7 @@ Rectangle {
         width: parent.height - Theme.px(6)
         height: width
         radius: width / 2
-        color: menuSwitch.checked ? Theme.background : Theme.textColor
+        color: menuSwitch.checked ? Theme.controlText : Theme.textColor
 
         Behavior on x { NumberAnimation { duration: Theme.animationDuration; easing.type: Easing.OutCubic } }
     }

@@ -97,7 +97,7 @@ DropdownMenu {
                 font.family: text === "\uf294" ? Theme.brandIconFont : Theme.iconFont
                 font.weight: Font.Black
                 font.pixelSize: Theme.iconSize
-                color: entry.modelData.connected ? Theme.accent : Theme.textColor
+                color: entry.modelData.connected ? Theme.selectedText : Theme.textColor
             }
 
             Text {
@@ -110,7 +110,7 @@ DropdownMenu {
                 textFormat: Text.PlainText
                 font.pixelSize: Theme.fontSize
                 font.bold: entry.modelData.connected
-                color: entry.modelData.connected ? Theme.accent : Theme.textColor
+                color: entry.modelData.connected ? Theme.selectedText : Theme.textColor
             }
         }
 

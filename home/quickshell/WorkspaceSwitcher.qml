@@ -90,7 +90,23 @@ Row {
         width: special ? height : Math.max(height, label.implicitWidth + Theme.px(12))
         height: Theme.workspaceSize
         radius: height / 2
-        color: active ? Theme.accent : empty ? Theme.surface : Theme.occupied
+        readonly property string look: Theme.workspaceLook
+        readonly property color occupiedColor: Theme.workspaceColor(special || ws === null ? 0 : ws.id)
+        // Styles that give empty workspaces a pill of their own
+        readonly property bool emptyPill: look === "filled" || look === "tint"
+        color: active ? Theme.activeWorkspace
+            : empty ? (emptyPill ? Theme.surface : "transparent")
+            : look === "filled" ? occupiedColor
+            : look === "tint" ? Theme.tint(occupiedColor, 0.28)
+            : "transparent"
+        border.width: look === "ring" && !active && !empty ? 1.5 * Theme.uiScale : 0
+        border.color: occupiedColor
+        // Colour of the number or icon
+        readonly property color fg: active ? Theme.accentText
+            : empty ? (emptyPill ? Theme.textColor : Theme.dimTextColor)
+            : look === "filled" ? Theme.occupiedText
+            : look === "tint" ? occupiedColor
+            : Theme.textColor
 
         Behavior on width { NumberAnimation { duration: Theme.animationDuration; easing.type: Easing.OutCubic } }
         Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
@@ -110,7 +126,7 @@ Row {
                 font.family: Theme.iconFont
                 font.weight: Font.Black
                 font.pixelSize: Theme.iconSize - Theme.px(2)
-                color: Theme.background
+                color: button.fg
             }
 
             Text {
@@ -118,7 +134,8 @@ Row {
                 anchors.verticalCenterOffset: Theme.textOffset
                 text: fullscreen ? ws.id - switcher.fullscreenBase : ws ? ws.name : modelData
                 font.pixelSize: Theme.fontSize
-                color: empty && !active ? Theme.textColor : Theme.background
+                font.bold: button.look === "minimal" && !button.empty
+                color: button.fg
             }
         }
 
@@ -129,7 +146,7 @@ Row {
             font.family: Theme.iconFont
             font.weight: Font.Black
             font.pixelSize: Theme.iconSize
-            color: Theme.background
+            color: button.fg
         }
 
         HoverHandler {

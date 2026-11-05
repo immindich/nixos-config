@@ -23,7 +23,7 @@ Slider {
             width: slider.handle.x + slider.handle.width / 2 - parent.x
             height: parent.height
             radius: height / 2
-            color: Theme.occupied
+            color: Theme.sliderFill
         }
     }
 
@@ -33,7 +33,7 @@ Slider {
         width: Theme.px(16)
         height: Theme.px(16)
         radius: width / 2
-        color: slider.pressed ? Theme.textColor : Theme.accent
+        color: slider.pressed ? Theme.textColor : Theme.sliderKnob
 
         Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
     }

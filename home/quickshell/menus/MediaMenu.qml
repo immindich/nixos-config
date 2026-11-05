@@ -45,7 +45,7 @@ DropdownMenu {
             font.family: Theme.iconFont
             font.weight: Font.Black
             font.pixelSize: Theme.iconSize + (button.primary ? 2 : 0)
-            color: button.primary ? Theme.background : Theme.textColor
+            color: button.primary ? Theme.accentText : Theme.textColor
         }
 
         HoverHandler { id: hover }

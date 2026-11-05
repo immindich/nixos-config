@@ -33,7 +33,7 @@ DropdownMenu {
                 width: (tabs.width - tabs.spacing) / 2
                 height: Theme.px(28)
                 radius: Theme.px(8)
-                color: selected ? Theme.accent : hover.hovered ? Theme.highlight : Theme.surface
+                color: selected ? Theme.controlFill : hover.hovered ? Theme.highlight : Theme.surface
 
                 Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
 
@@ -42,7 +42,7 @@ DropdownMenu {
                     anchors.verticalCenterOffset: Theme.textOffset
                     text: tabButton.modelData
                     font.pixelSize: Theme.fontSize
-                    color: tabButton.selected ? Theme.background : Theme.textColor
+                    color: tabButton.selected ? Theme.controlText : Theme.textColor
                 }
 
                 HoverHandler { id: hover }

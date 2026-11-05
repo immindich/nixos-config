@@ -15,7 +15,7 @@ Rectangle {
 
     readonly property string style: Theme.activeStyle
     readonly property color fgColor: !lit ? contentColor
-        : style === "filled" ? Theme.background
+        : style === "filled" ? Theme.accentText
         : style === "accent" ? Theme.accent
         : contentColor
 

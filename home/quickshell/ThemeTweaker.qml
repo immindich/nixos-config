@@ -24,6 +24,9 @@ PanelWindow {
     // themselves don't read well, the labels to show for them
     readonly property var settings: [
         { label: "Scheme", prop: "scheme", values: Theme.schemes.map(s => s.name) },
+        { label: "Spaces", prop: "workspaceStyle", values: ["", "filled", "tint", "ring", "minimal"], names: ["scheme", "filled", "tint", "ring", "minimal"] },
+        { label: "Chosen", prop: "selectionStyle", values: ["", "accent", "row", "check"], names: ["scheme", "accent", "row", "check"] },
+        { label: "Fills", prop: "fillStyle", values: ["", "solid", "tint"], names: ["scheme", "solid", "tint"] },
         { label: "Menus", prop: "menuStyle", values: ["flush", "float", "caret", "drawer", "tab"] },
         { label: "Open", prop: "activeStyle", values: ["pill", "filled", "accent", "underline", "tab"] },
         { label: "Outline", prop: "menuBorder", values: [0, 1, 2], names: ["none", "1 px", "2 px"] },
@@ -108,7 +111,7 @@ PanelWindow {
                                     width: label.implicitWidth + Theme.px(16)
                                     height: Theme.px(24)
                                     radius: height / 2
-                                    color: selected ? Theme.accent : hover.hovered ? Theme.highlight : Theme.surface
+                                    color: selected ? Theme.controlFill : hover.hovered ? Theme.highlight : Theme.surface
 
                                     Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
 
@@ -118,7 +121,7 @@ PanelWindow {
                                         anchors.verticalCenterOffset: Theme.textOffset
                                         text: row.modelData.names ? row.modelData.names[choice.index] : choice.modelData
                                         font.pixelSize: Theme.fontSize - Theme.px(1)
-                                        color: choice.selected ? Theme.background : Theme.textColor
+                                        color: choice.selected ? Theme.controlText : Theme.textColor
                                     }
 
                                     HoverHandler { id: hover }

@@ -140,7 +140,7 @@ KeyboardMenu {
                     textFormat: Text.PlainText
                     font.pixelSize: Theme.fontSize
                     font.bold: entry.modelData.connected
-                    color: entry.modelData.connected ? Theme.accent : Theme.textColor
+                    color: entry.modelData.connected ? Theme.selectedText : Theme.textColor
                 }
             }
 

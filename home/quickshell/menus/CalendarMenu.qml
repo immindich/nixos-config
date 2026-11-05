@@ -119,7 +119,7 @@ DropdownMenu {
                 width: Theme.px(26)
                 height: Theme.px(26)
                 radius: height / 2
-                color: Theme.accent
+                color: Theme.controlFill
                 visible: day.isToday
             }
 
@@ -128,7 +128,7 @@ DropdownMenu {
                 anchors.verticalCenterOffset: Theme.textOffset
                 text: day.model.day
                 font.pixelSize: Theme.fontSize - Theme.px(1)
-                color: day.isToday ? Theme.background
+                color: day.isToday ? Theme.controlText
                     : day.model.month === grid.month ? Theme.textColor : Theme.dimTextColor
             }
         }

@@ -31,7 +31,7 @@ Column {
                 width: (buttons.width - buttons.spacing * 2) / 3
                 height: Theme.px(48)
                 radius: Theme.px(8)
-                color: selected ? Theme.accent : hover.hovered && available ? Theme.highlight : Theme.surface
+                color: selected ? Theme.controlFill : hover.hovered && available ? Theme.highlight : Theme.surface
                 opacity: available ? 1 : 0.5
 
                 Behavior on color { ColorAnimation { duration: Theme.animationDuration } }
@@ -46,14 +46,14 @@ Column {
                         font.family: Theme.iconFont
                         font.weight: Font.Black
                         font.pixelSize: Theme.iconSize
-                        color: button.selected ? Theme.background : Theme.textColor
+                        color: button.selected ? Theme.controlText : Theme.textColor
                     }
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: button.modelData.label
                         font.pixelSize: Theme.fontSize - Theme.px(2)
-                        color: button.selected ? Theme.background : Theme.textColor
+                        color: button.selected ? Theme.controlText : Theme.textColor
                     }
                 }
 
