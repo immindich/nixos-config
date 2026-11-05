@@ -15,7 +15,9 @@ Singleton {
         AyuMirage {}, CatppuccinMocha {}, Everforest {}, Flexoki {}, Graphite {},
         GruvboxMaterial {}, Horizon {}, KanagawaDragon {}, KanagawaWave {}, Melange {},
         MonokaiPro {}, Nord {}, Oxocarbon {}, RosePine {}, SolarizedDark {}, TokyoNight {},
-        TomorrowNight {}, Zenburn {}
+        TomorrowNight {}, Zenburn {},
+        AmberGraphite {}, Dusk {}, Ember {}, FlexokiCalm {}, KanagawaInk {}, Moss {},
+        Paper {}, Patina {}, Prism {}, Sumi {}
     ]
     readonly property Scheme colors: {
         const found = schemes.find(s => s.name === scheme)
