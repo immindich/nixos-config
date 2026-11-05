@@ -1,6 +1,7 @@
 import QtQuick
 
-// Greyscale with a white accent (not an upstream scheme).
+// Greyscale with a white accent (not an upstream scheme). Only the active
+// workspace gets a pill; occupied ones are bold numbers.
 Scheme {
     name: "Graphite"
     background: "#141414"
@@ -14,4 +15,5 @@ Scheme {
     bad: "#ff6b6b"
     menuColor: "#1e1e1e"
     borderColor: "#3c3c3c"
+    workspaceStyle: "minimal"
 }
