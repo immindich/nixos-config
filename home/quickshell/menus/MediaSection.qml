@@ -4,15 +4,19 @@ import qs
 
 // Now playing: album art, title, artist and album, a seek bar and
 // previous/play-pause/next buttons for the current media player (Media.player).
-// Opened from the media indicator; set `anchor.item` to it.
-DropdownMenu {
-    id: mediaMenu
+// A section of the control center; set `shown` while the menu is open, which
+// is when it polls the playback position.
+Column {
+    id: mediaSection
 
+    width: parent.width - parent.leftPadding - parent.rightPadding
+    spacing: Theme.px(8)
+
+    // True while the menu holding this section is open
+    property bool shown: false
     readonly property var player: Media.player
     readonly property bool hasProgress: player !== null && player.lengthSupported
         && player.positionSupported && player.length > 0
-
-    menuWidth: Theme.px(320)
 
     // "1:05" or "1:02:33"
     function formatTime(seconds) {
@@ -55,18 +59,18 @@ DropdownMenu {
     // Players don't report playback position on their own; ask once a second
     // while the menu is open and something is playing
     Timer {
-        running: mediaMenu.visible && (mediaMenu.player?.isPlaying ?? false)
+        running: mediaSection.shown && mediaSection.visible && (mediaSection.player?.isPlaying ?? false)
         interval: 1000
         repeat: true
         triggeredOnStart: true
-        onTriggered: mediaMenu.player.positionChanged()
+        onTriggered: mediaSection.player.positionChanged()
     }
 
-    MenuHeading { text: mediaMenu.player?.identity ?? "Media" }
+    MenuHeading { text: mediaSection.player?.identity ?? "Media" }
 
     // Album art beside the track details
     Row {
-        width: parent.width - parent.leftPadding - parent.rightPadding
+        width: parent.width
         spacing: Theme.px(12)
 
         Item {
@@ -94,7 +98,7 @@ DropdownMenu {
             Image {
                 id: cover
                 anchors.fill: parent
-                source: mediaMenu.player?.trackArtUrl ?? ""
+                source: mediaSection.player?.trackArtUrl ?? ""
                 visible: source != "" && status === Image.Ready
                 fillMode: Image.PreserveAspectCrop
                 sourceSize: Qt.size(Theme.px(128), Theme.px(128))
@@ -122,7 +126,7 @@ DropdownMenu {
 
             Text {
                 width: parent.width
-                text: mediaMenu.player?.trackTitle || "Nothing playing"
+                text: mediaSection.player?.trackTitle || "Nothing playing"
                 textFormat: Text.PlainText
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
@@ -135,7 +139,7 @@ DropdownMenu {
             Text {
                 width: parent.width
                 visible: text !== ""
-                text: mediaMenu.player?.trackArtist ?? ""
+                text: mediaSection.player?.trackArtist ?? ""
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - Theme.px(1)
@@ -145,7 +149,7 @@ DropdownMenu {
             Text {
                 width: parent.width
                 visible: text !== ""
-                text: mediaMenu.player?.trackAlbum ?? ""
+                text: mediaSection.player?.trackAlbum ?? ""
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize - Theme.px(2)
@@ -156,20 +160,20 @@ DropdownMenu {
 
     // Seek bar with elapsed and total time; drag to seek if the player allows
     Column {
-        visible: mediaMenu.hasProgress
-        width: parent.width - parent.leftPadding - parent.rightPadding
+        visible: mediaSection.hasProgress
+        width: parent.width
         spacing: Theme.px(2)
 
         MenuSlider {
             id: progress
             width: parent.width
             from: 0
-            to: mediaMenu.player?.length ?? 1
-            enabled: mediaMenu.player?.canSeek ?? false
+            to: mediaSection.player?.length ?? 1
+            enabled: mediaSection.player?.canSeek ?? false
             // Seek once the handle is released
             onPressedChanged: {
-                if (!pressed && mediaMenu.player)
-                    mediaMenu.player.position = value
+                if (!pressed && mediaSection.player)
+                    mediaSection.player.position = value
             }
         }
 
@@ -177,7 +181,7 @@ DropdownMenu {
         Binding {
             target: progress
             property: "value"
-            value: mediaMenu.player?.position ?? 0
+            value: mediaSection.player?.position ?? 0
             when: !progress.pressed
         }
 
@@ -188,14 +192,14 @@ DropdownMenu {
             Text {
                 id: elapsed
                 anchors.left: parent.left
-                text: mediaMenu.formatTime(progress.value)
+                text: mediaSection.formatTime(progress.value)
                 font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
 
             Text {
                 anchors.right: parent.right
-                text: mediaMenu.formatTime(mediaMenu.player?.length ?? 0)
+                text: mediaSection.formatTime(mediaSection.player?.length ?? 0)
                 font.pixelSize: Theme.fontSize - Theme.px(2)
                 color: Theme.dimTextColor
             }
@@ -204,7 +208,7 @@ DropdownMenu {
 
     // Controls, centered
     Item {
-        width: parent.width - parent.leftPadding - parent.rightPadding
+        width: parent.width
         implicitHeight: controls.implicitHeight
 
         Row {
@@ -215,22 +219,22 @@ DropdownMenu {
             ControlButton {
                 anchors.verticalCenter: parent.verticalCenter
                 icon: "\uf048" // backward-step
-                enabled: mediaMenu.player?.canGoPrevious ?? false
-                onClicked: mediaMenu.player.previous()
+                enabled: mediaSection.player?.canGoPrevious ?? false
+                onClicked: mediaSection.player.previous()
             }
 
             ControlButton {
                 primary: true
-                icon: mediaMenu.player?.isPlaying ? "\uf04c" : "\uf04b" // pause : play
-                enabled: mediaMenu.player?.canTogglePlaying ?? false
-                onClicked: mediaMenu.player.togglePlaying()
+                icon: mediaSection.player?.isPlaying ? "\uf04c" : "\uf04b" // pause : play
+                enabled: mediaSection.player?.canTogglePlaying ?? false
+                onClicked: mediaSection.player.togglePlaying()
             }
 
             ControlButton {
                 anchors.verticalCenter: parent.verticalCenter
                 icon: "\uf051" // forward-step
-                enabled: mediaMenu.player?.canGoNext ?? false
-                onClicked: mediaMenu.player.next()
+                enabled: mediaSection.player?.canGoNext ?? false
+                onClicked: mediaSection.player.next()
             }
         }
     }

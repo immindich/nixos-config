@@ -5,7 +5,7 @@ import Quickshell
 import Quickshell.Io
 
 // The laptop backlight's raw brightness (`current` out of `max`), kept up to
-// date for the bar indicator, brightness menu and OSD
+// date for the control center and OSD
 Singleton {
     readonly property int max: parseInt(maxBrightnessFile.text())
     readonly property int current: parseInt(brightnessFile.text())

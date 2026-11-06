@@ -2,24 +2,28 @@ import QtQuick
 import Quickshell.Io
 import qs
 
-// Brightness slider and night light controls, opened from the brightness
-// indicator. Set `anchor.item` to the indicator and pass in the backlight's
-// raw `current` and `max` values; the menu sets brightness itself with
-// brightnessctl. The night light section follows NightLight (on/off,
-// automatic or manual, target temperature) and is hidden
-// when hyprsunset isn't running.
-DropdownMenu {
-    id: brightnessMenu
+// Brightness slider and night light controls, a section of the control
+// center. The slider follows Brightness and sets it with brightnessctl, and
+// is hidden without a backlight. The night light part follows NightLight
+// (on/off, automatic or manual, target temperature) and is hidden when
+// hyprsunset isn't running.
+Column {
+    id: brightnessSection
 
-    property int current: 0
-    property int max: 0
+    width: parent.width - parent.leftPadding - parent.rightPadding
+    spacing: Theme.px(8)
 
-    MenuHeading { text: "Brightness" }
+    // Raw backlight values; max is 0 without a backlight
+    readonly property int current: Brightness.current
+    readonly property int max: Brightness.max
+
+    MenuHeading { visible: brightnessSection.max > 0; text: "Brightness" }
 
     MenuSlider {
         id: brightnessSlider
+        visible: brightnessSection.max > 0
         from: 0
-        to: brightnessMenu.max
+        to: brightnessSection.max
         // value follows the real brightness via the Binding below
         live: true
         // start() is a no-op while the timer runs, so a drag sends at most one
@@ -55,14 +59,14 @@ DropdownMenu {
         // Reapply once max is read too; before that `to` is 0 and the slider
         // clamps the value to 0. Delayed so `to` has updated by the time the
         // value is applied.
-        value: brightnessMenu.max > 0 ? brightnessMenu.current : 0
+        value: brightnessSection.max > 0 ? brightnessSection.current : 0
         when: !brightnessSlider.pressed
         delayed: true
     }
 
     Item {
         visible: NightLight.available
-        width: parent.width - parent.leftPadding - parent.rightPadding
+        width: parent.width
         implicitHeight: Math.max(nightLightHeading.implicitHeight, nightLightSwitch.implicitHeight)
 
         MenuHeading {
@@ -85,7 +89,7 @@ DropdownMenu {
         visible: NightLight.available
         enabled: NightLight.enabled
         opacity: enabled ? 1 : 0.5
-        width: parent.width - parent.leftPadding - parent.rightPadding
+        width: parent.width
         implicitHeight: Math.max(autoLabel.implicitHeight, autoSwitch.implicitHeight)
 
         Text {

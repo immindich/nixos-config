@@ -8,7 +8,7 @@ import Quickshell.Wayland
 import qs.menus
 
 // Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
-// privacy indicators, then volume, brightness, network, battery and the clock
+// privacy indicators, then volume, the control center, network, battery and the clock
 Rectangle {
     id: statusArea
     anchors.verticalCenter: parent.verticalCenter
@@ -119,20 +119,6 @@ Rectangle {
         // 14px apart
         spacing: Theme.px(2)
 
-        // Media player: play icon while playing, dimmed pause icon while
-        // paused; hidden when no player is running
-        Indicator {
-            id: media
-            menu: MediaMenu { anchor.item: media }
-
-            readonly property var player: Media.player
-            readonly property bool playing: player?.isPlaying ?? false
-            visible: player !== null
-            icon: playing ? "\uf04b" : "\uf04c" // play : pause
-            contentColor: playing ? Theme.textColor : Theme.dimTextColor
-            text: ""
-        }
-
         // Pending Flatpak updates and their count; hidden when there are none
         Indicator {
             id: flatpak
@@ -218,17 +204,33 @@ Rectangle {
             }
         }
 
+        // Control center: media, brightness and night light, Bluetooth. A
+        // play icon while media plays and the Bluetooth logo while a device
+        // is connected show before the sliders icon.
         Indicator {
-            id: brightness
-            menu: BrightnessMenu {
-                anchor.item: brightness
-                current: Brightness.current
-                max: Brightness.max
-            }
+            id: controlCenter
+            menu: ControlCenterMenu { anchor.item: controlCenter }
 
-            visible: Brightness.max > 0
-            icon: "\uf185" // sun
+            readonly property bool playing: Media.player?.isPlaying ?? false
+            readonly property bool bluetoothConnected: (Bluetooth.defaultAdapter?.devices.values ?? [])
+                .some(d => d.connected)
+            icon: "\uf1de" // sliders
             text: ""
+            extraVisible: playing || bluetoothConnected
+            extra: Row {
+                spacing: Theme.px(4)
+                Icon {
+                    visible: controlCenter.playing
+                    text: "\uf04b" // play
+                    color: controlCenter.fgColor
+                }
+                Icon {
+                    visible: controlCenter.bluetoothConnected
+                    text: "\uf294" // bluetooth-b
+                    font.family: Theme.brandIconFont
+                    color: controlCenter.fgColor
+                }
+            }
 
             // Scroll to change the brightness in 5% steps, like the brightness keys
             WheelSteps {
@@ -259,18 +261,6 @@ Rectangle {
                 connecting: network.connecting && !network.wifi
                 color: network.fgColor
             }
-        }
-
-        Indicator {
-            id: bluetooth
-            menu: BluetoothMenu { anchor.item: bluetooth }
-
-            readonly property var adapter: Bluetooth.defaultAdapter
-            visible: adapter !== null
-            icon: "\uf294" // bluetooth-b
-            iconFont: Theme.brandIconFont
-            contentColor: adapter?.enabled ? Theme.textColor : Theme.dimTextColor
-            text: ""
         }
 
         Indicator {

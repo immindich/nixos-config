@@ -4,18 +4,18 @@ import Quickshell.Bluetooth
 import qs
 
 // Bluetooth on/off switch and paired devices with connect/disconnect buttons
-// and battery levels, opened from the Bluetooth indicator. Set `anchor.item`
-// to the indicator. Pairing new devices isn't handled here.
-DropdownMenu {
-    id: bluetoothMenu
+// and battery levels, a section of the control center. Pairing new devices
+// isn't handled here.
+Column {
+    id: bluetoothSection
+
+    width: parent.width - parent.leftPadding - parent.rightPadding
+    spacing: Theme.px(8)
 
     readonly property var adapter: Bluetooth.defaultAdapter
 
-    // Wider than the default to fit name, battery level and button on one line
-    menuWidth: Theme.px(320)
-
     Item {
-        width: parent.width - parent.leftPadding - parent.rightPadding
+        width: parent.width
         implicitHeight: Math.max(heading.implicitHeight, bluetoothSwitch.implicitHeight)
 
         MenuHeading {
@@ -28,24 +28,24 @@ DropdownMenu {
             id: bluetoothSwitch
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            enabled: bluetoothMenu.adapter !== null
-            checked: bluetoothMenu.adapter?.enabled ?? false
-            onToggled: bluetoothMenu.adapter.enabled = !bluetoothMenu.adapter.enabled
+            enabled: bluetoothSection.adapter !== null
+            checked: bluetoothSection.adapter?.enabled ?? false
+            onToggled: bluetoothSection.adapter.enabled = !bluetoothSection.adapter.enabled
         }
     }
 
     Text {
-        visible: !(bluetoothMenu.adapter?.enabled ?? false) || devices.count === 0
+        visible: !(bluetoothSection.adapter?.enabled ?? false) || devices.count === 0
         font.pixelSize: Theme.fontSize
         color: Theme.dimTextColor
-        text: bluetoothMenu.adapter === null ? "No Bluetooth adapter"
-            : !bluetoothMenu.adapter.enabled ? "Bluetooth is off"
+        text: bluetoothSection.adapter === null ? "No Bluetooth adapter"
+            : !bluetoothSection.adapter.enabled ? "Bluetooth is off"
             : "No paired devices"
     }
 
     Column {
-        visible: bluetoothMenu.adapter?.enabled ?? false
-        width: parent.width - parent.leftPadding - parent.rightPadding
+        visible: bluetoothSection.adapter?.enabled ?? false
+        width: parent.width
         spacing: Theme.px(2)
 
         Repeater {
@@ -53,7 +53,7 @@ DropdownMenu {
 
             // Connected devices first, then by name
             model: ScriptModel {
-                values: (bluetoothMenu.adapter?.devices.values ?? [])
+                values: (bluetoothSection.adapter?.devices.values ?? [])
                     .filter(d => d.paired)
                     .sort((a, b) => (b.connected - a.connected) || a.name.localeCompare(b.name))
             }
