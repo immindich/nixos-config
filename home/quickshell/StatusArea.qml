@@ -252,7 +252,7 @@ Rectangle {
             // Wired: plug icon. Wi-Fi: signal bars, cycling while connecting.
             // Otherwise a dimmed Wi-Fi icon.
             icon: wired ? "\uf6ff" : wifi || connecting ? "" : "\uf1eb" // network-wired : wifi
-            contentColor: wired ? Theme.textColor : Theme.dimTextColor
+            contentColor: wired || wifi || connecting ? Theme.textColor : Theme.dimTextColor
             text: ""
             extraVisible: !wired && (wifi || connecting)
             extra: WifiSignal {
