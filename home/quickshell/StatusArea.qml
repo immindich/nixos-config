@@ -170,12 +170,31 @@ Rectangle {
 
             readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
             readonly property bool muted: !audio || audio.muted
+            readonly property bool headphones: {
+                const props = Pipewire.defaultAudioSink?.properties ?? {}
+                // Bluetooth: the sink only gives the address, so look up the
+                // device's type in BlueZ (e.g. "audio-headset")
+                const address = props["api.bluez5.address"]
+                if (address) {
+                    const device = (Bluetooth.defaultAdapter?.devices.values ?? [])
+                        .find(d => d.address === address)
+                    return device?.icon.startsWith("audio-head") ?? false
+                }
+                // USB headsets name their form factor; the laptop's own jack
+                // is a separate "Headphones" sink
+                const formFactor = props["device.form-factor"] ?? ""
+                return formFactor === "headphone" || formFactor === "headset"
+                    || (props["device.icon_name"] ?? "").startsWith("audio-head")
+                    || (props["device.profile.name"] ?? "").includes("Headphones")
+            }
             visible: audio !== null
-            // Muted: speaker with a cross. Otherwise the bare speaker with
+            // Headphones: a headphones icon, dimmed while muted. Otherwise,
+            // muted: speaker with a cross; unmuted: the bare speaker with
             // sound-wave arcs lit by volume.
-            icon: muted ? "\uf6a9" : "" // volume-xmark
+            icon: headphones ? "\uf025" : muted ? "\uf6a9" : "" // headphones : volume-xmark
+            contentColor: headphones && muted ? Theme.dimTextColor : Theme.textColor
             text: ""
-            extraVisible: !muted
+            extraVisible: !muted && !headphones
             extra: Row {
                 spacing: Theme.px(1)
                 Icon { text: "\uf026"; color: volume.fgColor } // volume-off (bare speaker)
@@ -204,33 +223,13 @@ Rectangle {
             }
         }
 
-        // Control center: media, brightness and night light, Bluetooth. A
-        // play icon while media plays and the Bluetooth logo while a device
-        // is connected show before the sliders icon.
+        // Control center: media, brightness, Bluetooth and night light
         Indicator {
             id: controlCenter
             menu: ControlCenterMenu { anchor.item: controlCenter }
 
-            readonly property bool playing: Media.player?.isPlaying ?? false
-            readonly property bool bluetoothConnected: (Bluetooth.defaultAdapter?.devices.values ?? [])
-                .some(d => d.connected)
             icon: "\uf1de" // sliders
             text: ""
-            extraVisible: playing || bluetoothConnected
-            extra: Row {
-                spacing: Theme.px(4)
-                Icon {
-                    visible: controlCenter.playing
-                    text: "\uf04b" // play
-                    color: controlCenter.fgColor
-                }
-                Icon {
-                    visible: controlCenter.bluetoothConnected
-                    text: "\uf294" // bluetooth-b
-                    font.family: Theme.brandIconFont
-                    color: controlCenter.fgColor
-                }
-            }
 
             // Scroll to change the brightness in 5% steps, like the brightness keys
             WheelSteps {
