@@ -179,15 +179,9 @@ ShellRoot {
             maxWidth: {
               const center = parent.width / 2
               const leftRoom = center - (workspaces.x + workspaces.width)
-              const rightRoom = (tray.visible ? tray.x : statusArea.x) - center
+              const rightRoom = statusArea.x - center
               return Math.min(Theme.px(600), 2 * (Math.min(leftRoom, rightRoom) - Theme.bubbleSpacing))
             }
-          }
-
-          TrayArea {
-            id: tray
-            anchors.right: statusArea.left
-            anchors.rightMargin: Theme.bubbleSpacing
           }
 
           StatusArea {

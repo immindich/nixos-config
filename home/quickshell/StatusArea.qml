@@ -8,7 +8,8 @@ import Quickshell.Wayland
 import qs.menus
 
 // Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
-// privacy indicators, then volume, network, battery, control center, and the clock
+// the system tray, privacy indicators, then volume, network, battery, control
+// center, and the clock
 Item {
     id: statusArea
     anchors.verticalCenter: parent.verticalCenter
@@ -115,6 +116,9 @@ Item {
         // Indicators are padded pills; this plus their padding spaces items
         // 14px apart
         spacing: Theme.px(2)
+
+        // System tray icons, before the indicators; nothing while empty
+        TrayArea {}
 
         // Pending Flatpak updates and their count; hidden when there are none
         Indicator {
