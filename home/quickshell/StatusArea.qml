@@ -140,15 +140,18 @@ Rectangle {
             text: ""
         }
 
-        // Notification count; bell-slash while do-not-disturb is on
+        // Notification count; bell-slash while do-not-disturb is on. Hidden
+        // when there are none, closing its menu if that was open.
         Indicator {
             id: notifications
             menu: NotificationMenu { anchor.item: notifications }
 
             readonly property int count: Notifications.history.length
+            visible: count > 0
+            onVisibleChanged: if (!visible) menu.visible = false
             icon: Notifications.dnd ? "\uf1f6" : "\uf0f3" // bell-slash : bell
             contentColor: Notifications.dnd ? Theme.dimTextColor : Theme.textColor
-            text: count > 0 ? count : ""
+            text: count
         }
 
         // Weather: conditions icon and temperature; hidden until the first
@@ -223,7 +226,8 @@ Rectangle {
             }
         }
 
-        // Control center: media, brightness, Bluetooth and night light
+        // Control center: media, brightness, Bluetooth, night light and
+        // do-not-disturb
         Indicator {
             id: controlCenter
             menu: ControlCenterMenu { anchor.item: controlCenter }

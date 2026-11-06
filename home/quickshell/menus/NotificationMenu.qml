@@ -2,14 +2,16 @@ import QtQuick
 import Quickshell
 import qs
 
-// Notification history with a do-not-disturb switch and "Clear all", opened
-// from the bell indicator. Set `anchor.item` to the indicator.
+// Notification history with "Clear all", opened from the bell indicator.
+// Set `anchor.item` to the indicator. Do-not-disturb is in the control
+// center.
 DropdownMenu {
     menuWidth: Theme.px(380)
 
+    // Heading with "Clear all" on the right
     Item {
         width: parent.width - parent.leftPadding - parent.rightPadding
-        implicitHeight: Math.max(heading.implicitHeight, dndSwitch.implicitHeight)
+        implicitHeight: Math.max(heading.implicitHeight, Theme.px(24))
 
         MenuHeading {
             id: heading
@@ -17,35 +19,12 @@ DropdownMenu {
             text: "Notifications"
         }
 
-        Text {
-            anchors.right: dndSwitch.left
-            anchors.rightMargin: Theme.px(8)
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: Theme.textOffset
-            text: "Do not disturb"
-            font.pixelSize: Theme.fontSize - Theme.px(2)
-            color: Theme.dimTextColor
-        }
-
-        MenuSwitch {
-            id: dndSwitch
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            checked: Notifications.dnd
-            onToggled: Notifications.dnd = !Notifications.dnd
-        }
-    }
-
-    // Full-width row so the button can be anchored to the right
-    Item {
-        visible: Notifications.history.length > 0
-        width: parent.width - parent.leftPadding - parent.rightPadding
-        height: Theme.px(24)
-
         Rectangle {
+            visible: Notifications.history.length > 0
             anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
             width: clearLabel.implicitWidth + Theme.px(20)
-            height: parent.height
+            height: Theme.px(24)
             radius: height / 2
             color: clearHover.hovered ? Theme.highlight : Theme.surface
 
@@ -61,13 +40,6 @@ DropdownMenu {
             HoverHandler { id: clearHover }
             TapHandler { onTapped: Notifications.clearAll() }
         }
-    }
-
-    Text {
-        visible: Notifications.history.length === 0
-        font.pixelSize: Theme.fontSize
-        color: Theme.dimTextColor
-        text: "No notifications"
     }
 
     // Scrolls once the list is taller than this

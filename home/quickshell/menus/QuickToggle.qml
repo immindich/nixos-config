@@ -3,9 +3,9 @@ import qs
 
 // Control center tile: icon, label and a one-line status, filled while
 // `checked`. Clicking the tile emits `toggled()`; the chevron on its right
-// emits `expandToggled()`, for showing the setting's details below the
-// tiles. Like MenuSwitch, it leaves updating `checked` and `expanded` to the
-// owner.
+// (shown while `expandable`) emits `expandToggled()`, for showing the
+// setting's details below the tiles. Like MenuSwitch, it leaves updating
+// `checked` and `expanded` to the owner.
 Rectangle {
     id: tile
 
@@ -15,6 +15,7 @@ Rectangle {
     property alias status: statusText.text
     property bool checked: false
     property bool expanded: false
+    property bool expandable: true
     signal toggled()
     signal expandToggled()
 
@@ -44,7 +45,8 @@ Rectangle {
     Column {
         anchors.left: glyph.right
         anchors.leftMargin: Theme.px(8)
-        anchors.right: chevron.left
+        anchors.right: tile.expandable ? chevron.left : parent.right
+        anchors.rightMargin: tile.expandable ? 0 : Theme.px(10)
         anchors.verticalCenter: parent.verticalCenter
 
         Text {
@@ -73,7 +75,7 @@ Rectangle {
     // toggle
     TapHandler {
         onTapped: eventPoint => {
-            if (chevron.contains(chevron.mapFromItem(tile, eventPoint.position)))
+            if (chevron.visible && chevron.contains(chevron.mapFromItem(tile, eventPoint.position)))
                 tile.expandToggled()
             else
                 tile.toggled()
@@ -83,6 +85,7 @@ Rectangle {
     // Expand button
     Rectangle {
         id: chevron
+        visible: tile.expandable
         anchors.right: parent.right
         anchors.rightMargin: Theme.px(4)
         anchors.verticalCenter: parent.verticalCenter

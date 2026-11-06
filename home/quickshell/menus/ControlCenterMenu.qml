@@ -8,7 +8,8 @@ import qs
 // show their details below the tiles, one at a time. The Bluetooth tile is
 // filled while a device is connected, and clicking it shows the on/off
 // switch and paired devices; the night light tile is filled while it's on,
-// and clicking it turns it on or off.
+// and clicking it turns it on or off. A do-not-disturb tile (no details)
+// follows them.
 // Parts with nothing to control are hidden.
 DropdownMenu {
     id: controlCenter
@@ -20,7 +21,6 @@ DropdownMenu {
     readonly property bool hasBrightness: Brightness.max > 0
     readonly property bool hasBluetooth: adapter !== null
     readonly property bool hasNightLight: NightLight.available
-    readonly property bool hasTiles: hasBluetooth || hasNightLight
     // Connected devices, for the Bluetooth tile's status
     readonly property var connectedDevices: (adapter?.devices.values ?? []).filter(d => d.connected)
 
@@ -44,19 +44,18 @@ DropdownMenu {
         shown: controlCenter.visible
     }
 
-    Divider { visible: controlCenter.hasMedia && (controlCenter.hasBrightness || controlCenter.hasTiles) }
+    Divider { visible: controlCenter.hasMedia }
 
     BrightnessSection { visible: controlCenter.hasBrightness }
 
-    Row {
+    // Two to a row; with an odd number, the last (do-not-disturb) spans the row
+    Flow {
         id: tiles
-        visible: controlCenter.hasTiles
         width: parent.width - parent.leftPadding - parent.rightPadding
         spacing: Theme.px(8)
 
-        // Shared evenly between the tiles shown
-        readonly property int count: (controlCenter.hasBluetooth ? 1 : 0) + (controlCenter.hasNightLight ? 1 : 0)
-        readonly property real tileWidth: (width - spacing * (count - 1)) / Math.max(count, 1)
+        readonly property int count: (controlCenter.hasBluetooth ? 1 : 0) + (controlCenter.hasNightLight ? 1 : 0) + 1
+        readonly property real tileWidth: (width - spacing) / 2
 
         QuickToggle {
             visible: controlCenter.hasBluetooth
@@ -89,16 +88,19 @@ DropdownMenu {
             onToggled: NightLight.enabled = !NightLight.enabled
             onExpandToggled: controlCenter.toggleExpanded("nightLight")
         }
+
+        QuickToggle {
+            width: tiles.count % 2 === 1 ? tiles.width : tiles.tileWidth
+            icon: "\uf1f6" // bell-slash
+            label: "Do not disturb"
+            status: Notifications.dnd ? "On" : "Off"
+            checked: Notifications.dnd
+            expandable: false
+            onToggled: Notifications.dnd = !Notifications.dnd
+        }
     }
 
     BluetoothSection { visible: controlCenter.hasBluetooth && controlCenter.expanded === "bluetooth" }
 
     NightLightSection { visible: controlCenter.hasNightLight && controlCenter.expanded === "nightLight" }
-
-    Text {
-        visible: !controlCenter.hasMedia && !controlCenter.hasBrightness && !controlCenter.hasTiles
-        text: "Nothing to control"
-        font.pixelSize: Theme.fontSize
-        color: Theme.dimTextColor
-    }
 }
