@@ -19,14 +19,9 @@ Item {
 
     readonly property int pad: Theme.menuShadow ? Theme.px(20) : 0
     readonly property int caretSize: Theme.menuStyle === "caret" ? Theme.px(8) : 0
-    // A drawer needs the solid bar to sit flush against; with bubbles it floats
-    readonly property bool squareTop: (Theme.menuStyle === "drawer" && Theme.solidBar) || Theme.menuStyle === "tab"
-    // Distance from the bar's edge to the panel. With bubbles instead of a
-    // solid bar, the bar window's edge is already a margin below them, so
-    // only a caret needs a little room there.
-    readonly property int barInset: Theme.solidBar
-        ? (Theme.menuStyle === "float" || Theme.menuStyle === "caret" ? Theme.menuGap : 0)
-        : (Theme.menuStyle === "caret" ? Theme.px(2) : 0)
+    readonly property bool squareTop: Theme.menuStyle === "drawer" || Theme.menuStyle === "tab"
+    // Distance from the bar's edge to the panel
+    readonly property int barInset: Theme.menuStyle === "float" || Theme.menuStyle === "caret" ? Theme.menuGap : 0
     // The caret stays clear of the panel's rounded corners, so it can't quite
     // reach an indicator at the screen's edge
     readonly property real caretShift: {

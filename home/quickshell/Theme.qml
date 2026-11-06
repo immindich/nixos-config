@@ -73,8 +73,7 @@ Singleton {
     // How a menu hangs off the bar:
     //   "float"  a menuGap below the bar
     //   "caret"  floats, with a beak pointing at its indicator
-    //   "drawer" flush with the bar, square corners where they meet (needs
-    //            the solid bar; with bubbles it floats instead)
+    //   "drawer" flush with the bar, square corners where they meet
     //   "tab"    a drawer joined to its indicator by a tab through the bar
     //   "flush"  hangs just off the indicator, rounded (the original look)
     property string menuStyle: "drawer"
@@ -115,23 +114,20 @@ Singleton {
 
     // Screen edge the bar sits on: "top" or "bottom". Menus, tooltips and
     // the workspace window list open toward the middle of the screen.
-    // The bar passes this and solidBar on to Hyprland, for the gaps around
-    // a lone window (sendBarGap in shell.qml).
     property string barPosition: "top"
     readonly property bool barOnBottom: barPosition === "bottom"
-    // Fill the whole bar behind the bubbles instead of leaving the wallpaper
-    // showing between them, in barColor
-    property bool solidBar: true
     readonly property color barColor: background
 
     // Sizes
+    // Height of the bar's groups (session button, workspaces, window title,
+    // status area)
     readonly property int bubbleHeight: px(26)
-    // Gap between bubbles and screen edges; same as Hyprland's gaps_out, so
-    // it doesn't scale
+    // Gap between the bar's groups and its ends; same as Hyprland's
+    // gaps_out, so it doesn't scale
     readonly property int barMargin: 6
-    // Same gap above and below the bubbles as at the sides
+    // Same gap above and below the groups as at the ends
     readonly property int barHeight: bubbleHeight + 2 * barMargin
-    readonly property int bubbleSpacing: px(4)  // gap between bubbles
+    readonly property int bubbleSpacing: px(4)  // gap between groups
     readonly property int workspaceSize: px(20) // height of a workspace circle
     readonly property int animationDuration: 150
     readonly property int menuOpenDuration: 90 // menus fade and slide in

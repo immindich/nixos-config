@@ -11,28 +11,6 @@ import qs.menus
 ShellRoot {
   id: root
 
-  // Tell Hyprland which edge the bar is on and whether it's solid, for the
-  // gaps around a lone tiled window (set_bar_gap in home/hyprland.nix). Sent
-  // when the shell loads, which includes every save of Theme.qml, when
-  // either setting changes at runtime (ThemeTweaker), and again whenever
-  // Hyprland reloads its config, which resets the rule to its defaults.
-  function sendBarGap() {
-    Hyprland.dispatch(`set_bar_gap(${JSON.stringify(Theme.barPosition)}, ${Theme.solidBar})`)
-  }
-  Component.onCompleted: sendBarGap()
-  Connections {
-    target: Theme
-    function onBarPositionChanged() { root.sendBarGap() }
-    function onSolidBarChanged() { root.sendBarGap() }
-  }
-  Connections {
-    target: Hyprland
-    function onRawEvent(event) {
-      if (event.name === "configreloaded")
-        root.sendBarGap()
-    }
-  }
-
   // One wallpaper per screen
   Variants {
     model: Quickshell.screens
@@ -62,11 +40,7 @@ ShellRoot {
         }
 
         implicitHeight: Theme.barHeight
-        // Reserve space only up to the bubbles; Hyprland's gaps_out supplies
-        // the gap between them and the windows, so it matches the gaps
-        // between windows. A solid bar reserves all of itself, so the gap
-        // starts at its edge instead.
-        exclusiveZone: Theme.solidBar ? Theme.barHeight : Theme.barHeight - Theme.barMargin
+        exclusiveZone: Theme.barHeight
         color: "transparent"
 
         // Over a fullscreen window the bar slides out of sight, leaving a
@@ -148,23 +122,19 @@ ShellRoot {
 
           Behavior on y { NumberAnimation { duration: Theme.animationDuration; easing.type: Easing.OutCubic } }
 
-          // Solid background behind the bubbles, when Theme.solidBar is set
           Rectangle {
             anchors.fill: parent
-            visible: Theme.solidBar
             color: Theme.barColor
           }
 
           // NixOS logo; opens the lock/sleep/shut down/exit menu
-          Rectangle {
+          Item {
             id: session
             anchors.left: parent.left
             anchors.leftMargin: Theme.barMargin
             anchors.verticalCenter: parent.verticalCenter
             implicitWidth: sessionButton.width + Theme.px(8)
             implicitHeight: Theme.bubbleHeight
-            radius: height / 2
-            color: Theme.background
 
             IndicatorPill {
               id: sessionButton

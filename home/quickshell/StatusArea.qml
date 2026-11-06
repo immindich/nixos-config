@@ -9,14 +9,11 @@ import qs.menus
 
 // Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
 // privacy indicators, then volume, network, battery, control center, and the clock
-Rectangle {
+Item {
     id: statusArea
     anchors.verticalCenter: parent.verticalCenter
     implicitWidth: row.implicitWidth + Theme.px(12)
     implicitHeight: Theme.bubbleHeight
-    radius: height / 2
-    color: Theme.background
-
 
     // Font Awesome solid glyph
     component Icon: Text {

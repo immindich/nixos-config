@@ -58,14 +58,12 @@ Row {
         }
     }
 
-    component Bubble: Rectangle {
+    component Bubble: Item {
         default property alias content: row.data
         // Scroll wheel notches on the bubble (1 = up, -1 = down)
         signal scrolled(int direction)
         implicitWidth: row.implicitWidth + Theme.px(8)
         implicitHeight: Theme.bubbleHeight
-        radius: height / 2
-        color: Theme.background
 
         Row {
             id: row

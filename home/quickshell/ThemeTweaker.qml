@@ -33,7 +33,6 @@ PanelWindow {
         { label: "Shadow", prop: "menuShadow", values: [false, true], names: ["off", "on"] },
         { label: "Stripe", prop: "menuAccentEdge", values: [false, true], names: ["off", "on"] },
         { label: "Opacity", prop: "menuOpacity", values: [1, 0.85, 0.7, 0.55], names: ["100%", "85%", "70%", "55%"] },
-        { label: "Bar", prop: "solidBar", values: [false, true], names: ["bubbles", "solid"] },
         { label: "Edge", prop: "barPosition", values: ["top", "bottom"] },
         { label: "Size", prop: "fontSize", values: [10, 12, 14, 16, 20] },
     ]

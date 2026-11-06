@@ -4,8 +4,8 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Widgets
 
-// Title of the focused window, in a pill matching WorkspaceSwitcher
-Rectangle {
+// Title of the focused window, sized like WorkspaceSwitcher
+Item {
     // Hyprland keeps reporting the last active window after switching to an
     // empty workspace, so only show it while it's on the focused workspace
     // or on a special workspace that's open on top of it
@@ -44,8 +44,6 @@ Rectangle {
 
     implicitWidth: row.implicitWidth + Theme.px(24)
     implicitHeight: Theme.bubbleHeight
-    radius: height / 2
-    color: Theme.background
 
     RowLayout {
         id: row
