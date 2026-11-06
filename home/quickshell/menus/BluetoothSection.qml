@@ -3,9 +3,9 @@ import Quickshell
 import Quickshell.Bluetooth
 import qs
 
-// Bluetooth on/off switch and paired devices with connect/disconnect buttons
-// and battery levels, a section of the control center. Pairing new devices
-// isn't handled here.
+// Paired Bluetooth devices with connect/disconnect buttons and battery
+// levels, shown when the control center's Bluetooth tile is expanded (the
+// tile turns Bluetooth on and off). Pairing new devices isn't handled here.
 Column {
     id: bluetoothSection
 
@@ -13,26 +13,6 @@ Column {
     spacing: Theme.px(8)
 
     readonly property var adapter: Bluetooth.defaultAdapter
-
-    Item {
-        width: parent.width
-        implicitHeight: Math.max(heading.implicitHeight, bluetoothSwitch.implicitHeight)
-
-        MenuHeading {
-            id: heading
-            anchors.verticalCenter: parent.verticalCenter
-            text: "Bluetooth"
-        }
-
-        MenuSwitch {
-            id: bluetoothSwitch
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            enabled: bluetoothSection.adapter !== null
-            checked: bluetoothSection.adapter?.enabled ?? false
-            onToggled: bluetoothSection.adapter.enabled = !bluetoothSection.adapter.enabled
-        }
-    }
 
     Text {
         visible: !(bluetoothSection.adapter?.enabled ?? false) || devices.count === 0

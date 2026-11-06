@@ -2,26 +2,33 @@ import QtQuick
 import Quickshell.Io
 import qs
 
-// Brightness slider and night light controls, a section of the control
-// center. The slider follows Brightness and sets it with brightnessctl, and
-// is hidden without a backlight. The night light part follows NightLight
-// (on/off, automatic or manual, target temperature) and is hidden when
-// hyprsunset isn't running.
-Column {
+// Brightness slider for the control center, with a sun icon beside it. It
+// follows Brightness and sets it with brightnessctl. Hide it without a
+// backlight (Brightness.max is 0).
+Row {
     id: brightnessSection
 
     width: parent.width - parent.leftPadding - parent.rightPadding
-    spacing: Theme.px(8)
+    spacing: Theme.px(10)
 
     // Raw backlight values; max is 0 without a backlight
     readonly property int current: Brightness.current
     readonly property int max: Brightness.max
 
-    MenuHeading { visible: brightnessSection.max > 0; text: "Brightness" }
+    Text {
+        id: sun
+        anchors.verticalCenter: parent.verticalCenter
+        text: "\uf185" // sun
+        font.family: Theme.iconFont
+        font.weight: Font.Black
+        font.pixelSize: Theme.iconSize + Theme.px(2)
+        color: Theme.textColor
+    }
 
     MenuSlider {
         id: brightnessSlider
-        visible: brightnessSection.max > 0
+        anchors.verticalCenter: parent.verticalCenter
+        width: parent.width - sun.width - parent.spacing
         from: 0
         to: brightnessSection.max
         // value follows the real brightness via the Binding below
@@ -62,85 +69,5 @@ Column {
         value: brightnessSection.max > 0 ? brightnessSection.current : 0
         when: !brightnessSlider.pressed
         delayed: true
-    }
-
-    Item {
-        visible: NightLight.available
-        width: parent.width
-        implicitHeight: Math.max(nightLightHeading.implicitHeight, nightLightSwitch.implicitHeight)
-
-        MenuHeading {
-            id: nightLightHeading
-            anchors.verticalCenter: parent.verticalCenter
-            text: "Night light"
-        }
-
-        MenuSwitch {
-            id: nightLightSwitch
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            checked: NightLight.enabled
-            onToggled: NightLight.enabled = !NightLight.enabled
-        }
-    }
-
-    // Automatic: follow the sun while on. Manual: full temperature while on.
-    Item {
-        visible: NightLight.available
-        enabled: NightLight.enabled
-        opacity: enabled ? 1 : 0.5
-        width: parent.width
-        implicitHeight: Math.max(autoLabel.implicitHeight, autoSwitch.implicitHeight)
-
-        Text {
-            id: autoLabel
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            text: "Automatic"
-            font.pixelSize: Theme.fontSize
-            color: Theme.dimTextColor
-        }
-
-        MenuSwitch {
-            id: autoSwitch
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            checked: NightLight.auto
-            onToggled: NightLight.auto = !NightLight.auto
-        }
-    }
-
-    // Sets the target temperature; in automatic mode the filter fades toward
-    // it at sunset
-    MenuSlider {
-        id: temperatureSlider
-        visible: NightLight.available
-        enabled: NightLight.enabled
-        opacity: enabled ? 1 : 0.5
-        from: NightLight.minTemperature
-        to: NightLight.maxTemperature
-        stepSize: 100
-        live: true
-        // Throttled in NightLight, so every move can be forwarded
-        onMoved: NightLight.temperature = value
-    }
-
-    Binding {
-        target: temperatureSlider
-        property: "value"
-        value: NightLight.temperature
-        when: !temperatureSlider.pressed
-    }
-
-    MenuInfoRow {
-        visible: NightLight.available
-        label: "Temperature"
-        value: NightLight.active ? NightLight.appliedTemperature + " K" : "Off"
-    }
-
-    MenuInfoRow {
-        visible: NightLight.available && NightLight.enabled && NightLight.auto
-        label: "Schedule"
-        value: (NightLight.next.on ? "On at " : "Off at ") + Qt.formatTime(NightLight.next.time, "h:mm ap")
     }
 }
