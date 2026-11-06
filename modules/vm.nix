@@ -115,5 +115,40 @@
     # start and crash for want of a config.
     home-manager.users.isaiah.services.hypridle.enable = lib.mkVMOverride false;
     services.hypridle.enable = lib.mkVMOverride false;
+
+    # QEMU gives the guest no sound card, so without these there's no volume
+    # indicator, audio menu or OSD to test. Null devices that discard what's
+    # played: speakers (the default), headphones (for the bar's headphones
+    # icon; switch with `wpctl set-default`) and a microphone.
+    services.pipewire.extraConfig.pipewire."90-vm-dummy-devices"."context.objects" =
+      let
+        nullDevice = props: {
+          factory = "adapter";
+          args = {
+            "factory.name" = "support.null-audio-sink";
+            "object.linger" = true;
+            "audio.position" = [ "FL" "FR" ];
+          } // props;
+        };
+      in [
+        (nullDevice {
+          "node.name" = "vm-speakers";
+          "node.description" = "Speakers";
+          "media.class" = "Audio/Sink";
+          "priority.session" = 1100;
+        })
+        (nullDevice {
+          "node.name" = "vm-headphones";
+          "node.description" = "Headphones";
+          "media.class" = "Audio/Sink";
+          "device.form-factor" = "headphone";
+          "priority.session" = 1000;
+        })
+        (nullDevice {
+          "node.name" = "vm-microphone";
+          "node.description" = "Microphone";
+          "media.class" = "Audio/Source";
+        })
+      ];
   };
 }

@@ -83,7 +83,8 @@
     kdePackages.dolphin
     kdePackages.gwenview
     umu-launcher
-    mpv
+    # MPRIS, so the bar's media controls and playerctl see it
+    (mpv.override { scripts = [ mpvScripts.mpris ]; })
   ];
 
   # Select internationalisation properties.

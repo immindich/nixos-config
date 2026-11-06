@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# A media player in the guest, for the bar's media controls: mpv (with its
+# MPRIS plugin) looping a sine tone into the default sink.
+#
+#   vm-media start    start it playing (restarts it if it's already running)
+#   vm-media stop     quit it
+#   vm-media pause | play | status    through playerctl
+. "$(dirname "$0")/lib.sh"
+
+case "${1:-}" in
+    start)
+        vm_session "pkill -x mpv; setsid -f mpv --loop --force-media-title='Test Tone' --no-video av://lavfi:sine=f=440 >/dev/null 2>&1"
+        # Wait for it to register on the bus, so the next step sees it
+        for _ in $(seq 1 20); do
+            [ "$(vm_session 'playerctl -p mpv status 2>/dev/null' || true)" = Playing ] && { echo Playing; exit 0; }
+            sleep 0.25
+        done
+        die "mpv didn't show up on MPRIS after 5 s" ;;
+    stop) vm_session 'pkill -x mpv' || true ;;
+    pause|play|status) vm_session "playerctl -p mpv $1" ;;
+    *) die "usage: vm-media start | stop | pause | play | status" ;;
+esac
