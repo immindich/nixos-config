@@ -8,7 +8,7 @@ import Quickshell.Wayland
 import qs.menus
 
 // Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
-// privacy indicators, then volume, the control center, network, battery and the clock
+// privacy indicators, then volume, network, battery, control center, and the clock
 Rectangle {
     id: statusArea
     anchors.verticalCenter: parent.verticalCenter
@@ -226,21 +226,6 @@ Rectangle {
             }
         }
 
-        // Control center: media, brightness, Bluetooth, night light and
-        // do-not-disturb
-        Indicator {
-            id: controlCenter
-            menu: ControlCenterMenu { anchor.item: controlCenter }
-
-            icon: "\uf1de" // sliders
-            text: ""
-
-            // Scroll to change the brightness in 5% steps, like the brightness keys
-            WheelSteps {
-                onStepped: direction => Quickshell.execDetached(["brightnessctl", "-e4", "-n2", "set", direction > 0 ? "5%+" : "5%-"])
-            }
-        }
-
         Indicator {
             id: network
             menu: NetworkMenu { anchor.item: network }
@@ -294,6 +279,21 @@ Rectangle {
                     charging: power.charging
                     color: power.fgColor
                 }
+            }
+        }
+
+        // Control center: media, brightness, Bluetooth, night light and
+        // do-not-disturb
+        Indicator {
+            id: controlCenter
+            menu: ControlCenterMenu { anchor.item: controlCenter }
+
+            icon: "\uf1de" // sliders
+            text: ""
+
+            // Scroll to change the brightness in 5% steps, like the brightness keys
+            WheelSteps {
+                onStepped: direction => Quickshell.execDetached(["brightnessctl", "-e4", "-n2", "set", direction > 0 ? "5%+" : "5%-"])
             }
         }
 
