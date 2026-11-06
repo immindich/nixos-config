@@ -131,11 +131,21 @@ Rectangle {
             active: FlatpakUpdates.updating
         }
 
-        // Clipboard history
+        // Clipboard history; shown only while its menu is open (SUPER+SHIFT+V)
         Indicator {
             id: clipboard
             menu: ClipboardMenu { anchor.item: clipboard }
 
+            visible: menu.visible
+            // The menu places itself as it opens, which may be before the
+            // row has made room for this indicator; lay the row out now and
+            // place it again
+            onVisibleChanged: {
+                if (visible) {
+                    row.forceLayout()
+                    menu.place()
+                }
+            }
             icon: "\uf328" // clipboard
             text: ""
         }
