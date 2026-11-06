@@ -125,9 +125,14 @@ Row {
                 font.weight: Font.Black
                 font.pixelSize: Theme.iconSize - Theme.px(2)
                 color: button.fg
+                // The glyph is already at the font's heaviest weight, so an
+                // outline in its own colour stands in for bold
+                style: number.font.bold ? Text.Outline : Text.Normal
+                styleColor: button.fg
             }
 
             Text {
+                id: number
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: Theme.textOffset
                 text: fullscreen ? ws.id - switcher.fullscreenBase : ws ? ws.name : modelData
