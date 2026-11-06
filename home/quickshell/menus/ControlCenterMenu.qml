@@ -4,9 +4,11 @@ import qs
 
 // Opened from the control center indicator; set `anchor.item` to it. From
 // the top: media controls (while a player is running), the brightness slider
-// (with a backlight), and tiles for Bluetooth and night light. A tile turns
-// its setting on and off, and its chevron shows the details below the tiles
-// (paired devices; night light schedule and temperature), one at a time.
+// (with a backlight), and tiles for Bluetooth and night light, whose chevrons
+// show their details below the tiles, one at a time. The Bluetooth tile is
+// filled while a device is connected, and clicking it shows the on/off
+// switch and paired devices; the night light tile is filled while it's on,
+// and clicking it turns it on or off.
 // Parts with nothing to control are hidden.
 DropdownMenu {
     id: controlCenter
@@ -66,9 +68,10 @@ DropdownMenu {
                 : controlCenter.connectedDevices.length === 1 ? controlCenter.connectedDevices[0].name
                 : controlCenter.connectedDevices.length > 1 ? controlCenter.connectedDevices.length + " devices"
                 : "On"
-            checked: controlCenter.adapter?.enabled ?? false
+            // Filled while a device is connected; on/off is in the details
+            checked: controlCenter.connectedDevices.length > 0
             expanded: controlCenter.expanded === "bluetooth"
-            onToggled: controlCenter.adapter.enabled = !controlCenter.adapter.enabled
+            onToggled: controlCenter.toggleExpanded("bluetooth")
             onExpandToggled: controlCenter.toggleExpanded("bluetooth")
         }
 
