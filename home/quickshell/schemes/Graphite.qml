@@ -16,4 +16,6 @@ Scheme {
     menuColor: "#1e1e1e"
     borderColor: "#3c3c3c"
     workspaceStyle: "minimal"
+    // Solid white toggles glare against the dark menus
+    fillStyle: "tint"
 }

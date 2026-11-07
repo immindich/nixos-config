@@ -37,7 +37,9 @@ Column {
         width: primary ? Theme.px(36) : Theme.px(30)
         height: width
         radius: width / 2
-        color: primary ? (hover.hovered ? Qt.lighter(Theme.accent, 1.15) : Theme.accent)
+        // The primary button fills like the control center's toggles
+        color: primary
+            ? (hover.hovered ? (Theme.fillLook === "tint" ? Theme.tint(Theme.accent, 0.42) : Qt.lighter(Theme.accent, 1.15)) : Theme.controlFill)
             : hover.hovered ? Theme.highlight : Theme.surface
         opacity: enabled ? 1 : 0.4
 
@@ -49,7 +51,7 @@ Column {
             font.family: Theme.iconFont
             font.weight: Font.Black
             font.pixelSize: Theme.iconSize + (button.primary ? 2 : 0)
-            color: button.primary ? Theme.accentText : Theme.textColor
+            color: button.primary ? Theme.controlText : Theme.textColor
         }
 
         HoverHandler { id: hover }
