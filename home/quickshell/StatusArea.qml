@@ -25,11 +25,13 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
     }
 
+    // No Theme.textOffset: the labels here are digits, "°" and AM/PM, which
+    // have no descenders, so centering the box already centers their ink on
+    // the icons
     component Label: Text {
         font.pixelSize: Theme.fontSize
         color: Theme.textColor
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: Theme.textOffset
     }
 
     // Icon followed by a value, e.g. "🔈 23%", in a pill. Clicking anywhere on
