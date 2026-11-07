@@ -5,7 +5,7 @@ import qs
 // Opened from the control center indicator; set `anchor.item` to it. From
 // the top: media controls (while a player is running), the brightness slider
 // (with a backlight), and tiles for Bluetooth and night light, whose chevrons
-// show their details below the tiles, one at a time. The Bluetooth tile is
+// unfold their details right below them, one at a time. The Bluetooth tile is
 // filled while a device is connected, and clicking it shows the on/off
 // switch and paired devices; the night light tile is filled while it's on,
 // and clicking it turns it on or off. A do-not-disturb tile (no details)
@@ -48,49 +48,18 @@ DropdownMenu {
 
     BrightnessSection { visible: controlCenter.hasBrightness }
 
-    // Two to a row; with an odd number, the last (do-not-disturb) spans the row
-    Flow {
+    // Two to a row, Bluetooth and night light first; a tile's details unfold
+    // right below that row. With three tiles, do-not-disturb gets a row of
+    // its own after the details.
+    Column {
         id: tiles
         width: parent.width - parent.leftPadding - parent.rightPadding
-        spacing: Theme.px(8)
 
+        readonly property int gap: Theme.px(8)
         readonly property int count: (controlCenter.hasBluetooth ? 1 : 0) + (controlCenter.hasNightLight ? 1 : 0) + 1
-        readonly property real tileWidth: (width - spacing) / 2
+        readonly property real tileWidth: (width - gap) / 2
 
-        QuickToggle {
-            visible: controlCenter.hasBluetooth
-            width: tiles.tileWidth
-            icon: "\uf294" // bluetooth-b
-            iconFont: Theme.brandIconFont
-            label: "Bluetooth"
-            status: !(controlCenter.adapter?.enabled ?? false) ? "Off"
-                : controlCenter.connectedDevices.length === 1 ? controlCenter.connectedDevices[0].name
-                : controlCenter.connectedDevices.length > 1 ? controlCenter.connectedDevices.length + " devices"
-                : "On"
-            // Filled while a device is connected; on/off is in the details
-            checked: controlCenter.connectedDevices.length > 0
-            expanded: controlCenter.expanded === "bluetooth"
-            onToggled: controlCenter.toggleExpanded("bluetooth")
-            onExpandToggled: controlCenter.toggleExpanded("bluetooth")
-        }
-
-        QuickToggle {
-            visible: controlCenter.hasNightLight
-            width: tiles.tileWidth
-            icon: "\uf186" // moon
-            label: "Night light"
-            status: !NightLight.enabled ? "Off"
-                : NightLight.active ? NightLight.appliedTemperature + " K"
-                : NightLight.auto ? "At " + Qt.formatTime(NightLight.next.time, "h:mm ap")
-                : "On"
-            checked: NightLight.enabled
-            expanded: controlCenter.expanded === "nightLight"
-            onToggled: NightLight.enabled = !NightLight.enabled
-            onExpandToggled: controlCenter.toggleExpanded("nightLight")
-        }
-
-        QuickToggle {
-            width: tiles.count % 2 === 1 ? tiles.width : tiles.tileWidth
+        component DndTile: QuickToggle {
             icon: "\uf1f6" // bell-slash
             label: "Do not disturb"
             status: Notifications.dnd ? "On" : "Off"
@@ -98,9 +67,93 @@ DropdownMenu {
             expandable: false
             onToggled: Notifications.dnd = !Notifications.dnd
         }
+
+        // A tile's details, unfolding and folding over a short animation
+        // below the first row. Kept loaded until folded away, and only its
+        // height is shown, since a Loader keeps its last size after its item
+        // is destroyed (as in TrayMenuEntries).
+        component Details: Item {
+            id: details
+            property bool shown: false
+            property alias sourceComponent: loader.sourceComponent
+
+            width: tiles.width
+            height: shown ? loader.implicitHeight + tiles.gap : 0
+            clip: true
+
+            Behavior on height { NumberAnimation { duration: Theme.animationDuration } }
+
+            Loader {
+                id: loader
+                y: tiles.gap
+                width: parent.width
+                active: details.shown || details.height > 0
+            }
+        }
+
+        Row {
+            spacing: tiles.gap
+
+            QuickToggle {
+                visible: controlCenter.hasBluetooth
+                width: tiles.tileWidth
+                icon: "\uf294" // bluetooth-b
+                iconFont: Theme.brandIconFont
+                label: "Bluetooth"
+                status: !(controlCenter.adapter?.enabled ?? false) ? "Off"
+                    : controlCenter.connectedDevices.length === 1 ? controlCenter.connectedDevices[0].name
+                    : controlCenter.connectedDevices.length > 1 ? controlCenter.connectedDevices.length + " devices"
+                    : "On"
+                // Filled while a device is connected; on/off is in the details
+                checked: controlCenter.connectedDevices.length > 0
+                expanded: controlCenter.expanded === "bluetooth"
+                onToggled: controlCenter.toggleExpanded("bluetooth")
+                onExpandToggled: controlCenter.toggleExpanded("bluetooth")
+            }
+
+            QuickToggle {
+                visible: controlCenter.hasNightLight
+                width: tiles.tileWidth
+                icon: "\uf186" // moon
+                label: "Night light"
+                status: !NightLight.enabled ? "Off"
+                    : NightLight.active ? NightLight.appliedTemperature + " K"
+                    : NightLight.auto ? "At " + Qt.formatTime(NightLight.next.time, "h:mm ap")
+                    : "On"
+                checked: NightLight.enabled
+                expanded: controlCenter.expanded === "nightLight"
+                onToggled: NightLight.enabled = !NightLight.enabled
+                onExpandToggled: controlCenter.toggleExpanded("nightLight")
+            }
+
+            // Pairs up with the one other tile, or is alone
+            DndTile {
+                visible: tiles.count !== 3
+                width: tiles.count === 2 ? tiles.tileWidth : tiles.width
+            }
+        }
+
+        Details {
+            shown: controlCenter.hasBluetooth && controlCenter.expanded === "bluetooth"
+            sourceComponent: BluetoothSection { width: parent?.width ?? 0 }
+        }
+
+        Details {
+            shown: controlCenter.hasNightLight && controlCenter.expanded === "nightLight"
+            sourceComponent: NightLightSection { width: parent?.width ?? 0 }
+        }
+
+        // With the gap above it, so the details' own gap animates with them
+        Item {
+            visible: tiles.count === 3
+            width: tiles.width
+            height: dndRow.height + tiles.gap
+
+            DndTile {
+                id: dndRow
+                y: tiles.gap
+                width: parent.width
+            }
+        }
     }
-
-    BluetoothSection { visible: controlCenter.hasBluetooth && controlCenter.expanded === "bluetooth" }
-
-    NightLightSection { visible: controlCenter.hasNightLight && controlCenter.expanded === "nightLight" }
 }
