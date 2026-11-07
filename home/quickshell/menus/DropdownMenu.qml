@@ -24,7 +24,15 @@ PopupWindow {
     anchor.onAnchoring: place()
 
     implicitWidth: menuWidth + 2 * frame.pad
-    implicitHeight: frame.implicitHeight
+    // The window reaches the far edge of the screen whatever the content's
+    // height, with the panel at the end facing the bar and the rest left
+    // transparent. Resizing a popup every frame, as an unfolding section
+    // would, makes Hyprland show some frames offset by the change, so the
+    // whole menu jumps.
+    implicitHeight: Math.max(frame.implicitHeight, roomHeight)
+    // Height from the panel's bar-facing edge to the far edge of the screen,
+    // with the frame's room for shadow and caret; set by place()
+    property int roomHeight: 0
     color: "transparent"
     // Clicks on the shadow's room go through to what's underneath
     mask: Region { item: frame.panel }
@@ -50,6 +58,10 @@ PopupWindow {
             edge = Theme.barOnBottom ? -frame.barInset : Theme.barHeight + frame.barInset
         const room = frame.pad + frame.caretSize
         anchor.rect.y = (Theme.barOnBottom ? edge + room : edge - room) - pos.y
+        // The bar's window sits flush with its edge of the screen
+        const winTop = Theme.barOnBottom ? (win.screen?.height ?? 0) - win.height : 0
+        roomHeight = Theme.barOnBottom ? winTop + edge + room
+            : (win.screen?.height ?? 0) - (winTop + edge - room)
     }
 
     // Tallest the content can be before the menu runs off the far edge of

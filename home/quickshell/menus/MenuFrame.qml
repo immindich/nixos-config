@@ -51,7 +51,9 @@ Item {
     Rectangle {
         id: panel
         x: frame.pad
-        y: frame.pad + (Theme.barOnBottom ? 0 : frame.caretSize)
+        // At the end facing the bar; the window may be taller than the panel
+        y: Theme.barOnBottom ? frame.height - frame.pad - frame.caretSize - frame.panelHeight
+            : frame.pad + frame.caretSize
         width: frame.panelWidth
         height: frame.panelHeight
         radius: Theme.px(12)
