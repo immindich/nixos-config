@@ -88,6 +88,15 @@
   };
 
   services.power-profiles-daemon.enable = true;
+  services.udev.extraRules = ''
+    # power-profiles-daemon keeps whatever profile was last chosen and only
+    # drops to power-saver once upower reports the battery as low (under 20
+    # minutes left), so follow the charger ourselves: power-saver on battery,
+    # balanced on AC. "change" only: at boot's "add" D-Bus isn't up yet, and
+    # the daemon restores its saved profile anyway.
+    ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
+    ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
+  '';
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
