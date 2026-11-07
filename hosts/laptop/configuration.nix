@@ -96,6 +96,9 @@
     # the daemon restores its saved profile anyway.
     ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
     ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
+    # Stop charging at 80% and don't top up again until 75%, to spare the
+    # battery (down to 90% of design capacity on 0/100).
+    ACTION=="add", SUBSYSTEM=="power_supply", KERNEL=="BAT0", ATTR{charge_control_end_threshold}="80", ATTR{charge_control_start_threshold}="75"
   '';
 
   # This option defines the first version of NixOS you have installed on this particular machine,
