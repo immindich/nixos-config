@@ -72,8 +72,8 @@ Column {
                             : "\uf00c" // check
                     }
 
-                    // Hidden if the icon fails to load (e.g. Quickshell only
-                    // reads PNG icon data; Tailscale's tray sends JPEG)
+                    // Hidden if the icon fails to load (Quickshell only reads
+                    // PNG icon data, so an app sending a JPEG gets none)
                     IconImage {
                         id: icon
                         visible: entry.modelData.icon !== "" && status !== Image.Error
