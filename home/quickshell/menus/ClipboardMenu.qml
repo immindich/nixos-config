@@ -116,53 +116,16 @@ KeyboardMenu {
         }
     }
 
-    // Search field, as in the start menu
-    Rectangle {
-        width: parent.width - parent.leftPadding - parent.rightPadding
-        height: Theme.px(30)
-        radius: Theme.px(8)
-        color: Theme.surface
-        border.width: searchInput.activeFocus ? 1 : 0
-        border.color: Theme.accent
-
-        Text {
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.px(10)
-            anchors.verticalCenter: parent.verticalCenter
-            text: "\uf002" // magnifying-glass
-            font.family: Theme.iconFont
-            font.weight: Font.Black
-            font.pixelSize: Theme.iconSize
-            color: Theme.dimTextColor
+    SearchField {
+        id: searchInput
+        placeholder: "Search clipboard"
+        onAccepted: {
+            const entry = clipboardMenu.results[clipboardMenu.selected]
+            if (entry)
+                clipboardMenu.copy(entry)
         }
-
-        TextInput {
-            id: searchInput
-            anchors.fill: parent
-            anchors.leftMargin: Theme.px(32)
-            anchors.rightMargin: Theme.px(10)
-            verticalAlignment: TextInput.AlignVCenter
-            clip: true
-            font.pixelSize: Theme.fontSize
-            color: Theme.textColor
-            selectionColor: Theme.accent
-
-            onAccepted: {
-                const entry = clipboardMenu.results[clipboardMenu.selected]
-                if (entry)
-                    clipboardMenu.copy(entry)
-            }
-            Keys.onUpPressed: clipboardMenu.selected = Math.max(clipboardMenu.selected - 1, 0)
-            Keys.onDownPressed: clipboardMenu.selected = Math.min(clipboardMenu.selected + 1, clipboardMenu.results.length - 1)
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: searchInput.text === ""
-                text: "Search clipboard"
-                font.pixelSize: Theme.fontSize
-                color: Theme.dimTextColor
-            }
-        }
+        onUpPressed: clipboardMenu.selected = Math.max(clipboardMenu.selected - 1, 0)
+        onDownPressed: clipboardMenu.selected = Math.min(clipboardMenu.selected + 1, clipboardMenu.results.length - 1)
     }
 
     Text {

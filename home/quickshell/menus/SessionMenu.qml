@@ -183,54 +183,17 @@ KeyboardMenu {
     }
 
     // Search field
-    Rectangle {
-        width: parent.width - parent.leftPadding - parent.rightPadding
-        height: Theme.px(30)
-        radius: Theme.px(8)
-        color: Theme.surface
-        border.width: searchInput.activeFocus ? 1 : 0
-        border.color: Theme.accent
-
-        Text {
-            id: searchIcon
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.px(10)
-            anchors.verticalCenter: parent.verticalCenter
-            text: "\uf002"
-            font.family: Theme.iconFont
-            font.weight: Font.Black
-            font.pixelSize: Theme.iconSize
-            color: Theme.dimTextColor
+    SearchField {
+        id: searchInput
+        placeholder: "Search applications"
+        activeFocusOnTab: true
+        onAccepted: {
+            const entry = sessionMenu.results[sessionMenu.selected]
+            if (entry)
+                sessionMenu.launch(entry)
         }
-
-        TextInput {
-            id: searchInput
-            anchors.fill: parent
-            anchors.leftMargin: Theme.px(32)
-            anchors.rightMargin: Theme.px(10)
-            verticalAlignment: TextInput.AlignVCenter
-            clip: true
-            font.pixelSize: Theme.fontSize
-            color: Theme.textColor
-            selectionColor: Theme.accent
-            activeFocusOnTab: true
-
-            onAccepted: {
-                const entry = sessionMenu.results[sessionMenu.selected]
-                if (entry)
-                    sessionMenu.launch(entry)
-            }
-            Keys.onUpPressed: sessionMenu.selected = Math.max(sessionMenu.selected - 1, 0)
-            Keys.onDownPressed: sessionMenu.selected = Math.min(sessionMenu.selected + 1, sessionMenu.results.length - 1)
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: searchInput.text === ""
-                text: "Search applications"
-                font.pixelSize: Theme.fontSize
-                color: Theme.dimTextColor
-            }
-        }
+        onUpPressed: sessionMenu.selected = Math.max(sessionMenu.selected - 1, 0)
+        onDownPressed: sessionMenu.selected = Math.min(sessionMenu.selected + 1, sessionMenu.results.length - 1)
     }
 
     // Search results
