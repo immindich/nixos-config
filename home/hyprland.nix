@@ -18,7 +18,7 @@ let
   # Hyprland tags everything started by exec_cmd with
   # HL_INITIAL_WORKSPACE_TOKEN and opens its first window on the workspace it
   # was started from; clear it so the window opens where you are now.
-  screenshotNotify = { edit ? false }: lib.trim ''
+  screenshotNotify = { edit ? false }: lib.removeSuffix "\n" ''
     (
       case "$(notify-send -a Screenshot -h "string:image-path:$file" \
           -A "folder=Open folder" ${lib.optionalString edit ''-A "edit=Edit" ''}"Screenshot saved" "Copied to the clipboard")" in
