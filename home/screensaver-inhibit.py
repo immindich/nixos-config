@@ -17,7 +17,10 @@ Apps keep the screen awake in one of two ways:
 hypridle honors logind idle inhibitors, and `systemd-inhibit --list` (and the
 bar's power menu) shows them. Apps named with --ignore (a D-Bus app name or a
 window class, case-insensitive) get no inhibitor: their D-Bus calls still
-succeed, but nothing keeps the screen awake. If this service exits, logind
+succeed, but nothing keeps the screen awake. ListIgnored() on
+local.ScreenSaverInhibit at /IdleInhibitBridge (same bus name) returns the
+ignored inhibits currently asked for, as (who, why), for the power menu; the
+journal logs each one as it comes and goes. If this service exits, logind
 drops every inhibitor it held.
 """
 
@@ -52,6 +55,18 @@ INTERFACE = Gio.DBusNodeInfo.new_for_xml("""
 </node>
 """).interfaces[0]
 
+# Not part of the ScreenSaver spec: what --ignore is currently turning away
+BRIDGE_PATH = "/IdleInhibitBridge"
+BRIDGE_INTERFACE = Gio.DBusNodeInfo.new_for_xml("""
+<node>
+  <interface name="local.ScreenSaverInhibit">
+    <method name="ListIgnored">
+      <arg name="inhibits" type="a(ss)" direction="out"/>
+    </method>
+  </interface>
+</node>
+""").interfaces[0]
+
 
 def log(message):
     print(message, file=sys.stderr, flush=True)
@@ -77,12 +92,14 @@ class Bridge:
         self.system_bus = system_bus
         self.ignored = {name.casefold() for name in ignored}
         self.cookies = itertools.count(1)
-        # cookie -> (sender, logind fd, or None for an ignored app)
+        # cookie -> (sender, logind fd, or None for an ignored app, who, why)
         self.inhibitors = {}
         # sender -> bus name watch id, for senders still on the bus
         self.watches = {}
         # window address -> logind fd, or None while logind is answering
         self.windows = {}
+        # window address -> (class, title), for ignored windows inhibiting idle
+        self.ignored_windows = {}
         self.hyprland_error = None
 
     def is_ignored(self, name):
@@ -105,6 +122,12 @@ class Bridge:
             GLib.Variant("(ssss)", ("idle", who, why, "block")),
             GLib.VariantType("(h)"), Gio.DBusCallFlags.NONE, -1, None, None, done)
 
+    def handle_bridge_call(self, connection, sender, path, interface, method, params, invocation):
+        if method == "ListIgnored":
+            ignored = [(who, why) for _, fd, who, why in self.inhibitors.values() if fd is None]
+            ignored += list(self.ignored_windows.values())
+            invocation.return_value(GLib.Variant("(a(ss))", (ignored,)))
+
     # org.freedesktop.ScreenSaver
 
     def handle_call(self, connection, sender, path, interface, method, params, invocation):
@@ -125,7 +148,7 @@ class Bridge:
 
         def add(fd):
             cookie = next(self.cookies)
-            self.inhibitors[cookie] = (sender, fd)
+            self.inhibitors[cookie] = (sender, fd, who, reason)
             invocation.return_value(GLib.Variant("(u)", (cookie,)))
             return cookie
 
@@ -151,7 +174,7 @@ class Bridge:
     def uninhibit(self, sender, cookie):
         if cookie not in self.inhibitors:
             return
-        owner, fd = self.inhibitors[cookie]
+        owner, fd, _, _ = self.inhibitors[cookie]
         # Only the app that took an inhibitor can release it
         if owner != sender:
             log(f"ignoring uninhibit of cookie {cookie}: not held by {sender}")
@@ -163,7 +186,7 @@ class Bridge:
 
     def sender_vanished(self, connection, sender):
         Gio.bus_unwatch_name(self.watches.pop(sender))
-        for cookie, (owner, fd) in list(self.inhibitors.items()):
+        for cookie, (owner, fd, _, _) in list(self.inhibitors.items()):
             if owner == sender:
                 del self.inhibitors[cookie]
                 if fd is not None:
@@ -185,8 +208,20 @@ class Bridge:
             log("reading Hyprland's windows again")
             self.hyprland_error = None
 
-        inhibiting = {c["address"]: c for c in clients
-                      if c.get("inhibitingIdle") and not self.is_ignored(c.get("class", ""))}
+        inhibiting = {}
+        ignored = {}
+        for c in clients:
+            if c.get("inhibitingIdle"):
+                if self.is_ignored(c.get("class", "")):
+                    ignored[c["address"]] = (c.get("class") or "unknown", c.get("title") or "Idle inhibitor")
+                else:
+                    inhibiting[c["address"]] = c
+
+        for address in ignored.keys() - self.ignored_windows.keys():
+            log(f"ignored window {address} ({ignored[address][0]})")
+        for address in self.ignored_windows.keys() - ignored.keys():
+            log(f"ignored window {address} stopped inhibiting")
+        self.ignored_windows = ignored
 
         for address in [a for a in self.windows if a not in inhibiting]:
             fd = self.windows.pop(address)
@@ -230,6 +265,8 @@ def main():
     bridge = Bridge(session_bus, system_bus, args.ignore)
     for path in OBJECT_PATHS:
         session_bus.register_object_with_closures2(path, INTERFACE, bridge.handle_call)
+    session_bus.register_object_with_closures2(
+        BRIDGE_PATH, BRIDGE_INTERFACE, bridge.handle_bridge_call)
 
     loop = GLib.MainLoop()
 

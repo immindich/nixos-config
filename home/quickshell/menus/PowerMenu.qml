@@ -22,10 +22,14 @@ DropdownMenu {
     // Wayland idle inhibitor into logind ones, with the app and reason. The
     // keep-awake switch's own (who "quickshell") is left out.
     property var blockers: []
+    // Inhibits screensaver-inhibit is turning away (ignoredInhibitors in
+    // home/hypridle.nix), as { who, why }: asked for, but not blocking idle
+    property var ignoredBlockers: []
 
-    // logind doesn't announce changes, so poll while the menu is open
+    // Neither source announces changes, so poll while the menu is open
     function refreshBlockers() {
         logindInhibitors.running = true
+        ignoredInhibitors.running = true
     }
     onVisibleChanged: if (visible) refreshBlockers()
     Timer {
@@ -49,6 +53,23 @@ DropdownMenu {
                         .map(i => ({ who: i[1], why: i[2] }))
                 } catch (e) {
                     powerMenu.blockers = []
+                }
+            }
+        }
+    }
+
+    Process {
+        id: ignoredInhibitors
+        command: ["busctl", "--user", "--json=short", "call", "org.freedesktop.ScreenSaver",
+            "/IdleInhibitBridge", "local.ScreenSaverInhibit", "ListIgnored"]
+        stdout: StdioCollector {
+            // Each entry is [who, why]
+            onStreamFinished: {
+                try {
+                    powerMenu.ignoredBlockers = JSON.parse(text).data[0]
+                        .map(i => ({ who: i[0], why: i[1] }))
+                } catch (e) {
+                    powerMenu.ignoredBlockers = []
                 }
             }
         }
@@ -131,33 +152,48 @@ DropdownMenu {
         color: Theme.dimTextColor
     }
 
-    // Name, then the reason in smaller dim text
     Repeater {
         model: powerMenu.blockers
+        BlockerRow {}
+    }
 
-        Column {
-            id: blocker
-            required property var modelData
-            width: parent.width - parent.leftPadding - parent.rightPadding
+    Text {
+        visible: powerMenu.ignoredBlockers.length > 0
+        text: "Ignored, not blocking:"
+        font.pixelSize: Theme.fontSize
+        color: Theme.dimTextColor
+    }
 
-            Text {
-                width: parent.width
-                elide: Text.ElideRight
-                text: blocker.modelData.who
-                textFormat: Text.PlainText
-                font.pixelSize: Theme.fontSize
-                color: Theme.textColor
-            }
+    Repeater {
+        model: powerMenu.ignoredBlockers
+        BlockerRow { ignored: true }
+    }
 
-            Text {
-                visible: text !== ""
-                width: parent.width
-                elide: Text.ElideRight
-                text: blocker.modelData.why
-                textFormat: Text.PlainText
-                font.pixelSize: Theme.fontSize - Theme.px(2)
-                color: Theme.dimTextColor
-            }
+    // Name, then the reason in smaller dim text. An ignored one has its name
+    // dimmed too.
+    component BlockerRow: Column {
+        id: blocker
+        required property var modelData
+        property bool ignored: false
+        width: parent.width - parent.leftPadding - parent.rightPadding
+
+        Text {
+            width: parent.width
+            elide: Text.ElideRight
+            text: blocker.modelData.who
+            textFormat: Text.PlainText
+            font.pixelSize: Theme.fontSize
+            color: blocker.ignored ? Theme.dimTextColor : Theme.textColor
+        }
+
+        Text {
+            visible: text !== ""
+            width: parent.width
+            elide: Text.ElideRight
+            text: blocker.modelData.why
+            textFormat: Text.PlainText
+            font.pixelSize: Theme.fontSize - Theme.px(2)
+            color: Theme.dimTextColor
         }
     }
 
