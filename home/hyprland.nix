@@ -95,6 +95,33 @@ let
     '';
   };
 
+  # Steps the backlight 5% up or down on an exponential scale (finer steps
+  # at the low end), never quite to off (-n2: a raw minimum of 2). Used by the brightness keys and by
+  # scrolling on the bar's control center indicator.
+  brightnessStep = pkgs.writeShellApplication {
+    name = "brightness-step";
+    runtimeInputs = [ pkgs.brightnessctl ];
+    text = ''
+      case "''${1:-}" in
+        up) brightnessctl -e4 -n2 set 5%+ ;;
+        down) brightnessctl -e4 -n2 set 5%- ;;
+        *) echo "usage: brightness-step up|down" >&2; exit 2 ;;
+      esac
+    '';
+  };
+
+  # Ends the Hyprland session, through hyprshutdown if it's installed (which
+  # closes apps gracefully first). Used by SUPER+M and the start menu.
+  logOut = pkgs.writeShellApplication {
+    name = "session-logout";
+    text = ''
+      if command -v hyprshutdown >/dev/null 2>&1; then
+        exec hyprshutdown
+      fi
+      exec hyprctl dispatch 'hl.dsp.exit()'
+    '';
+  };
+
   bind = key: dsp: { _args = [ key (inline dsp) ]; };
   bindWith = key: dsp: opts: { _args = [ key (inline dsp) opts ]; };
   exec = cmd: "hl.dsp.exec_cmd(${builtins.toJSON cmd})";
@@ -123,8 +150,9 @@ let
 in
 {
   # The XCursor version is for clients that draw their own cursor, like slurp.
-  # playerctl is for the media key binds below.
-  home.packages = [ pkgs.rose-pine-hyprcursor pkgs.rose-pine-cursor pkgs.playerctl ];
+  # playerctl is for the media key binds below. The bar runs brightness-step
+  # and session-logout too, so they're on PATH.
+  home.packages = [ pkgs.rose-pine-hyprcursor pkgs.rose-pine-cursor pkgs.playerctl brightnessStep logOut ];
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -265,7 +293,7 @@ in
       bind = [
         (bind "${mainMod} + Return" (exec terminal))
         (bind "${mainMod} + C" "hl.dsp.window.close()")
-        (bind "${mainMod} + M" (exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
+        (bind "${mainMod} + M" (exec (lib.getExe logOut)))
         (bind "${mainMod} + Escape" (exec "pidof hyprlock || hyprlock"))
         (bind "${mainMod} + E" (exec fileManager))
         # Kitty floats at a set size, centred, rather than at its tiled size
@@ -348,8 +376,8 @@ in
         (bindWith "XF86AudioLowerVolume" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-") mediaOpts)
         (bindWith "XF86AudioMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle") mediaOpts)
         (bindWith "XF86AudioMicMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle") mediaOpts)
-        (bindWith "XF86MonBrightnessUp" (exec "brightnessctl -e4 -n2 set 5%+") mediaOpts)
-        (bindWith "XF86MonBrightnessDown" (exec "brightnessctl -e4 -n2 set 5%-") mediaOpts)
+        (bindWith "XF86MonBrightnessUp" (exec "${lib.getExe brightnessStep} up") mediaOpts)
+        (bindWith "XF86MonBrightnessDown" (exec "${lib.getExe brightnessStep} down") mediaOpts)
 
         # Media keys
         (bindWith "XF86AudioNext" (exec "playerctl next") { locked = true; })

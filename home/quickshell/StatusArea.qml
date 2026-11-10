@@ -299,7 +299,7 @@ Item {
 
             // Scroll to change the brightness in 5% steps, like the brightness keys
             WheelSteps {
-                onStepped: direction => Quickshell.execDetached(["brightnessctl", "-e4", "-n2", "set", direction > 0 ? "5%+" : "5%-"])
+                onStepped: direction => Quickshell.execDetached(["brightness-step", direction > 0 ? "up" : "down"])
             }
         }
 
