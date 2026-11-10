@@ -28,6 +28,9 @@ KeyboardMenu {
     }
     // Index of the highlighted result
     property int selected: 0
+    // Ids of the image entries already decoded into thumbDir this login, so
+    // a row that scrolls back into view doesn't decode its image again
+    property var decoded: ({})
 
     function reload() {
         lister.running = true
@@ -53,7 +56,7 @@ KeyboardMenu {
         }
     }
     onResultsChanged: selected = Math.min(selected, Math.max(results.length - 1, 0))
-    onSelectedChanged: list.ensureVisible(selected)
+    onSelectedChanged: list.positionViewAtIndex(selected, ListView.Contain)
 
     // Only the menu on the focused screen answers
     IpcHandler {
@@ -93,7 +96,10 @@ KeyboardMenu {
     Process {
         id: wiper
         command: ["sh", "-c", "cliphist -db-path \"$1\" wipe && rm -rf \"$2\"", "_", clipboardMenu.dbPath, clipboardMenu.thumbDir]
-        onExited: clipboardMenu.reload()
+        onExited: {
+            clipboardMenu.decoded = {}
+            clipboardMenu.reload()
+        }
     }
 
     // Heading with the Clear button
@@ -135,138 +141,132 @@ KeyboardMenu {
         color: Theme.dimTextColor
     }
 
-    // Scrolls once the list is taller than this
-    Flickable {
+    // Only the rows in view exist. The model keeps a row for each entry
+    // across searches and reloads (matched by id), so typing doesn't rebuild
+    // the list. Scrolls once it's taller than its limit.
+    ListView {
         id: list
         visible: clipboardMenu.results.length > 0
         width: parent.width - parent.leftPadding - parent.rightPadding
-        height: Math.min(rows.implicitHeight, Theme.px(400))
-        contentHeight: rows.implicitHeight
+        // From the entries rather than contentHeight, which a ListView only
+        // estimates from the rows it has made
+        height: Math.min(Theme.px(400), clipboardMenu.results.reduce(
+            (h, e) => h + (e.image ? Theme.px(48) : Theme.px(32)), 0)
+            + Math.max(0, clipboardMenu.results.length - 1) * spacing)
+        spacing: Theme.px(2)
         clip: true
         boundsBehavior: Flickable.StopAtBounds
 
-        // Scroll so row `index` is on screen, for keyboard navigation
-        function ensureVisible(index) {
-            for (let i = 0; i < rows.children.length; i++) {
-                const row = rows.children[i]
-                if (row.index !== index)
-                    continue
-                if (row.y < contentY)
-                    contentY = row.y
-                else if (row.y + row.height > contentY + height)
-                    contentY = row.y + row.height - height
-                return
-            }
+        model: ScriptModel {
+            values: clipboardMenu.results
+            objectProp: "id"
         }
 
-        Column {
-            id: rows
-            width: list.width
-            spacing: Theme.px(2)
+        delegate: Rectangle {
+            id: row
+            required property var modelData
+            required property int index
+            width: ListView.view.width
+            height: modelData.image ? Theme.px(48) : Theme.px(32)
+            radius: Theme.px(8)
+            // Only while Enter would copy it
+            color: index === clipboardMenu.selected && searchInput.activeFocus ? Theme.highlight : "transparent"
 
-            Repeater {
-                model: clipboardMenu.results
+            // Thumbnail, decoded the first time its row is shown and cached
+            // in thumbDir
+            readonly property string thumbPath: clipboardMenu.thumbDir + "/" + modelData.id
+            property bool thumbReady: clipboardMenu.decoded[modelData.id] === true
 
-                Rectangle {
-                    id: row
-                    required property var modelData
-                    required property int index
-                    width: rows.width
-                    height: modelData.image ? Theme.px(48) : Theme.px(32)
-                    radius: Theme.px(8)
-                    // Only while Enter would copy it
-                    color: index === clipboardMenu.selected && searchInput.activeFocus ? Theme.highlight : "transparent"
-
-                    // Thumbnail, decoded on first sight and cached in thumbDir
-                    readonly property string thumbPath: clipboardMenu.thumbDir + "/" + modelData.id
-                    property bool thumbReady: false
-
-                    Process {
-                        running: row.modelData.image
-                        command: ["sh", "-c", "mkdir -p \"$4\" && { test -s \"$3\" || cliphist -db-path \"$1\" decode \"$2\" > \"$3\"; }",
-                            "_", clipboardMenu.dbPath, row.modelData.id, row.thumbPath, clipboardMenu.thumbDir]
-                        onExited: code => row.thumbReady = code === 0
-                    }
-
-                    Image {
-                        id: thumb
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.px(8)
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: row.modelData.image
-                        width: Theme.px(64)
-                        height: Theme.px(40)
-                        fillMode: Image.PreserveAspectFit
-                        horizontalAlignment: Image.AlignLeft
-                        // Decoded small; the originals can be large screenshots
-                        sourceSize: Qt.size(Theme.px(128), Theme.px(80))
-                        asynchronous: true
-                        source: row.thumbReady ? "file://" + row.thumbPath : ""
-                    }
-
-                    // Placeholder until the thumbnail is ready
-                    Text {
-                        id: imageIcon
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.px(10)
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: row.modelData.image && thumb.status !== Image.Ready
-                        text: "\uf03e" // image
-                        font.family: Theme.iconFont
-                        font.weight: Font.Black
-                        font.pixelSize: Theme.iconSize
-                        color: Theme.dimTextColor
-                    }
-
-                    Text {
-                        anchors.left: parent.left
-                        anchors.leftMargin: row.modelData.image ? Theme.px(8) + thumb.width + Theme.px(10) : Theme.px(10)
-                        anchors.right: deleteButton.left
-                        anchors.rightMargin: Theme.px(4)
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.verticalCenterOffset: Theme.textOffset
-                        text: row.modelData.label
-                        textFormat: Text.PlainText
-                        elide: Text.ElideRight
-                        font.pixelSize: Theme.fontSize
-                        color: Theme.textColor
-                    }
-
-                    // Delete, shown while hovering the row
-                    Rectangle {
-                        id: deleteButton
-                        anchors.right: parent.right
-                        anchors.rightMargin: Theme.px(6)
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: rowHover.hovered
-                        width: Theme.px(20)
-                        height: Theme.px(20)
-                        radius: width / 2
-                        color: deleteHover.hovered ? Theme.surface : "transparent"
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "\uf00d" // xmark
-                            font.family: Theme.iconFont
-                            font.weight: Font.Black
-                            font.pixelSize: Theme.iconSize - Theme.px(2)
-                            color: Theme.dimTextColor
-                        }
-
-                        HoverHandler { id: deleteHover }
-                        TapHandler { onTapped: clipboardMenu.remove(row.modelData) }
-                    }
-
-                    HoverHandler {
-                        id: rowHover
-                        onHoveredChanged: {
-                            if (hovered)
-                                clipboardMenu.selected = row.index
-                        }
-                    }
-                    TapHandler { onTapped: clipboardMenu.copy(row.modelData) }
+            Process {
+                running: row.modelData.image && !row.thumbReady
+                command: ["sh", "-c", "mkdir -p \"$4\" && { test -s \"$3\" || cliphist -db-path \"$1\" decode \"$2\" > \"$3\"; }",
+                    "_", clipboardMenu.dbPath, row.modelData.id, row.thumbPath, clipboardMenu.thumbDir]
+                onExited: code => {
+                    if (code !== 0)
+                        return
+                    clipboardMenu.decoded[row.modelData.id] = true
+                    row.thumbReady = true
                 }
             }
+
+            Image {
+                id: thumb
+                anchors.left: parent.left
+                anchors.leftMargin: Theme.px(8)
+                anchors.verticalCenter: parent.verticalCenter
+                visible: row.modelData.image
+                width: Theme.px(64)
+                height: Theme.px(40)
+                fillMode: Image.PreserveAspectFit
+                horizontalAlignment: Image.AlignLeft
+                // Decoded small; the originals can be large screenshots
+                sourceSize: Qt.size(Theme.px(128), Theme.px(80))
+                asynchronous: true
+                source: row.thumbReady ? "file://" + row.thumbPath : ""
+            }
+
+            // Placeholder until the thumbnail is ready
+            Text {
+                id: imageIcon
+                anchors.left: parent.left
+                anchors.leftMargin: Theme.px(10)
+                anchors.verticalCenter: parent.verticalCenter
+                visible: row.modelData.image && thumb.status !== Image.Ready
+                text: "\uf03e" // image
+                font.family: Theme.iconFont
+                font.weight: Font.Black
+                font.pixelSize: Theme.iconSize
+                color: Theme.dimTextColor
+            }
+
+            Text {
+                anchors.left: parent.left
+                anchors.leftMargin: row.modelData.image ? Theme.px(8) + thumb.width + Theme.px(10) : Theme.px(10)
+                anchors.right: deleteButton.left
+                anchors.rightMargin: Theme.px(4)
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: Theme.textOffset
+                text: row.modelData.label
+                textFormat: Text.PlainText
+                elide: Text.ElideRight
+                font.pixelSize: Theme.fontSize
+                color: Theme.textColor
+            }
+
+            // Delete, shown while hovering the row
+            Rectangle {
+                id: deleteButton
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.px(6)
+                anchors.verticalCenter: parent.verticalCenter
+                visible: rowHover.hovered
+                width: Theme.px(20)
+                height: Theme.px(20)
+                radius: width / 2
+                color: deleteHover.hovered ? Theme.surface : "transparent"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "\uf00d" // xmark
+                    font.family: Theme.iconFont
+                    font.weight: Font.Black
+                    font.pixelSize: Theme.iconSize - Theme.px(2)
+                    color: Theme.dimTextColor
+                }
+
+                HoverHandler { id: deleteHover }
+                TapHandler { onTapped: clipboardMenu.remove(row.modelData) }
+            }
+
+            HoverHandler {
+                id: rowHover
+                onHoveredChanged: {
+                    if (hovered)
+                        clipboardMenu.selected = row.index
+                }
+            }
+            TapHandler { onTapped: clipboardMenu.copy(row.modelData) }
         }
+
     }
 }
