@@ -53,20 +53,32 @@ Row {
                 id: menu
                 anchor.item: trayItem
 
-                // Scrolls once the entries would run off the screen
-                Flickable {
-                    id: list
+                // The entries reach into the menu's padding by `inset`, so
+                // their text lines up with the other menus' content, which
+                // sits at the padding, rather than a row's padding further in
+                Item {
+                    id: listArea
+                    readonly property int inset: Theme.px(8)
                     width: parent.width - parent.leftPadding - parent.rightPadding
-                    height: Math.min(entries.implicitHeight, menu.maxContentHeight)
-                    contentHeight: entries.implicitHeight
-                    clip: true
-                    boundsBehavior: Flickable.StopAtBounds
+                    height: list.height - 2 * inset
 
-                    TrayMenuEntries {
-                        id: entries
-                        width: list.width
-                        handle: trayItem.modelData.menu
-                        menu: menu
+                    // Scrolls once the entries would run off the screen
+                    Flickable {
+                        id: list
+                        x: -listArea.inset
+                        y: -listArea.inset
+                        width: listArea.width + 2 * listArea.inset
+                        height: Math.min(entries.implicitHeight, menu.maxContentHeight + 2 * listArea.inset)
+                        contentHeight: entries.implicitHeight
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        TrayMenuEntries {
+                            id: entries
+                            width: list.width
+                            handle: trayItem.modelData.menu
+                            menu: menu
+                        }
                     }
                 }
             }
