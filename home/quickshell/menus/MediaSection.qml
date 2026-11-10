@@ -68,7 +68,11 @@ Column {
         onTriggered: mediaSection.player.positionChanged()
     }
 
-    MenuHeading { text: mediaSection.player?.identity ?? "Media" }
+    MenuHeading {
+        width: parent.width
+        elide: Text.ElideRight
+        text: mediaSection.player?.identity ?? "Media"
+    }
 
     // Album art beside the track details
     Row {
@@ -100,7 +104,9 @@ Column {
             Image {
                 id: cover
                 anchors.fill: parent
-                source: mediaSection.player?.trackArtUrl ?? ""
+                // Only local art; players that give an http(s) URL get the
+                // placeholder (LocalImage)
+                source: LocalImage.source(mediaSection.player?.trackArtUrl ?? "")
                 visible: source != "" && status === Image.Ready
                 fillMode: Image.PreserveAspectCrop
                 sourceSize: Qt.size(Theme.px(128), Theme.px(128))

@@ -52,11 +52,9 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 implicitSize: Theme.px(16)
-                // URLs as-is, absolute paths as file URLs (a bare path would
-                // resolve against this file's qrc: location), otherwise look
-                // up the icon name
-                source: icon.includes("://") ? icon
-                    : icon.startsWith("/") ? "file://" + icon
+                // A URL or path only if it's local (LocalImage), otherwise
+                // look up the icon name
+                source: icon.includes("://") || icon.startsWith("/") ? LocalImage.source(icon)
                     : icon !== "" ? Quickshell.iconPath(icon, true) : ""
                 visible: source != ""
             }
@@ -161,11 +159,12 @@ Rectangle {
                 ? Math.min(1, maxWidth / implicitWidth, maxHeight / implicitHeight) : 1
             visible: card.notification.image !== "" && status === Image.Ready
             // An image-path hint with an absolute path arrives as
-            // image://icon//path, which the icon provider can't load
+            // image://icon//path, which the icon provider can't load.
+            // Only local images are loaded (LocalImage).
             source: {
                 const img = card.notification.image
                 const prefix = "image://icon/"
-                return img.startsWith(prefix + "/") ? "file://" + img.slice(prefix.length) : img
+                return LocalImage.source(img.startsWith(prefix + "/") ? img.slice(prefix.length) : img)
             }
             width: Math.round(implicitWidth * scale)
             height: Math.round(implicitHeight * scale)
