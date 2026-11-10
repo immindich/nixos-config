@@ -255,7 +255,12 @@ KeyboardMenu {
                 }
 
                 HoverHandler { id: deleteHover }
-                TapHandler { onTapped: clipboardMenu.remove(row.modelData) }
+                // Takes the click for itself; otherwise the row's own
+                // handler also sees it and copies the entry being deleted
+                TapHandler {
+                    gesturePolicy: TapHandler.ReleaseWithinBounds
+                    onTapped: clipboardMenu.remove(row.modelData)
+                }
             }
 
             HoverHandler {
