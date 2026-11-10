@@ -10,7 +10,8 @@ import Quickshell.Services.Notifications
 Singleton {
     id: root
 
-    property bool dnd: false
+    // Do-not-disturb; kept across reloads (not restarts)
+    property alias dnd: persist.dnd
 
     // Notifications currently shown as popups, oldest first
     property list<var> popups: []
@@ -25,6 +26,7 @@ Singleton {
         id: persist
         reloadableId: "notifications"
         property string arrived: "{}"
+        property bool dnd: false
     }
     readonly property var arrived: JSON.parse(persist.arrived)
 
