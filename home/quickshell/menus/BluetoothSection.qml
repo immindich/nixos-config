@@ -142,31 +142,17 @@ Column {
             }
 
             // Connect / Disconnect button
-            Rectangle {
+            PillButton {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: !entry.busy
-                width: buttonLabel.implicitWidth + Theme.px(16)
                 height: Theme.px(22)
-                radius: height / 2
-                color: buttonHover.hovered ? Theme.highlight : Theme.surface
-
-                Text {
-                    id: buttonLabel
-                    anchors.centerIn: parent
-                    anchors.verticalCenterOffset: Theme.textOffset
-                    text: entry.modelData.connected ? "Disconnect" : "Connect"
-                    font.pixelSize: Theme.fontSize - Theme.px(2)
-                    color: Theme.textColor
-                }
-
-                HoverHandler { id: buttonHover }
-                TapHandler {
-                    onTapped: {
-                        if (entry.modelData.connected)
-                            entry.modelData.disconnect()
-                        else
-                            entry.modelData.connect()
-                    }
+                horizontalPadding: Theme.px(8)
+                text: entry.modelData.connected ? "Disconnect" : "Connect"
+                onClicked: {
+                    if (entry.modelData.connected)
+                        entry.modelData.disconnect()
+                    else
+                        entry.modelData.connect()
                 }
             }
         }

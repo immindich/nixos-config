@@ -9,30 +9,6 @@ DropdownMenu {
 
     onVisibleChanged: if (visible) FlatpakUpdates.refresh()
 
-    // Pill button like the notification menu's "Clear all"
-    component PillButton: Rectangle {
-        id: button
-        property alias text: buttonLabel.text
-        property bool active: true
-        signal clicked()
-
-        width: buttonLabel.implicitWidth + Theme.px(20)
-        height: Theme.px(24)
-        radius: height / 2
-        color: buttonHover.hovered && active ? Theme.highlight : Theme.surface
-
-        Text {
-            id: buttonLabel
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: Theme.textOffset
-            font.pixelSize: Theme.fontSize - Theme.px(2)
-            color: button.active ? Theme.textColor : Theme.dimTextColor
-        }
-
-        HoverHandler { id: buttonHover }
-        TapHandler { onTapped: if (button.active) button.clicked() }
-    }
-
     // Heading, with when the list was last checked on the right
     Item {
         width: parent.width - parent.leftPadding - parent.rightPadding

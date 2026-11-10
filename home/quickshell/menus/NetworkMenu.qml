@@ -182,25 +182,13 @@ KeyboardMenu {
                 }
 
                 // Disconnect button on the connected network
-                Rectangle {
+                PillButton {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: entry.modelData.connected && !entry.modelData.stateChanging
-                    width: disconnectLabel.implicitWidth + Theme.px(16)
                     height: Theme.px(22)
-                    radius: height / 2
-                    color: disconnectHover.hovered ? Theme.highlight : Theme.surface
-
-                    Text {
-                        id: disconnectLabel
-                        anchors.centerIn: parent
-                        anchors.verticalCenterOffset: Theme.textOffset
-                        text: "Disconnect"
-                        font.pixelSize: Theme.fontSize - Theme.px(2)
-                        color: Theme.textColor
-                    }
-
-                    HoverHandler { id: disconnectHover }
-                    TapHandler { onTapped: entry.modelData.disconnect() }
+                    horizontalPadding: Theme.px(8)
+                    text: "Disconnect"
+                    onClicked: entry.modelData.disconnect()
                 }
             }
 

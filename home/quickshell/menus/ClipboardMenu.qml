@@ -107,26 +107,12 @@ KeyboardMenu {
             text: "Clipboard"
         }
 
-        Rectangle {
+        PillButton {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             visible: clipboardMenu.entries.length > 0
-            width: clearLabel.implicitWidth + Theme.px(20)
-            height: Theme.px(24)
-            radius: height / 2
-            color: clearHover.hovered ? Theme.highlight : Theme.surface
-
-            Text {
-                id: clearLabel
-                anchors.centerIn: parent
-                anchors.verticalCenterOffset: Theme.textOffset
-                text: "Clear"
-                font.pixelSize: Theme.fontSize - Theme.px(2)
-                color: Theme.textColor
-            }
-
-            HoverHandler { id: clearHover }
-            TapHandler { onTapped: wiper.running = true }
+            text: "Clear"
+            onClicked: wiper.running = true
         }
     }
 

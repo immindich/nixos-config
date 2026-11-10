@@ -19,26 +19,12 @@ DropdownMenu {
             text: "Notifications"
         }
 
-        Rectangle {
+        PillButton {
             visible: Notifications.history.length > 0
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            width: clearLabel.implicitWidth + Theme.px(20)
-            height: Theme.px(24)
-            radius: height / 2
-            color: clearHover.hovered ? Theme.highlight : Theme.surface
-
-            Text {
-                id: clearLabel
-                anchors.centerIn: parent
-                anchors.verticalCenterOffset: Theme.textOffset
-                text: "Clear all"
-                font.pixelSize: Theme.fontSize - Theme.px(2)
-                color: Theme.textColor
-            }
-
-            HoverHandler { id: clearHover }
-            TapHandler { onTapped: Notifications.clearAll() }
+            text: "Clear all"
+            onClicked: Notifications.clearAll()
         }
     }
 
