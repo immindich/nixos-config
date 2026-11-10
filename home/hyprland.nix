@@ -95,16 +95,17 @@ let
     '';
   };
 
-  # Steps the backlight 5% up or down on an exponential scale (finer steps
-  # at the low end), never quite to off (-n2: a raw minimum of 2). Used by the brightness keys and by
-  # scrolling on the bar's control center indicator.
+  # Steps the backlight by 5% of full brightness up or down, the same scale
+  # the bar's OSD and slider show, never quite to off (-n2: a raw minimum of
+  # 2). Used by the brightness keys and by scrolling on the bar's control
+  # center indicator.
   brightnessStep = pkgs.writeShellApplication {
     name = "brightness-step";
     runtimeInputs = [ pkgs.brightnessctl ];
     text = ''
       case "''${1:-}" in
-        up) brightnessctl -e4 -n2 set 5%+ ;;
-        down) brightnessctl -e4 -n2 set 5%- ;;
+        up) brightnessctl -n2 set 5%+ ;;
+        down) brightnessctl -n2 set 5%- ;;
         *) echo "usage: brightness-step up|down" >&2; exit 2 ;;
       esac
     '';
