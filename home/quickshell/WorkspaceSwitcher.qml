@@ -134,7 +134,9 @@ Row {
                 id: number
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: Theme.textOffset
+                // Any program can name a workspace (through hyprctl)
                 text: fullscreen ? ws.id - switcher.fullscreenBase : ws ? ws.name : modelData
+                textFormat: Text.PlainText
                 font.pixelSize: Theme.fontSize
                 font.bold: button.look === "minimal" && !button.empty
                 color: button.fg

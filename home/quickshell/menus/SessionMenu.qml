@@ -227,7 +227,9 @@ KeyboardMenu {
                 anchors.rightMargin: Theme.px(8)
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: Theme.textOffset
+                // From the app's .desktop file
                 text: result.modelData.name
+                textFormat: Text.PlainText
                 elide: Text.ElideRight
                 font.pixelSize: Theme.fontSize
                 color: Theme.textColor
