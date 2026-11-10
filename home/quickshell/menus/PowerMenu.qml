@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.UPower
 import qs
@@ -16,21 +15,16 @@ DropdownMenu {
     readonly property var battery: UPower.displayDevice
     readonly property var laptopBattery: UPower.devices.values.find(d => d.isLaptopBattery) ?? null
 
-    // What else is keeping the screen awake, as { who, why }: windows holding
-    // a Wayland idle inhibitor (Hyprland reports them, but not why), and
-    // logind idle inhibitors (systemd-inhibit --what=idle). hypridle honors
-    // both. Inhibits made over D-Bus (org.freedesktop.ScreenSaver, e.g.
-    // Firefox) are among the logind ones: screensaver-inhibit turns each
-    // into a logind inhibitor with the app and reason.
-    property var logindBlockers: []
-    readonly property var blockers: Hyprland.toplevels.values
-        .filter(t => t.lastIpcObject?.inhibitingIdle)
-        .map(t => ({ who: t.lastIpcObject.class || t.title, why: t.title }))
-        .concat(logindBlockers)
+    // What else is keeping the screen awake, as { who, why }: the logind
+    // idle inhibitors (systemd-inhibit --what=idle), which are the only ones
+    // hypridle honors. screensaver-inhibit turns D-Bus inhibits
+    // (org.freedesktop.ScreenSaver, e.g. Firefox) and windows holding a
+    // Wayland idle inhibitor into logind ones, with the app and reason. The
+    // keep-awake switch's own (who "quickshell") is left out.
+    property var blockers: []
 
-    // Neither source announces changes, so poll while the menu is open
+    // logind doesn't announce changes, so poll while the menu is open
     function refreshBlockers() {
-        Hyprland.refreshToplevels()
         logindInhibitors.running = true
     }
     onVisibleChanged: if (visible) refreshBlockers()
@@ -50,11 +44,11 @@ DropdownMenu {
             // colon-separated list such as "sleep:idle"
             onStreamFinished: {
                 try {
-                    powerMenu.logindBlockers = JSON.parse(text).data[0]
-                        .filter(i => i[0].split(":").includes("idle"))
+                    powerMenu.blockers = JSON.parse(text).data[0]
+                        .filter(i => i[0].split(":").includes("idle") && i[1] !== "quickshell")
                         .map(i => ({ who: i[1], why: i[2] }))
                 } catch (e) {
-                    powerMenu.logindBlockers = []
+                    powerMenu.blockers = []
                 }
             }
         }

@@ -100,13 +100,6 @@ Item {
         precision: SystemClock.Seconds
     }
 
-    // Keep the screen awake while IdleInhibit is on (toggled from the power
-    // menu). Attached to this bar's window, which the compositor respects.
-    IdleInhibitor {
-        window: statusArea.QsWindow.window
-        enabled: IdleInhibit.enabled
-    }
-
     // Pipewire nodes must be tracked for volume and properties to be valid
     PwObjectTracker {
         objects: Pipewire.nodes.values
