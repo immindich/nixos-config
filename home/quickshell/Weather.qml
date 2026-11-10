@@ -122,6 +122,8 @@ Singleton {
     }
 
     property bool fetching: false
+    // The request under way, for the watchdog
+    property var request: null
 
     function fetch() {
         if (fetching)
@@ -129,9 +131,13 @@ Singleton {
         fetching = true
         retry.stop()
         const xhr = new XMLHttpRequest()
+        request = xhr
         xhr.onreadystatechange = () => {
-            if (xhr.readyState !== XMLHttpRequest.DONE)
+            // Also skips one the watchdog has given up on
+            if (xhr !== request || xhr.readyState !== XMLHttpRequest.DONE)
                 return
+            request = null
+            watchdog.stop()
             fetching = false
             if (xhr.status === 200) {
                 try {
@@ -153,6 +159,24 @@ Singleton {
             + "&temperature_unit=" + temperatureUnit + "&wind_speed_unit=" + windSpeedUnit
             + "&timezone=auto&forecast_days=2")
         xhr.send()
+        watchdog.restart()
+    }
+
+    // A request can hang without ever finishing (the network went away
+    // mid-way, say), and while `fetching` stays set every later refresh
+    // skips the fetch, so the forecast would never update again. Give up on
+    // one that takes too long and retry as for any other failure.
+    Timer {
+        id: watchdog
+        interval: 30 * 1000
+        onTriggered: {
+            const xhr = weather.request
+            weather.request = null
+            weather.fetching = false
+            xhr?.abort()
+            console.warn("weather: request timed out")
+            retry.start()
+        }
     }
 
     function apply(data) {
