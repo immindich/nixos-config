@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Widgets
 import qs.menus
 
 // The windows on a workspace, listed below its circle in WorkspaceSwitcher
@@ -121,17 +120,6 @@ PopupWindow {
                 Item {
                     id: entry
                     required property HyprlandToplevel modelData
-                    // The app id (window class) names the desktop entry,
-                    // which names the icon. The Wayland handle that carries
-                    // it is null until Hyprland reports the window's address.
-                    readonly property string appId: modelData.wayland?.appId ?? ""
-                    readonly property var desktopEntry: {
-                        // The lookup isn't reactive on its own; depend on the
-                        // index so it runs again once the entries are scanned,
-                        // which takes a moment after the shell starts
-                        DesktopEntries.applications.values
-                        return appId !== "" ? DesktopEntries.heuristicLookup(appId) : null
-                    }
 
                     Layout.fillWidth: true
                     implicitWidth: row.implicitWidth + Theme.px(16)
@@ -144,9 +132,11 @@ PopupWindow {
                         anchors.rightMargin: Theme.px(8)
                         spacing: Theme.px(8)
 
-                        IconImage {
+                        AppIcon {
                             implicitSize: Theme.px(16)
-                            source: Quickshell.iconPath(entry.desktopEntry?.icon ?? "", "application-x-executable")
+                            // The Wayland handle is null until Hyprland
+                            // reports the window's address
+                            appId: entry.modelData.wayland?.appId ?? ""
                         }
 
                         Text {

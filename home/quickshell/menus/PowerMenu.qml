@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.UPower
-import Quickshell.Widgets
 import qs
 
 // Battery details, the keep-awake switch with what else is blocking idle,
@@ -176,23 +175,16 @@ DropdownMenu {
         id: blocker
         required property var modelData
         property bool ignored: false
-        // who is a window class or a D-Bus app name, which can be a path
-        // ("/app/discord/Discord"); its last part names the desktop entry
-        readonly property var desktopEntry: {
-            // The lookup isn't reactive on its own; depend on the index so it
-            // runs again once the entries are scanned
-            DesktopEntries.applications.values
-            const appId = modelData.who.split("/").pop()
-            return appId !== "" ? DesktopEntries.heuristicLookup(appId) : null
-        }
 
         width: parent.width - parent.leftPadding - parent.rightPadding
         spacing: Theme.px(8)
 
-        IconImage {
+        AppIcon {
             anchors.verticalCenter: parent.verticalCenter
             implicitSize: Theme.px(20)
-            source: Quickshell.iconPath(blocker.desktopEntry?.icon ?? "", "application-x-executable")
+            // who is a window class or a D-Bus app name, which can be a path
+            // ("/app/discord/Discord"); its last part names the desktop entry
+            appId: blocker.modelData.who.split("/").pop()
             opacity: blocker.ignored ? 0.5 : 1
         }
 

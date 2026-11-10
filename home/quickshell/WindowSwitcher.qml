@@ -3,7 +3,6 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
-import Quickshell.Widgets
 
 // ALT+Tab window switcher: every window, most recently focused first, in a
 // box in the middle of the focused screen. Opens with the previous window
@@ -138,15 +137,6 @@ PanelWindow {
                     required property HyprlandToplevel modelData
                     required property int index
                     readonly property bool isSelected: index === switcher.selected
-                    // The app id (window class) names the desktop entry,
-                    // which names the icon
-                    readonly property string appId: modelData.wayland?.appId ?? ""
-                    readonly property var desktopEntry: {
-                        // The lookup isn't reactive on its own; depend on the
-                        // index so it runs again once the entries are scanned
-                        DesktopEntries.applications.values
-                        return appId !== "" ? DesktopEntries.heuristicLookup(appId) : null
-                    }
 
                     Layout.fillWidth: true
                     implicitHeight: Theme.bubbleHeight + Theme.px(8)
@@ -159,9 +149,9 @@ PanelWindow {
                         anchors.rightMargin: Theme.px(12)
                         spacing: Theme.px(10)
 
-                        IconImage {
+                        AppIcon {
                             implicitSize: Theme.px(20)
-                            source: Quickshell.iconPath(entry.desktopEntry?.icon ?? "", "application-x-executable")
+                            appId: entry.modelData.wayland?.appId ?? ""
                         }
 
                         Text {

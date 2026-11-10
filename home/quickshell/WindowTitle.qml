@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Widgets
 
 // Title of the focused window, sized like WorkspaceSwitcher
 Item {
@@ -29,15 +28,6 @@ Item {
     }
     readonly property string title: onScreen ? toplevel.title : ""
 
-    // The app id (window class) names the desktop entry, which names the icon
-    readonly property string appId: onScreen ? (toplevel.wayland?.appId ?? "") : ""
-    readonly property var desktopEntry: {
-        // The lookup isn't reactive on its own; depend on the index so it
-        // runs again once the entries are scanned
-        DesktopEntries.applications.values
-        return appId !== "" ? DesktopEntries.heuristicLookup(appId) : null
-    }
-
     visible: title !== ""
     // Widest the pill may get; longer titles are cut off with "…"
     property real maxWidth: Theme.px(600)
@@ -50,10 +40,10 @@ Item {
         anchors.centerIn: parent
         spacing: Theme.px(8)
 
-        IconImage {
+        AppIcon {
             id: icon
             implicitSize: Theme.px(16)
-            source: Quickshell.iconPath(desktopEntry?.icon ?? "", "application-x-executable")
+            appId: onScreen ? (toplevel.wayland?.appId ?? "") : ""
         }
 
         Text {
