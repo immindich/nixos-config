@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import qs
 
 // Popup that opens below `anchor.item` (above it with the bar at the bottom)
@@ -37,31 +36,19 @@ PopupWindow {
     // Clicks on the shadow's room go through to what's underneath
     mask: Region { item: frame.panel }
 
-    // Hang off the bar, centered on the anchor item; slid back on screen if
-    // it would go past the edge, keeping the bar's margin from it. Where the
-    // panel sits relative to the bar depends on Theme.menuStyle.
+    // Hang off the bar where MenuBehavior says. The window reaches the far
+    // edge of the screen (see implicitHeight).
     function place() {
-        const item = anchor.item
-        if (!item)
+        const p = behavior.placement()
+        if (!p)
             return
-        const win = item.QsWindow.window
-        const pos = item.mapToItem(null, 0, 0)
-        const want = pos.x + (item.width - frame.panelWidth) / 2
-        const x = Math.max(Theme.barMargin, Math.min(want, win.width - frame.panelWidth - Theme.barMargin))
-        frame.caretOffset = want - x
-        anchor.rect.x = x - frame.pad - pos.x
-        // Edge of the panel that faces the bar, in the bar window's coordinates
-        let edge
-        if (Theme.menuStyle === "flush")
-            edge = Theme.barOnBottom ? pos.y - Theme.px(8) : pos.y + item.height + Theme.px(8)
-        else
-            edge = Theme.barOnBottom ? -frame.barInset : Theme.barHeight + frame.barInset
-        const room = frame.pad + frame.caretSize
-        anchor.rect.y = (Theme.barOnBottom ? edge + room : edge - room) - pos.y
+        anchor.rect.x = p.x - frame.pad - p.pos.x
+        anchor.rect.y = (Theme.barOnBottom ? p.edge + p.room : p.edge - p.room) - p.pos.y
         // The bar's window sits flush with its edge of the screen
-        const winTop = Theme.barOnBottom ? (win.screen?.height ?? 0) - win.height : 0
-        roomHeight = Theme.barOnBottom ? winTop + edge + room
-            : (win.screen?.height ?? 0) - (winTop + edge - room)
+        const screenHeight = p.win.screen?.height ?? 0
+        const winTop = Theme.barOnBottom ? screenHeight - p.win.height : 0
+        roomHeight = Theme.barOnBottom ? winTop + p.edge + p.room
+            : screenHeight - (winTop + p.edge - p.room)
     }
 
     // Tallest the content can be before the menu runs off the far edge of
@@ -74,48 +61,14 @@ PopupWindow {
         menu.visible = !menu.visible
     }
 
-    onVisibleChanged: {
-        if (visible) {
-            frame.playOpen()
-            if (MenuState.openMenu && MenuState.openMenu !== menu)
-                MenuState.openMenu.visible = false
-            MenuState.openMenu = menu
-        } else if (MenuState.openMenu === menu) {
-            MenuState.openMenu = null
-        }
-    }
-
-    // Hyprland rejects a grab on a window that isn't mapped yet, so start it
-    // once the popup is actually on screen. Setting it false first re-requests
-    // a grab the compositor has already cleared.
-    function updateGrab() {
-        grab.active = false
-        grab.active = backingWindowVisible
-    }
-    onBackingWindowVisibleChanged: updateGrab()
-
-    Connections {
-        target: MenuState
-        function onHoldChanged() {
-            if (menu.visible)
-                menu.updateGrab()
-        }
-    }
-
-    // Clicks on the bar don't clear the grab, so clicking another indicator
-    // switches menus in one click. The bar closes the menu itself (shell.qml).
-    HyprlandFocusGrab {
-        id: grab
-        windows: [menu, menu.anchor.item?.QsWindow.window]
-        onCleared: {
-            if (!MenuState.hold)
-                menu.visible = false
-        }
+    MenuBehavior {
+        id: behavior
+        menuWindow: menu
+        menuFrame: frame
     }
 
     MenuFrame {
         id: frame
         anchors.fill: parent
-        onCloseRequested: menu.visible = false
     }
 }

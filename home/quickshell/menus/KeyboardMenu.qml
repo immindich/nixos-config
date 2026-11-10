@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs
 
@@ -30,29 +29,18 @@ PanelWindow {
     }
 
     // Positioned when opened, since an item's position in its window isn't a
-    // property bindings can follow. Same placement as DropdownMenu.place(),
-    // but the window spans the bar's width and the frame is moved inside it.
+    // property bindings can follow. The window spans the bar's width, so the
+    // frame is moved inside it.
     function place() {
-        const item = anchor.item
-        if (!item)
+        const p = behavior.placement()
+        if (!p)
             return
-        const win = item.QsWindow.window
-        const pos = item.mapToItem(null, 0, 0)
-        const want = pos.x + (item.width - menuWidth) / 2
-        const x = Math.max(Theme.barMargin, Math.min(want, win.width - menuWidth - Theme.barMargin))
-        frame.caretOffset = want - x
-        frame.x = x - frame.pad
-        let edge
-        if (Theme.menuStyle === "flush")
-            edge = Theme.barOnBottom ? pos.y - Theme.px(8) : pos.y + item.height + Theme.px(8)
-        else
-            edge = Theme.barOnBottom ? -frame.barInset : Theme.barHeight + frame.barInset
-        const room = frame.pad + frame.caretSize
+        frame.x = p.x - frame.pad
         // pos is in the bar window, which sits against the bar's screen edge
         if (Theme.barOnBottom)
-            margins.bottom = win.height - (edge + room)
+            margins.bottom = p.win.height - (p.edge + p.room)
         else
-            margins.top = edge - room
+            margins.top = p.edge - p.room
     }
 
     screen: anchor.item?.QsWindow.window?.screen ?? null
@@ -77,31 +65,13 @@ PanelWindow {
     // Only the panel takes input; clicks beside it go through
     mask: Region { item: frame.panel }
 
-    onVisibleChanged: {
-        if (visible) {
-            place()
-            frame.playOpen()
-            if (MenuState.openMenu && MenuState.openMenu !== menu)
-                MenuState.openMenu.visible = false
-            MenuState.openMenu = menu
-        } else if (MenuState.openMenu === menu) {
-            MenuState.openMenu = null
-        }
-    }
+    onVisibleChanged: if (visible) place()
 
-    // Hyprland rejects a grab on a window that isn't mapped yet, so start it
-    // once the menu is actually on screen. Setting it false first re-requests
-    // a grab the compositor has already cleared.
-    function updateGrab() {
-        grab.active = false
-        grab.active = backingWindowVisible
-    }
     onBackingWindowVisibleChanged: {
         if (backingWindowVisible)
             settle.start()
         else
             mapped = false
-        updateGrab()
     }
     Timer {
         id: settle
@@ -109,29 +79,15 @@ PanelWindow {
         onTriggered: menu.mapped = menu.backingWindowVisible
     }
 
-    Connections {
-        target: MenuState
-        function onHoldChanged() {
-            if (menu.visible)
-                menu.updateGrab()
-        }
-    }
-
-    // Clicks on the bar don't clear the grab, so clicking another indicator
-    // switches menus in one click. The bar closes the menu itself (shell.qml).
-    HyprlandFocusGrab {
-        id: grab
-        windows: [menu, menu.anchor.item?.QsWindow.window]
-        onCleared: {
-            if (!MenuState.hold)
-                menu.visible = false
-        }
+    MenuBehavior {
+        id: behavior
+        menuWindow: menu
+        menuFrame: frame
     }
 
     MenuFrame {
         id: frame
         width: menu.menuWidth + 2 * pad
         height: implicitHeight
-        onCloseRequested: menu.visible = false
     }
 }
