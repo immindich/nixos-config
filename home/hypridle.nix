@@ -8,6 +8,12 @@ let
   # Claude Desktop holds one for minutes whenever claude.ai checks on this
   # machine as a remote device, with no setting to stop it.
   ignoredInhibitors = [ "com.anthropic.Claude" ];
+
+  # D-Bus inhibits ignored by the reason they give, whatever the app
+  # (case-insensitive, the whole reason). Firefox asks with "Playing audio"
+  # for sound and "Playing video" for video, so music in a background tab
+  # doesn't keep the laptop awake and unlocked while a video still does.
+  ignoredReasons = [ "Playing audio" ];
 in
 
 {
@@ -61,8 +67,9 @@ in
 
   # Takes a logind idle inhibitor for each org.freedesktop.ScreenSaver
   # inhibit (Firefox, Steam) and each window holding a Wayland idle inhibitor
-  # (mpv, SDL games), except for ignoredInhibitors, so the bar's power menu
-  # can list them with the app and reason. hypridle honors those.
+  # (mpv, SDL games), except for ignoredInhibitors and ignoredReasons, so
+  # the bar's power menu can list them with the app and reason. hypridle
+  # honors those.
   systemd.user.services.screensaver-inhibit = {
     Unit = {
       Description = "Idle inhibits as logind inhibitors";
@@ -81,6 +88,10 @@ in
           "--ignore"
           app
         ]) ignoredInhibitors
+        ++ lib.concatMap (reason: [
+          "--ignore-reason"
+          reason
+        ]) ignoredReasons
       );
       Restart = "always";
       RestartSec = 5;

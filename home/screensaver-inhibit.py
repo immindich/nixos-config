@@ -16,8 +16,11 @@ Apps keep the screen awake in one of two ways:
 
 hypridle honors logind idle inhibitors, and `systemd-inhibit --list` (and the
 bar's power menu) shows them. Apps named with --ignore (a D-Bus app name or a
-window class, case-insensitive) get no inhibitor: their D-Bus calls still
-succeed, but nothing keeps the screen awake. ListIgnored() on
+window class, case-insensitive) get no inhibitor, and neither do D-Bus
+inhibits whose reason is named with --ignore-reason (the whole reason,
+case-insensitive; window titles aren't reasons, so these don't apply to
+windows). Their D-Bus calls still succeed, but nothing keeps the screen
+awake. ListIgnored() on
 local.ScreenSaverInhibit at /IdleInhibitBridge (same bus name) returns the
 ignored inhibits currently asked for, as (who, why), for the power menu; the
 journal logs each one as it comes and goes. If this service exits, logind
@@ -55,7 +58,8 @@ INTERFACE = Gio.DBusNodeInfo.new_for_xml("""
 </node>
 """).interfaces[0]
 
-# Not part of the ScreenSaver spec: what --ignore is currently turning away
+# Not part of the ScreenSaver spec: what --ignore and --ignore-reason are
+# currently turning away
 BRIDGE_PATH = "/IdleInhibitBridge"
 BRIDGE_INTERFACE = Gio.DBusNodeInfo.new_for_xml("""
 <node>
@@ -87,10 +91,11 @@ def hyprland_clients():
 
 
 class Bridge:
-    def __init__(self, session_bus, system_bus, ignored):
+    def __init__(self, session_bus, system_bus, ignored, ignored_reasons):
         self.session_bus = session_bus
         self.system_bus = system_bus
         self.ignored = {name.casefold() for name in ignored}
+        self.ignored_reasons = {reason.strip().casefold() for reason in ignored_reasons}
         self.cookies = itertools.count(1)
         # cookie -> (sender, logind fd, or None for an ignored app, who, why)
         self.inhibitors = {}
@@ -104,6 +109,9 @@ class Bridge:
 
     def is_ignored(self, name):
         return name.casefold() in self.ignored
+
+    def is_ignored_reason(self, reason):
+        return reason.strip().casefold() in self.ignored_reasons
 
     def take_inhibitor(self, who, why, on_fd, on_error):
         """Ask logind for an idle inhibitor; calls on_fd(fd) or on_error(message)."""
@@ -152,7 +160,7 @@ class Bridge:
             invocation.return_value(GLib.Variant("(u)", (cookie,)))
             return cookie
 
-        if self.is_ignored(who):
+        if self.is_ignored(who) or self.is_ignored_reason(reason):
             # Answer as usual so the app doesn't retry or complain
             cookie = add(None)
             log(f"ignored {cookie}: {who}: {reason} ({sender})")
@@ -258,11 +266,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--ignore", action="append", default=[], metavar="APP",
                         help="D-Bus app name or window class to give no inhibitor")
+    parser.add_argument("--ignore-reason", action="append", default=[], metavar="REASON",
+                        help="reason of a D-Bus inhibit to give no inhibitor, whatever the app")
     args = parser.parse_args()
 
     session_bus = Gio.bus_get_sync(Gio.BusType.SESSION)
     system_bus = Gio.bus_get_sync(Gio.BusType.SYSTEM)
-    bridge = Bridge(session_bus, system_bus, args.ignore)
+    bridge = Bridge(session_bus, system_bus, args.ignore, args.ignore_reason)
     for path in OBJECT_PATHS:
         session_bus.register_object_with_closures2(path, INTERFACE, bridge.handle_call)
     session_bus.register_object_with_closures2(

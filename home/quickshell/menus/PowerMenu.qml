@@ -22,8 +22,9 @@ DropdownMenu {
     // Wayland idle inhibitor into logind ones, with the app and reason. The
     // keep-awake switch's own (who "quickshell") is left out.
     property var blockers: []
-    // Inhibits screensaver-inhibit is turning away (ignoredInhibitors in
-    // home/hypridle.nix), as { who, why }: asked for, but not blocking idle
+    // Inhibits screensaver-inhibit is turning away (ignoredInhibitors and
+    // ignoredReasons in home/hypridle.nix), as { who, why }: asked for, but
+    // not blocking idle
     property var ignoredBlockers: []
 
     // Neither source announces changes, so poll while the menu is open

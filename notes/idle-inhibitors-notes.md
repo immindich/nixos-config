@@ -67,6 +67,12 @@ kscreenlocker does but sends the calls to logind instead of PowerDevil:
 
 Behavior to know about:
 
+- Inhibits can be turned away by app (`--ignore`, `ignoredInhibitors`) or,
+  for D-Bus ones, by their whole reason (`--ignore-reason`, `ignoredReasons`,
+  case-insensitive), both set in `home/hypridle.nix`. "Playing audio" is
+  ignored (added 2026-11-10) so music in a background Firefox tab doesn't keep
+  the laptop awake and unlocked; Firefox's separate "Playing video" inhibit
+  still does. Turned-away inhibits are listed in the power menu as ignored.
 - If the service dies, logind drops its inhibitors, and apps that already
   inhibited don't re-send, so they stop blocking idle until they inhibit
   again. systemd restarts it after 5 s. (hypridle restarting had the same
