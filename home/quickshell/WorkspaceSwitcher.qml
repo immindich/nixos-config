@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 
-// Styled after ashell's Workspaces module (Tokyo Night colors).
 // Regular workspaces in one bubble, special workspaces in a second one.
 // Each bar lists the regular workspaces on its own monitor; the special ones
 // can be opened on any monitor, so every bar lists all of them.

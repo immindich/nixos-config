@@ -18,7 +18,7 @@
     powerOnBoot = false;
   };
 
-  # Battery info for the ashell bar
+  # Battery info for the bar's battery indicator and low-battery warning
   services.upower.enable = true;
 
   services.geoclue2.enable = true;

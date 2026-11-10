@@ -43,7 +43,7 @@
           monitor = "";
           size = "250, 50";
           outline_thickness = 2;
-          # Same gradient as the active window border
+          # Hyprland's default active-border gradient
           outer_color = "rgba(33ccffee) rgba(00ff99ee) 45deg";
           inner_color = "rgba(1a1a1aee)";
           font_color = "rgb(dddddd)";

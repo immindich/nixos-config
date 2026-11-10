@@ -7,8 +7,9 @@ import Quickshell.Services.UPower
 import Quickshell.Wayland
 import qs.menus
 
-// Right side of the bar, after ashell's Tempo, Privacy and Settings modules:
-// the system tray, privacy indicators, then volume, network, battery, control
+// Right side of the bar: the system tray, then the indicators that only show
+// when there's something to say (Flatpak updates, the open clipboard menu,
+// notifications, weather, privacy), then volume, network, battery, control
 // center, and the clock
 Item {
     id: statusArea

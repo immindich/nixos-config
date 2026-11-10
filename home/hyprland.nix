@@ -182,7 +182,8 @@ in
           gaps_in = 3;
           gaps_out = gapsOut;
           border_size = 1;
-          # Tokyo Night, matching the bar's Theme.qml (accent, dimTextColor)
+          # Tokyo Night's blue and grey. Set here, not taken from the bar's
+          # colour scheme (Theme.qml), so they don't follow it
           col = {
             active_border = "rgba(7aa2f7ee)";
             inactive_border = "rgba(565f89aa)";
