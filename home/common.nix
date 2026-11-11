@@ -41,6 +41,7 @@ in {
       epkgs.helm
       epkgs.doom-themes
       (epkgs.treesit-grammars.with-grammars (g: [ g.tree-sitter-qmljs ]))
+      epkgs.auctex
       # Not in nixpkgs. Uses the qmljs grammar above; autoloaded for .qml files.
       (epkgs.trivialBuild {
         pname = "qml-ts-mode";
