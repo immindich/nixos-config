@@ -151,12 +151,14 @@
   # newline the padding wraps, leaving the "%" as a marker and the prompt on a
   # fresh line. The marker is printed from PROMPT_COMMAND rather than PS1:
   # readline reprints the prompt when it redraws a wrapped line, and the
-  # padding would then blank out the line being edited.
+  # padding would then blank out the line being edited. A leading newline in
+  # PS1 (nix-shell sets one after the rc files run) is dropped, or it would move
+  # the prompt below the marker and leave the "%" behind every time.
   programs.bash.promptInit = ''
     if [ "$TERM" != "dumb" ] || [ -n "$INSIDE_EMACS" ]; then
       PROMPT_COLOR="1;31m"
       ((UID)) && PROMPT_COLOR="1;32m"
-      PROMPT_COMMAND+=('printf "%%%*s\r" $((COLUMNS-1)) ""')
+      PROMPT_COMMAND+=('PS1=''${PS1#\\n}; printf "%%%*s\r" $((COLUMNS-1)) ""')
       if [ -n "$INSIDE_EMACS" ]; then
         # Emacs term mode doesn't support xterm title escape sequence (\e]0;)
         PS1="\[\033[$PROMPT_COLOR\][\u@\h:\w]\\$\[\033[0m\] "
