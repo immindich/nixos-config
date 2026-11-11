@@ -162,6 +162,10 @@
       if [ -n "$INSIDE_EMACS" ]; then
         # Emacs term mode doesn't support xterm title escape sequence (\e]0;)
         PS1="\[\033[$PROMPT_COLOR\][\u@\h:\w]\\$\[\033[0m\] "
+      elif [ -n "$KITTY_INSTALLATION_DIR" ]; then
+        # Kitty's shell integration (sourced from ~/.bashrc) sets the title
+        # itself; setting it here too makes the title flash on every prompt.
+        PS1="\[\033[$PROMPT_COLOR\][\u@\h:\w]\\$\[\033[0m\] "
       else
         PS1="\[\033[$PROMPT_COLOR\][\[\e]0;\u@\h: \w\a\]\u@\h:\w]\\$\[\033[0m\] "
       fi
