@@ -26,7 +26,13 @@ Scope {
         if (!item)
             return null
         const win = item.QsWindow.window
-        const pos = item.mapToItem(null, 0, 0)
+        // Measured from the window's top-level item rather than the window,
+        // so a bar still sliding in (a menu opened by keybind over a
+        // fullscreen window) gives the position it's about to settle at
+        let top = item
+        while (top.parent && top.parent !== win.contentItem)
+            top = top.parent
+        const pos = item.mapToItem(top, 0, 0)
         const want = pos.x + (item.width - menuWindow.menuWidth) / 2
         const x = Math.max(Theme.barMargin, Math.min(want, win.width - menuWindow.menuWidth - Theme.barMargin))
         menuFrame.caretOffset = want - x

@@ -114,6 +114,16 @@ ShellRoot {
           onTriggered: bar.revealed = false
         }
 
+        // A menu opened by a keybind (launcher, clipboard) while the bar is
+        // hidden brings the bar out with it, so the menu hangs off something
+        Connections {
+          target: MenuState
+          function onOpenMenuChanged() {
+            if (bar.hidden && MenuState.openMenu?.anchor.item?.QsWindow.window === bar)
+              bar.revealed = true
+          }
+        }
+
         Item {
           id: content
           width: parent.width
