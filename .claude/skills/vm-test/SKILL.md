@@ -1,6 +1,6 @@
 ---
 name: vm-test
-description: Build, run and drive the NixOS test VM (modules/vm.nix) to verify changes before they land on the laptop. Covers the vm-dev worktree flow, starting and stopping the guest, restarting Quickshell in it, screenshots, and injecting pointer and keyboard input with the bundled vm-* scripts. Use it for any change under home/quickshell or to home/hyprland.nix, for any Nix change that has to be run to be trusted, and whenever a task involves the VM, the guest, vm-dev, or checking how the bar, a menu, a popup, a tooltip or hover behaves, even if the user doesn't say "VM".
+description: Build, run and drive the NixOS test VM (modules/vm.nix) to verify changes before they land on the laptop. Covers the vm-dev worktree flow, starting and stopping the guest, restarting Quickshell in it, screenshots, and injecting pointer and keyboard input with the bundled vm-* scripts. Use it for any change under home/quickshell or home/hypr or to home/hyprland.nix, for any Nix change that has to be run to be trusted, and whenever a task involves the VM, the guest, vm-dev, or checking how the bar, a menu, a popup, a tooltip or hover behaves, even if the user doesn't say "VM".
 ---
 
 # Testing in the VM
@@ -94,7 +94,7 @@ $S/vm-display list             # connectors and Hyprland's monitors
 - For a change that shouldn't alter the look (a refactor), screenshot the same menus before and after and diff them with ImageMagick (`magick a.png b.png -compose difference -composite -trim -format %@ info:`). Two runs without changes come out pixel-identical, but mask the clock, and expect live data such as the weather to differ.
 - Notifications can be posted and closed from the shell with `busctl --user call -- org.freedesktop.Notifications ...`. The `--` is needed: without it busctl reads an `expire_timeout` of `-1` as an option. `notify-send` isn't on the guest's PATH; take libnotify's store path from a script that has it in `runtimeInputs` (grep the script for `libnotify`). Its `-i` lands in the `image-path` hint, not in `app_icon`, so Quickshell sees an empty `appIcon` for it.
 - `vm-qs restart` restarts the service, which empties the notification history and every `PersistentProperties`; only a QML reload keeps them. To test what survives a reload, use the `Quickshell.reload(false)` timer trick above, then wait past its interval before looking.
-- The scripts bound in `home/hyprland.nix` (`screenshot-window`, ...) aren't on PATH either; grep their store path out of `~/.config/hypr/hyprland.lua`. Start one that leaves a process behind (`notify-send -A` waiting for its button) with `setsid -f <script> >/dev/null 2>&1`, or the ssh call hangs until that process exits.
+- The scripts packaged in `home/hyprland.nix` and bound in `home/hypr/binds.lua` (`screenshot-window`, ...) aren't on PATH either; take their store paths from `~/.config/hypr/nix.lua`. Start one that leaves a process behind (`notify-send -A` waiting for its button) with `setsid -f <script> >/dev/null 2>&1`, or the ssh call hangs until that process exits.
 
 ## What has been measured and tried
 
