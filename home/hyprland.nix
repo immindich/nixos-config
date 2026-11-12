@@ -119,7 +119,8 @@ let
   };
 
   # Everything the hand-written Lua (home/hypr/) needs from Nix, as
-  # require("nix").
+  # require("nix"). home/hypr/types/nix.lua describes it for the language
+  # server; keep the two in step.
   nixValues = {
     screenshot = lib.getExe screenshot;
     screenshot_window = lib.getExe screenshotWindow;
@@ -144,6 +145,9 @@ in
     value.source = ./hypr/${name}.lua;
   }) luaModules) // {
     "hypr/nix.lua".text = "return ${lib.generators.toLua { } nixValues}\n";
+    # Hyprland's Lua API stubs, for the language server (.luarc.json). The
+    # same package as programs.hyprland.package in the NixOS config.
+    "hypr/stubs".source = "${pkgs.hyprland}/share/hypr/stubs";
   };
 
   wayland.windowManager.hyprland = {
