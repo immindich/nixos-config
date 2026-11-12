@@ -1,4 +1,4 @@
--- Options, curves, animations and gestures
+-- Options, curves, and animations
 
 hl.env("XCURSOR_THEME", "BreezeX-RosePine-Linux")
 hl.env("XCURSOR_SIZE", "24")
@@ -62,23 +62,6 @@ hl.config({
     disable_splash_rendering = true,
     focus_on_activate = true,
   },
-
-  -- The test VM sets input.accel_profile from Nix (modules/vm.nix), so it
-  -- mustn't be set here: this file runs after the Nix settings.
-  input = {
-    kb_layout = "us",
-    kb_variant = "",
-    kb_model = "",
-    kb_options = "ctrl:nocaps",
-    kb_rules = "",
-    follow_mouse = 1,
-    sensitivity = 0,
-    touchpad = {
-      natural_scroll = true,
-      tap_to_click = false,
-      clickfinger_behavior = true,
-    },
-  },
 })
 
 -- Curves come before the animations that use them
@@ -116,5 +99,3 @@ for _, a in ipairs({
   spec.leaf, spec.speed, spec.enabled = a[1], a[2], true
   hl.animation(spec)
 end
-
-hl.gesture({ fingers = 4, direction = "horizontal", action = "workspace" })

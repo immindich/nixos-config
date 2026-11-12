@@ -130,7 +130,7 @@ let
   };
 
   # The modules in home/hypr/ that main.lua requires
-  luaModules = [ "main" "settings" "binds" "rules" "fullscreen" ];
+  luaModules = [ "main" "settings" "binds" "rules" "fullscreen" "input" ];
 
   # Hyprland reloads by itself when a switch replaces a file it has loaded,
   # but that can happen before the switch has created the rest: replacing
