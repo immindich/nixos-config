@@ -1,12 +1,7 @@
 { lib, pkgs, ... }:
 let
-  inline = lib.generators.mkLuaInline;
-
-  mainMod = "SUPER";
-  terminal = "kitty";
+  # For the screenshot notification's "Open folder" button
   fileManager = "dolphin";
-  # Gap between windows and the screen edges; the bar's Theme.barMargin matches it
-  gapsOut = 6;
 
   # Posts a notification showing the screenshot in $file, with an "Open
   # folder" button that shows it in the file manager and, with `edit`, an
@@ -123,37 +118,33 @@ let
     '';
   };
 
-  bind = key: dsp: { _args = [ key (inline dsp) ]; };
-  bindWith = key: dsp: opts: { _args = [ key (inline dsp) opts ]; };
-  exec = cmd: "hl.dsp.exec_cmd(${builtins.toJSON cmd})";
-  mediaOpts = { locked = true; repeating = true; };
-  # Triggers a Quickshell GlobalShortcut with appid "quickshell"
-  shellShortcut = name: ''hl.dsp.global("quickshell:${name}")'';
-  # Closes the window switcher (home/quickshell/WindowSwitcher.qml) with
-  # shortcut `name` and leaves its submap; does nothing outside the submap
-  switcherFinish = name: ''function() if hl.get_current_submap() == "alttab" then hl.dispatch(${shellShortcut name}); hl.dispatch(hl.dsp.submap("reset")) end end'';
+  # Everything the hand-written Lua (home/hypr/) needs from Nix, as
+  # require("nix").
+  nixValues = {
+    screenshot = lib.getExe screenshot;
+    screenshot_window = lib.getExe screenshotWindow;
+    screenshot_screen = lib.getExe screenshotScreen;
+    brightness_step = lib.getExe brightnessStep;
+    log_out = lib.getExe logOut;
+  };
 
-  bezier = name: p1: p2: { _args = [ name { type = "bezier"; points = [ p1 p2 ]; } ]; };
-  anim = leaf: speed: extra: { inherit leaf speed; enabled = true; } // extra;
-
-  # SUPER + [0-9] switches workspace, SUPER + SHIFT + [0-9] moves the window without following it
-  workspaceBinds = lib.concatMap (
-    i:
-    let
-      key = toString (lib.mod i 10); # 10 maps to key 0
-      ws = toString i;
-    in
-    [
-      (bind "${mainMod} + ${key}" "hl.dsp.focus({ workspace = ${ws} })")
-      (bind "${mainMod} + SHIFT + ${key}" "hl.dsp.window.move({ workspace = ${ws}, follow = false })")
-    ]
-  ) (lib.range 1 10);
+  # The modules in home/hypr/ that main.lua requires
+  luaModules = [ "main" "settings" "binds" "rules" "fullscreen" ];
 in
 {
   # The XCursor version is for clients that draw their own cursor, like slurp.
-  # playerctl is for the media key binds below. The bar runs brightness-step
+  # playerctl is for the media key binds. The bar runs brightness-step
   # and session-logout too, so they're on PATH.
   home.packages = [ pkgs.rose-pine-hyprcursor pkgs.rose-pine-cursor pkgs.playerctl brightnessStep logOut ];
+
+  # Hyprland watches every file it has loaded, and replacing one of these
+  # links on a switch is enough to make it reload.
+  xdg.configFile = lib.listToAttrs (map (name: {
+    name = "hypr/${name}.lua";
+    value.source = ./hypr/${name}.lua;
+  }) luaModules) // {
+    "hypr/nix.lua".text = "return ${lib.generators.toLua { } nixValues}\n";
+  };
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -162,407 +153,17 @@ in
     portalPackage = null;
     configType = "lua";
 
-    settings = {
-      monitor = {
-        output = "";
-        mode = "preferred";
-        position = "auto";
-        scale = "auto";
-      };
-
-      env = [
-        { _args = [ "XCURSOR_THEME" "BreezeX-RosePine-Linux" ]; }
-        { _args = [ "XCURSOR_SIZE" "24" ]; }
-        { _args = [ "HYPRCURSOR_SIZE" "24" ]; }
-        { _args = [ "HYPRCURSOR_THEME" "rose-pine-hyprcursor" ]; }
-      ];
-
-      config = {
-        general = {
-          gaps_in = 3;
-          gaps_out = gapsOut;
-          border_size = 1;
-          # Tokyo Night's blue and grey. Set here, not taken from the bar's
-          # colour scheme (Theme.qml), so they don't follow it
-          col = {
-            active_border = "rgba(7aa2f7ee)";
-            inactive_border = "rgba(565f89aa)";
-          };
-          resize_on_border = false;
-          allow_tearing = false;
-          layout = "dwindle";
-        };
-
-        decoration = {
-          rounding = 5;
-          rounding_power = 2;
-          active_opacity = 1.0;
-          inactive_opacity = 1.0;
-          shadow = {
-            enabled = true;
-            range = 4;
-            render_power = 3;
-            color = inline "0xee1a1a1a";
-          };
-          blur = {
-            enabled = true;
-            # Strong enough to frost the bar's menus when Theme.menuOpacity
-            # is below 1 (see the layer rules)
-            size = 8;
-            passes = 3;
-            vibrancy = 0.1696;
-          };
-        };
-
-        animations.enabled = true;
-        binds = {
-          # Switching workspace (keys, bar, scroll) also closes an open
-          # special workspace instead of leaving it over the new one
-          hide_special_on_workspace_change = true;
-          movefocus_cycles_groupfirst = true;
-        };
-        dwindle.preserve_split = true;
-        master.new_status = "master";
-        scrolling.fullscreen_on_one_column = true;
-        xwayland.force_zero_scaling = true;
-
-        misc = {
-          disable_hyprland_logo = true;
-          disable_splash_rendering = true;
-          focus_on_activate = true;
-        };
-
-        input = {
-          kb_layout = "us";
-          kb_variant = "";
-          kb_model = "";
-          kb_options = "ctrl:nocaps";
-          kb_rules = "";
-          follow_mouse = 1;
-          sensitivity = 0;
-          touchpad = {
-	          natural_scroll = true;
-	          tap_to_click = false;
-            clickfinger_behavior = true;
-          };
-        };
-      };
-
-      curve = [
-        (bezier "easeOutQuint" [ 0.23 1 ] [ 0.32 1 ])
-        (bezier "easeInOutCubic" [ 0.65 0.05 ] [ 0.36 1 ])
-        (bezier "linear" [ 0 0 ] [ 1 1 ])
-        (bezier "almostLinear" [ 0.5 0.5 ] [ 0.75 1 ])
-        (bezier "quick" [ 0.15 0 ] [ 0.1 1 ])
-        {
-          _args = [
-            "easy"
-            {
-              type = "spring";
-              mass = 1;
-              stiffness = 71.2633;
-              dampening = 15.8273644;
-            }
-          ];
-        }
-      ];
-
-      animation = [
-        (anim "global" 10 { bezier = "default"; })
-        (anim "border" 5.39 { bezier = "easeOutQuint"; })
-        (anim "windows" 4.79 { spring = "easy"; })
-        (anim "windowsIn" 4.1 { spring = "easy"; style = "popin 87%"; })
-        (anim "windowsOut" 1.49 { bezier = "linear"; style = "popin 87%"; })
-        (anim "fadeIn" 1.73 { bezier = "almostLinear"; })
-        (anim "fadeOut" 1.46 { bezier = "almostLinear"; })
-        (anim "fade" 3.03 { bezier = "quick"; })
-        (anim "layers" 3.81 { bezier = "easeOutQuint"; })
-        (anim "layersIn" 4 { bezier = "easeOutQuint"; style = "fade"; })
-        (anim "layersOut" 1.5 { bezier = "linear"; style = "fade"; })
-        (anim "fadeLayersIn" 1.79 { bezier = "almostLinear"; })
-        (anim "fadeLayersOut" 1.39 { bezier = "almostLinear"; })
-        (anim "workspaces" 1.94 { bezier = "almostLinear"; style = "fade"; })
-        (anim "workspacesIn" 1.21 { bezier = "almostLinear"; style = "fade"; })
-        (anim "workspacesOut" 1.94 { bezier = "almostLinear"; style = "fade"; })
-        (anim "zoomFactor" 7 { bezier = "quick"; })
-      ];
-
-      gesture = {
-        fingers = 4;
-        direction = "horizontal";
-        action = "workspace";
-      };
-
-      bind = [
-        (bind "${mainMod} + Return" (exec terminal))
-        (bind "${mainMod} + C" "hl.dsp.window.close()")
-        (bind "${mainMod} + M" (exec (lib.getExe logOut)))
-        (bind "${mainMod} + Escape" (exec "pidof hyprlock || hyprlock"))
-        (bind "${mainMod} + E" (exec fileManager))
-        # Kitty floats at a set size, centred, rather than at its tiled size
-        (bind "${mainMod} + V" ''
-          function()
-            hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
-            local w = hl.get_active_window()
-            if w and w.floating and w.class == "kitty" and w.monitor then
-              local m = w.monitor
-              hl.dispatch(hl.dsp.window.resize({ x = math.floor(m.width / m.scale * 0.5), y = math.floor(m.height / m.scale * 0.6) }))
-              hl.dispatch(hl.dsp.window.center())
-            end
-          end'')
-        # Tapping SUPER on its own toggles the Quickshell start menu
-        (bindWith "${mainMod} + Super_L" (exec "qs ipc call startmenu toggle") { release = true; })
-        (bind "${mainMod} + SHIFT + V" (exec "qs ipc call clipboard toggle"))
-        # Prompt box that starts a Claude Desktop chat (home/quickshell/ClaudePrompt.qml).
-        # Off for now: the deep link only fills in Claude's message box, where
-        # the app's own quick entry (CTRL+ALT+space) sends the message.
-        # (bind "${mainMod} + A" (shellShortcut "claude-prompt"))
-        # Try colour schemes and look options live (ThemeTweaker.qml)
-        (bind "${mainMod} + SHIFT + T" (shellShortcut "theme-tweaker"))
-        (bind "${mainMod} + P" "hl.dsp.window.pseudo()")
-        (bind "${mainMod} + T" ''hl.dsp.layout("togglesplit")'') # dwindle only
-        (bind "Print" (exec (lib.getExe screenshot)))
-        (bind "SHIFT + Print" (exec (lib.getExe screenshotWindow)))
-        (bind "ALT + Print" (exec (lib.getExe screenshotScreen)))
-        (bind "${mainMod} + SHIFT + P" (exec (lib.getExe screenshot)))
-
-        (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
-        (bind "${mainMod} + L" ''hl.dsp.focus({ direction = "right" })'')
-        (bind "${mainMod} + K" ''hl.dsp.focus({ direction = "up" })'')
-        (bind "${mainMod} + J" ''hl.dsp.focus({ direction = "down" })'')
-
-        (bind "${mainMod} + SHIFT + H" ''hl.dsp.window.move({ direction = "left", group_aware = true })'')
-        (bind "${mainMod} + SHIFT + L" ''hl.dsp.window.move({ direction = "right", group_aware = true })'')
-        (bind "${mainMod} + SHIFT + K" ''hl.dsp.window.move({ direction = "up", group_aware = true })'')
-        (bind "${mainMod} + SHIFT + J" ''hl.dsp.window.move({ direction = "down", group_aware = true })'')
-
-        (bind "${mainMod} + W" ''hl.dsp.group.toggle()'')
-        (bind "${mainMod} + TAB" "hl.dsp.group.next()")
-        (bind "${mainMod} + SHIFT + TAB" "hl.dsp.group.prev()")
-        # Window switcher (home/quickshell/WindowSwitcher.qml). Hyprland, not
-        # the shell, enters and leaves the alttab submap, so letting go of ALT
-        # straight away still closes it, and ALT can't get stuck in the submap
-        # if Quickshell isn't running.
-        (bind "ALT + TAB" "function() hl.dispatch(${shellShortcut "alttab-open"}); hl.dispatch(hl.dsp.submap(\"alttab\")) end")
-        # Letting go of ALT picks the window. A release bind only fires after
-        # other keys (Tab) were pressed if it's transparent, which also lets
-        # the app see ALT go up.
-        (bindWith "Alt_L" (switcherFinish "alttab-commit") { release = true; transparent = true; ignore_mods = true; submap_universal = true; })
-        (bindWith "Alt_R" (switcherFinish "alttab-commit") { release = true; transparent = true; ignore_mods = true; submap_universal = true; })
-      ]
-      ++ workspaceBinds
-      ++ [
-        # Scratchpad
-        (bind "${mainMod} + S" ''hl.dsp.workspace.toggle_special("magic")'')
-        (bind "${mainMod} + SHIFT + S" ''hl.dsp.window.move({ workspace = "special:magic silent" })'')
-        # The test VM's window (modules/vm.nix) lives on special:vm
-        (bind "${mainMod} + SHIFT + M" ''hl.dsp.workspace.toggle_special("vm")'')
-
-        # Claude Desktop's quick entry, which the app registers through the
-        # GlobalShortcuts portal (see modules/claude-desktop.nix). The id is
-        # what `hyprctl globalshortcuts` lists, and is tied to the app's profile
-        # (~/.config/Claude), so it changes if that is reset. The app picks the
-        # key, but the portal can't bind it, so it's bound here to match.
-        (bind "CTRL + ALT + space" ''hl.dsp.global("com.anthropic.Claude:0AAD7C444F61D669DCBB25DDA7C44871-Ctrl+Alt+Space")'')
-
-        # Scroll through existing workspaces
-        (bind "${mainMod} + mouse_down" ''hl.dsp.focus({ workspace = "e+1" })'')
-        (bind "${mainMod} + mouse_up" ''hl.dsp.focus({ workspace = "e-1" })'')
-
-        # Move/resize with LMB/RMB drag
-        (bindWith "${mainMod} + mouse:272" "hl.dsp.window.drag()" { mouse = true; })
-        (bindWith "${mainMod} + mouse:273" "hl.dsp.window.resize()" { mouse = true; })
-
-        # Volume and brightness keys
-        # Changing the volume also unmutes (wpctl doesn't on its own)
-        (bindWith "XF86AudioRaiseVolume" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+") mediaOpts)
-        (bindWith "XF86AudioLowerVolume" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-") mediaOpts)
-        (bindWith "XF86AudioMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle") mediaOpts)
-        (bindWith "XF86AudioMicMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle") mediaOpts)
-        (bindWith "XF86MonBrightnessUp" (exec "${lib.getExe brightnessStep} up") mediaOpts)
-        (bindWith "XF86MonBrightnessDown" (exec "${lib.getExe brightnessStep} down") mediaOpts)
-
-        # Media keys
-        (bindWith "XF86AudioNext" (exec "playerctl next") { locked = true; })
-        (bindWith "XF86AudioPause" (exec "playerctl play-pause") { locked = true; })
-        (bindWith "XF86AudioPlay" (exec "playerctl play-pause") { locked = true; })
-        (bindWith "XF86AudioPrev" (exec "playerctl previous") { locked = true; })
-      ];
-
-      # Active while the window switcher is open. Tab and SHIFT+Tab move the
-      # selection, Escape cancels. (A catchall can't cancel on other keys:
-      # it fires on Tab too.)
-      define_submap = {
-        _args = [
-          "alttab"
-          (inline ''
-            function()
-              hl.bind("ALT + TAB", ${shellShortcut "alttab-next"}, { repeating = true })
-              hl.bind("ALT + SHIFT + TAB", ${shellShortcut "alttab-prev"}, { repeating = true })
-              hl.bind("Escape", ${switcherFinish "alttab-cancel"}, { ignore_mods = true })
-            end
-          '')
-        ];
-      };
-
-      # A window that goes fullscreen moves to a workspace of its own, like
-      # macOS, so switching to another window never has to take it out of
-      # fullscreen (misc:on_focus_under_fullscreen). Workspaces from 101 up
-      # are kept for these; the bar (home/quickshell/WorkspaceSwitcher.qml)
-      # shows them after the others. Leaving fullscreen takes the window back,
-      # if it's still alone there; closing it (quitting a game) takes you back
-      # there instead, if you're still looking at its empty workspace. Handled
-      # on a timer because the event fires inside Hyprland's fullscreen code,
-      # and again (with the window still fullscreen) during the move itself.
-      on = {
-        _args = [
-          "window.fullscreen"
-          (inline ''
-            (function()
-              local home = {}
-              -- Registered here to share `home`
-              hl.on("window.close", function(w)
-                local window = "address:" .. w.address
-                local id = home[window]
-                if not id then return end
-                home[window] = nil
-                local left = w.workspace and w.workspace.id
-                hl.timer(function()
-                  local active = hl.get_active_workspace()
-                  if active and active.id == left and active.windows == 0 then
-                    hl.dispatch(hl.dsp.focus({ workspace = id }))
-                  end
-                end, { timeout = 1, type = "oneshot" })
-              end)
-              return function(w)
-                local window = "address:" .. w.address
-                hl.timer(function()
-                  local win = hl.get_window(window)
-                  if not win then
-                    home[window] = nil
-                    return
-                  end
-                  local ws = win.workspace
-                  if win.fullscreen == 2 then
-                    if not ws.special and ws.id <= 100 then
-                      home[window] = ws.id
-                      local id = 101
-                      while true do
-                        local target = hl.get_workspace(id)
-                        if not target or target.windows == 0 then break end
-                        id = id + 1
-                      end
-                      hl.dispatch(hl.dsp.window.move({ workspace = id, window = window }))
-                    end
-                  elseif win.fullscreen == 0 and home[window] then
-                    local id = home[window]
-                    home[window] = nil
-                    if ws.windows == 1 then
-                      hl.dispatch(hl.dsp.window.move({ workspace = id, window = window }))
-                    end
-                  end
-                end, { timeout = 1, type = "oneshot" })
-              end
-            end)()
-          '')
-        ];
-      };
-
-      window_rule = [
-        {
-          # Ignore maximize requests from all apps
-          name = "suppress-maximize-events";
-          match.class = ".*";
-          suppress_event = "maximize";
-        }
-        {
-          # Fix some dragging issues with XWayland
-          name = "fix-xwayland-drags";
-          match = {
-            class = "^$";
-            title = "^$";
-            xwayland = true;
-            float = true;
-            fullscreen = false;
-            pin = false;
-          };
-          no_focus = true;
-        }
-        {
-          name = "move-hyprland-run";
-          match.class = "hyprland-run";
-          move = "20 monitor_h-120";
-          float = true;
-        }
-        {
-          name = "steam-friends-float";
-          match = {
-            class = "^steam$";
-            title = "^Friends List$";
-          };
-          float = true;
-        }
-        {
-          # Only the main window: the quick entry popup is floating and has to
-          # open where it can be seen
-          name = "claude-desktop-magic";
-          match = {
-            class = "com.anthropic.Claude";
-            float = false;
-          };
-          workspace = "special:magic silent";
-        }
-        {
-          # The screenshot editor (Edit on a screenshot notification) floats
-          name = "satty-float";
-          match.class = "^com\\.gabm\\.satty$";
-          float = true;
-          size = "monitor_w*0.7 monitor_h*0.7";
-          center = true;
-        }
-        {
-          # The test VM (modules/vm.nix) opens out of the way; SUPER+SHIFT+M shows it
-          name = "test-vm";
-          match = {
-            class = "qemu";
-            title = "^QEMU \\(laptop-vm\\)$";
-          };
-          workspace = "special:vm silent";
-        }
-        {
-          # A lone tiled window fills the screen (see the w[tv1] workspace rule)
-          name = "single-window-no-border";
-          match = {
-            float = false;
-            workspace = "w[tv1]";
-          };
-          border_size = 0;
-          rounding = 0;
-        }
-      ];
-
-      # Blur what shows through the bar's menus when Theme.menuOpacity is
-      # below 1: the layer surfaces themselves (the bar and the keyboard
-      # menus) and the popups hanging off them. No effect while they're opaque.
-      layer_rule = map (namespace: {
-        match.namespace = namespace;
-        blur = true;
-        blur_popups = true;
-        ignore_alpha = 0.2;
-      }) [ "quickshell" "quickshell-menu" ];
-
-      # Keep 1-5 around when empty, so the workspace swipe can reach them
-      workspace_rule = map (i: {
-        workspace = toString i;
-        persistent = true;
-      }) (lib.range 1 5) ++ [
-        # A single tiled window fills the screen up to the bar, without gaps
-        {
-          workspace = "w[tv1]";
-          gaps_in = 0;
-          gaps_out = 0;
-        }
-      ];
+    # The rest of the config is hand-written Lua in home/hypr/, loaded last.
+    # Only what other Nix code changes stays here: the test VM
+    # (modules/vm.nix) overrides the monitor and settings.config.input.accel_profile,
+    # so home/hypr/ mustn't set those. Home-manager adds its startup hook.
+    settings.monitor = {
+      output = "";
+      mode = "preferred";
+      position = "auto";
+      scale = "auto";
     };
+
+    extraConfig = ''require("main")'';
   };
 }

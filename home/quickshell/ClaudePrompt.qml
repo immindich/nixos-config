@@ -4,7 +4,7 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 
 // Prompt box for Claude Desktop, in the middle of the focused screen, opened
-// by the claude-prompt global shortcut (its SUPER+A bind in home/hyprland.nix
+// by the claude-prompt global shortcut (its SUPER+A bind in home/hypr/binds.lua
 // is commented out for now). Enter starts a new chat in Claude with
 // the text through a claude://claude.ai/new?q= deep link, which fills in the
 // message box, and brings Claude's window (kept on special:magic) into view.

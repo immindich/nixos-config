@@ -40,7 +40,7 @@ KeyboardMenu {
         [
             { icon: "\uf011", label: "Shut down", command: "systemctl poweroff", confirm: true }, // power-off
             { icon: "\uf2f9", label: "Restart", command: "systemctl reboot", confirm: true }, // rotate-right
-            // Same as the SUPER+M bind (home/hyprland.nix)
+            // Same as the SUPER+M bind (home/hypr/binds.lua)
             { icon: "\uf2f5", label: "Log out", command: "session-logout", confirm: true }, // right-from-bracket
         ],
     ]

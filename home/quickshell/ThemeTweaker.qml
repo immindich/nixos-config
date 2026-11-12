@@ -4,7 +4,7 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 
 // Panel for trying the colour schemes and look options live, toggled with
-// SUPER+SHIFT+T (home/hyprland.nix). Each button writes straight to Theme;
+// SUPER+SHIFT+T (home/hypr/binds.lua). Each button writes straight to Theme;
 // nothing is saved, so a reload of the shell brings back the values in
 // Theme.qml. It sits at the bottom of the focused screen (the top with the
 // bar at the bottom) so the bar and its menus stay in view, and closes with

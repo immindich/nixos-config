@@ -29,7 +29,7 @@ Row {
     }
 
     // Workspaces above this id hold fullscreen windows, one each
-    // (home/hyprland.nix moves them there)
+    // (home/hypr/fullscreen.lua moves them there)
     readonly property int fullscreenBase: 100
 
     // Icons for the special workspaces: the test VM (modules/vm.nix) gets a

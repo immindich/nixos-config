@@ -85,7 +85,7 @@ Singleton {
     property int menuBorder: 1
     property bool menuShadow: false
     // Below 1 the menus show what's behind them, blurred by Hyprland (the
-    // layer rules in home/hyprland.nix)
+    // layer rules in home/hypr/rules.lua)
     property real menuOpacity: 0.85
     // Accent stripe along the edge of a menu that faces the bar
     property bool menuAccentEdge: false

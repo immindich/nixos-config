@@ -10,7 +10,7 @@ import Quickshell.Wayland
 // letting go of ALT focuses it. Escape cancels. A click on a row focuses
 // that window.
 //
-// The keys are Hyprland binds (home/hyprland.nix) that trigger the global
+// The keys are Hyprland binds (home/hypr/binds.lua) that trigger the global
 // shortcuts below, and Hyprland enters and leaves the alttab submap itself,
 // so this window never takes the keyboard.
 PanelWindow {
