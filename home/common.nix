@@ -40,7 +40,7 @@ in {
       epkgs.agent-shell
       epkgs.helm
       epkgs.doom-themes
-      (epkgs.treesit-grammars.with-grammars (g: [ g.tree-sitter-qmljs ]))
+      (epkgs.treesit-grammars.with-grammars (g: [ g.tree-sitter-qmljs g.tree-sitter-lua ]))
       epkgs.auctex
       # Not in nixpkgs. Uses the qmljs grammar above; autoloaded for .qml files.
       (epkgs.trivialBuild {
@@ -94,6 +94,8 @@ in {
     # with the flake's nixpkgs and option sets, so it completes packages
     # and NixOS and home-manager options.
     pkgs.nixd
+    # Lua language server for lua-ts-mode (the Hyprland config, home/hypr/)
+    pkgs.lua-language-server
     # Icon theme for the bar's app icons; selected in shell.qml
     pkgs.papirus-icon-theme
     # Breeze Dark colours as a system-wide kdeglobals. KDE apps merge it under

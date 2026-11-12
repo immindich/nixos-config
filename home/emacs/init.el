@@ -55,3 +55,15 @@
   :config
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs '(qml-ts-mode "qmlls"))))
+
+;; Lua (the Hyprland config in home/hypr/). Eglot already knows
+;; lua-language-server for lua-ts-mode; .luarc.json at the repo root points
+;; it at Hyprland's API stubs. lua-ts-mode also adds a luacheck Flymake
+;; checker, but luacheck isn't installed and the server covers it.
+(use-package lua-ts-mode
+  :mode "\\.lua\\'"
+  :hook (lua-ts-mode . eglot-ensure)
+  :config
+  (add-hook 'lua-ts-mode-hook
+            (lambda ()
+              (remove-hook 'flymake-diagnostic-functions #'lua-ts-flymake-luacheck t))))
