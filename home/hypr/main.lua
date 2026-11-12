@@ -5,6 +5,8 @@
 -- packaged in Nix come from require("nix"), which is generated; its shape is
 -- described for the language server in types/nix.lua.
 
+require("startup")
+
 require("settings")
 require("binds")
 require("rules")
