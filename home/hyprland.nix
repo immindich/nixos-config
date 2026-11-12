@@ -145,9 +145,6 @@ in
     value.source = ./hypr/${name}.lua;
   }) luaModules) // {
     "hypr/nix.lua".text = "return ${lib.generators.toLua { } nixValues}\n";
-    # Hyprland's Lua API stubs, for the language server (.luarc.json). The
-    # same package as programs.hyprland.package in the NixOS config.
-    "hypr/stubs".source = "${pkgs.hyprland}/share/hypr/stubs";
   };
 
   wayland.windowManager.hyprland = {
