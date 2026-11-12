@@ -9,3 +9,4 @@ require("settings")
 require("binds")
 require("rules")
 require("fullscreen")
+-- probe
