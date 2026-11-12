@@ -65,6 +65,16 @@
   :hook (lua-ts-mode . eglot-ensure)
   :custom (lua-ts-indent-offset 2)
   :config
+  ;; A function passed as an argument indents its body from the start of
+  ;; the call's line, not from the `function' keyword, also when it isn't
+  ;; the only argument (hl.on("event", function(w) ...)).
+  (setf (alist-get 'lua lua-ts--simple-indent-rules)
+        (append
+         '(((n-p-gp "block" "function_definition" "arguments")
+            standalone-parent lua-ts-indent-offset)
+           ((n-p-gp "end" "function_definition" "arguments")
+            standalone-parent 0))
+         (alist-get 'lua lua-ts--simple-indent-rules)))
   (add-hook 'lua-ts-mode-hook
             (lambda ()
               (remove-hook 'flymake-diagnostic-functions #'lua-ts-flymake-luacheck t))))
