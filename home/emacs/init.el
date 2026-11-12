@@ -63,6 +63,7 @@
 (use-package lua-ts-mode
   :mode "\\.lua\\'"
   :hook (lua-ts-mode . eglot-ensure)
+  :custom (lua-ts-indent-offset 2)
   :config
   (add-hook 'lua-ts-mode-hook
             (lambda ()
