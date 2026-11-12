@@ -24,7 +24,7 @@ hl.gesture({ fingers = 4, direction = "horizontal", action = "workspace" })
 -- By default, the touchpad is disabled when typing. This is fine
 -- normally, but it can be a pain when playing certain games.
 local function exempt(w)
-  return w and (w.class:find("steam_app") or
+  return w and w.class and (w.class:find("steam_app") or
     w.class == "dwarfort"
   )
 end
