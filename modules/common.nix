@@ -85,6 +85,7 @@
     umu-launcher
     # MPRIS, so the bar's media controls and playerctl see it
     (mpv.override { scripts = [ mpvScripts.mpris ]; })
+    uv
   ];
 
   # Select internationalisation properties.
