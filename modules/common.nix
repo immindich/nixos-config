@@ -3,7 +3,34 @@
 {
   nixpkgs.config.allowUnfree = true;
 
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 5;
+
+  # Use latest kernel.
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Set your time zone.
+  time.timeZone = null;
+
+  security.tpm2.enable = true;
+
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.users.isaiah = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" "video" "tss" ]; # Enable ‘sudo’ for the user.
+    packages = with pkgs; [
+      tree
+    ];
+  };
+
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
 
   nix.gc = {
     automatic = true;
@@ -118,7 +145,15 @@
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   programs.dconf.enable = true;
 
-  services.libinput.enable = true;
+  services.libinput = {
+    enable = true;
+    touchpad = {
+      tapping = false;
+      naturalScrolling = true;
+      accelSpeed = "0.5";
+      clickMethod = "clickfinger";
+    };
+  };
 
   services.tailscale.enable = true;
 
