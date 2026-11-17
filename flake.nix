@@ -43,9 +43,9 @@
         ];
       };
     in {
-      nixosConfigurations.laptop = mkHost "laptop";
+      nixosConfigurations.x1c = mkHost "x1c";
 
-      homeConfigurations."${username}@laptop" =
+      homeConfigurations."${username}@x1c" =
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
           extraSpecialArgs = { inherit inputs; };
