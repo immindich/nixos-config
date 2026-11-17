@@ -4,7 +4,42 @@
 
 { config, lib, pkgs, ... }:
 
-{
+let libcamera_0_8 = pkgs.libcamera.overrideAttrs (old: rec {
+      version = "0.8.0";
+      src = pkgs.fetchgit {
+        url = "https://gitlab.freedesktop.org/camera/libcamera.git/";
+        rev = "v${version}";
+        hash = "sha256-HPQZEzxH1QqmNpMVvKeYl2o7rxfNNP+npCyzYHYyFP8=";
+      };
+      buildInputs = old.buildInputs ++ (with pkgs; [
+        libjpeg
+        libyuv
+        elfutils
+        libGL
+        libtiff
+        SDL2
+      ]);
+    });
+    pipewire' = (pkgs.pipewire.override { libcamera = libcamera_0_8; }).overrideAttrs (old: {
+      patches = (old.patches or []) ++ [
+        # spa: libcamera: source: use `std::span`
+        (pkgs.fetchpatch {
+          url = "https://gitlab.freedesktop.org/pipewire/pipewire/-/commit/7bc41112e8453c482fb7a408af7928ba5cc68a94.patch";
+          hash = "sha256-7lSn3U18Uw36nYdDYlQX/oF8EecktOXIzK4FJITvWDs=";
+        })
+        # spa: libcamera: device: 0.8 compatibility
+        (pkgs.fetchpatch {
+          url = "https://gitlab.freedesktop.org/pipewire/pipewire/-/commit/54f2f51f5233026e608f8235f5377b9b473918e3.patch";
+          hash = "sha256-eIS9n5K2wTz++7Nf6tzWah61EA/73soS1vIG/n7UUqY=";
+        })
+      ];
+      # The version check above needs LIBCAMERA_VERSION_*; upstream gets it
+      # from a later commit (44176d411) that 1.6.6 doesn't have.
+      postPatch = (old.postPatch or "") + ''
+        sed -i '1i #include <libcamera/version.h>' spa/plugins/libcamera/libcamera-device.cpp
+      '';
+    });
+in {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
@@ -26,6 +61,9 @@
   ];
 
   networking.hostName = "x1c";
+
+  services.pipewire.package = pipewire';
+  services.pipewire.wireplumber.package = pkgs.wireplumber.override { pipewire = pipewire'; };
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
