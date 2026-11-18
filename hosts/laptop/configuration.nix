@@ -12,6 +12,8 @@
       ../../modules/fingerprint.nix
     ];
 
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
   boot.initrd.luks.devices.cryptroot = {
     device = "/dev/disk/by-uuid/ab514cd3-78e1-4ee8-a53d-8585509eaafe";
     allowDiscards = true;

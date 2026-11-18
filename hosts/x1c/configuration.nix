@@ -47,6 +47,24 @@ in {
       ../../modules/fingerprint.nix
     ];
 
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  boot.kernelPatches = [
+    {
+      name = "imx471-crop-fix";
+      patch = ./0001-media-i2c-imx471-Fix-V4L2_SEL_TGT_CROP-returning-EIN.patch;
+    }
+    {
+      name = "imx471-gain-960";
+      patch = ./0003-media-i2c-imx471-Raise-the-analogue-gain-limit-to-th.patch;
+    }
+  ];
+
+  assertions = [{
+    assertion = lib.versionOlder config.boot.kernelPackages.kernel.version "7.4";
+    message = "Kernel updated to 7.4, check camera patches.";
+  }];
+
   boot.initrd.luks.devices.cryptlvm = {
     device = "/dev/disk/by-uuid/5e1d32f4-0a2d-404a-8707-3b2067b056bb";
     allowDiscards = true;

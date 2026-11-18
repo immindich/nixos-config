@@ -8,9 +8,6 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 5;
 
-  # Use latest kernel.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Set your time zone.
