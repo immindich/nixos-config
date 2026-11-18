@@ -19,6 +19,9 @@ let libcamera_0_8 = pkgs.libcamera.overrideAttrs (old: rec {
         libtiff
         SDL2
       ]);
+      postInstall = (old.postInstall or "") + ''
+        install -Dm644 ${./imx471.yaml} $out/share/libcamera/ipa/softisp/imx471.yaml
+      '';
     });
     pipewire' = (pkgs.pipewire.override { libcamera = libcamera_0_8; }).overrideAttrs (old: {
       patches = (old.patches or []) ++ [
