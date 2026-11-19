@@ -86,6 +86,18 @@ in {
   services.pipewire.package = pipewire';
   services.pipewire.wireplumber.package = pkgs.wireplumber.override { pipewire = pipewire'; };
 
+  # The libcamera source stops the camera when PipeWire takes back its buffers
+  # and format after the last stream disconnects, but the node stays marked
+  # running, so a stream that reconnects quickly gets a Start that does
+  # nothing and never sees a frame (Cheese, toggling video in Meet). Pausing
+  # the node when it goes idle keeps PipeWire's state in step with the camera.
+  services.pipewire.wireplumber.extraConfig."50-libcamera-pause-on-idle" = {
+    "monitor.libcamera.rules" = [{
+      matches = [{ "node.name" = "~libcamera_input.*"; }];
+      actions.update-props."node.pause-on-idle" = true;
+    }];
+  };
+
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
   #
