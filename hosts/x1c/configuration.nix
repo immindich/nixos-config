@@ -22,6 +22,9 @@ let libcamera_0_8 = pkgs.libcamera.overrideAttrs (old: rec {
       patches = (old.patches or []) ++ [
         # imx471 exposure and gain both latch 2 frames late (measured).
         ./libcamera-imx471-sensor-delays.patch
+        # Without this the software ISP drops the sensor to 1x gain for a
+        # frame at startup (a dark flash) and lags AGC by an iteration.
+        ./libcamera-softisp-send-latest-agc.patch
       ];
       postInstall = (old.postInstall or "") + ''
         install -Dm644 ${./imx471.yaml} $out/share/libcamera/ipa/softisp/imx471.yaml

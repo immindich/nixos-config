@@ -1,0 +1,35 @@
+ipa: softisp: Send the latest AGC result to the sensor
+
+processStats() sent the exposure and gain the processed frame had been
+prepared with, not what AGC had just computed from it. That delays every
+AGC decision by one iteration, and for the first frame sends the
+configuration defaults (minimum gain), so the sensor drops to 1x gain for
+a frame at startup, which shows as a dark flash. Send the active state's
+automatic values instead when AE/AGC are on.
+
+--- a/src/ipa/softisp/softisp.cpp
++++ b/src/ipa/softisp/softisp.cpp
+@@ -253,9 +253,21 @@
+ 		algo->process(context_, frame, frameContext, stats_, metadata);
+ 	metadataReady.emit(frame, metadata);
+ 
++	/*
++	 * Send what AGC has just decided rather than the values this frame
++	 * was prepared with: those lag one AGC iteration behind, and for the
++	 * first frame they are the configuration defaults (minimum gain),
++	 * which briefly drops the sensor to 1x gain at startup.
++	 */
++	uint32_t exposure = frameContext.agc.autoExposureEnabled
++				    ? context_.activeState.agc.automatic.exposure
++				    : frameContext.agc.exposure;
++	double gain = frameContext.agc.autoGainEnabled
++			      ? context_.activeState.agc.automatic.gain
++			      : frameContext.agc.gain;
++
+ 	ControlList ctrls(context_.sensorControls);
+-	agc::prepareControls(ctrls, context_.camHelper.get(),
+-			     frameContext.agc.exposure, frameContext.agc.gain);
++	agc::prepareControls(ctrls, context_.camHelper.get(), exposure, gain);
+ 	setSensorControls.emit(ctrls);
+ }
+ 
