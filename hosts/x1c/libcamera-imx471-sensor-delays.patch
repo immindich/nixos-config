@@ -1,0 +1,26 @@
+libcamera: sensor: Add imx471 sensor delays
+
+The imx471 entry has no sensor delays, so libcamera assumes exposure 2,
+gain 1. Measured on the ThinkPad X1 Carbon Gen 14 by stepping each control
+alone with AE off and timing the change in brightness against the frame at
+whose start DelayedControls wrote it: both exposure and analogue gain take
+effect 2 frames later. With gain assumed at 1, AGC pairs each frame's
+statistics with the wrong gain and oscillates at startup. The blanking
+delays are libcamera's defaults, not measured.
+
+--- a/src/libcamera/sensor/camera_sensor_properties.cpp
++++ b/src/libcamera/sensor/camera_sensor_properties.cpp
+@@ -310,7 +310,12 @@
+ 				{ controls::draft::TestPatternModeColorBarsFadeToGray, 3 },
+ 				{ controls::draft::TestPatternModePn9, 4 },
+ 			},
+-			.sensorDelays = { },
++			.sensorDelays = {
++				.exposureDelay = 2,
++				.gainDelay = 2,
++				.vblankDelay = 2,
++				.hblankDelay = 2
++			},
+ 		} },
+ 		{ "imx477", {
+ 			.unitCellSize = { 1550, 1550 },

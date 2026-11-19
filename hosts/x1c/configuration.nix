@@ -19,6 +19,10 @@ let libcamera_0_8 = pkgs.libcamera.overrideAttrs (old: rec {
         libtiff
         SDL2
       ]);
+      patches = (old.patches or []) ++ [
+        # imx471 exposure and gain both latch 2 frames late (measured).
+        ./libcamera-imx471-sensor-delays.patch
+      ];
       postInstall = (old.postInstall or "") + ''
         install -Dm644 ${./imx471.yaml} $out/share/libcamera/ipa/softisp/imx471.yaml
       '';
