@@ -59,15 +59,33 @@ in {
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  boot.kernelPatches = [
-    {
-      name = "imx471-crop-fix";
-      patch = ./0001-media-i2c-imx471-Fix-V4L2_SEL_TGT_CROP-returning-EIN.patch;
-    }
-    {
-      name = "imx471-gain-960";
-      patch = ./0003-media-i2c-imx471-Raise-the-analogue-gain-limit-to-th.patch;
-    }
+  # The patched imx471 driver, built on its own against the stock kernel
+  # rather than patching (and rebuilding) the whole kernel. It installs under
+  # updates/, which depmod prefers over the in-tree module of the same name.
+  boot.extraModulePackages = [
+    (config.boot.kernelPackages.callPackage ({ stdenv, kernel }: stdenv.mkDerivation {
+      pname = "imx471";
+      inherit (kernel) version src;
+      sourceRoot = ".";
+      unpackCmd = ''
+        tar xf "$curSrc" --strip-components=1 --wildcards '*/drivers/media/i2c/imx471.c'
+      '';
+      patches = [
+        ./0001-media-i2c-imx471-Fix-V4L2_SEL_TGT_CROP-returning-EIN.patch
+        ./0003-media-i2c-imx471-Raise-the-analogue-gain-limit-to-th.patch
+      ];
+      postPatch = ''
+        echo 'obj-m := imx471.o' > drivers/media/i2c/Kbuild
+      '';
+      nativeBuildInputs = kernel.moduleBuildDependencies;
+      makeFlags = kernel.commonMakeFlags ++ [
+        "-C" "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+        "M=$(PWD)/drivers/media/i2c"
+      ];
+      buildFlags = [ "modules" ];
+      installFlags = [ "INSTALL_MOD_PATH=$(out)" "INSTALL_MOD_DIR=updates" ];
+      installTargets = [ "modules_install" ];
+    }) { })
   ];
 
   assertions = [{
