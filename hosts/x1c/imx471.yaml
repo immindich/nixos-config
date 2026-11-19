@@ -148,6 +148,22 @@ algorithms:
             k3: -15.595871
             k4: -59.388143
   - Awb:
+      # White balance gains [R, B] per illuminant, 1 / (R/G) and 1 / (B/G)
+      # of the sensor's average white point for each light source in the
+      # chromaticity response record (cmc id 15) of the same Intel
+      # calibration as the colour matrices (TBE0020A0_CJFPE90_PTL.aiqb,
+      # identical in CBG802N3A). Colour temperatures are McCamy's estimate
+      # from each light source's CIE xy. Grey world still picks the gains
+      # each frame; this curve sets where it starts (5000 K) and makes
+      # manual colour temperature work.
+      colourGains:
+        - { ct: 2237, gains: [ 0.9642, 3.7786 ] }
+        - { ct: 2690, gains: [ 1.1921, 3.2100 ] }
+        - { ct: 2876, gains: [ 1.2752, 3.0296 ] }
+        - { ct: 3872, gains: [ 1.6543, 2.3115 ] }
+        - { ct: 4591, gains: [ 1.8652, 2.0039 ] }
+        - { ct: 5880, gains: [ 2.1468, 1.6732 ] }
+        - { ct: 6634, gains: [ 2.2756, 1.5492 ] }
   - Ccm:
       ccms:
         - ct: 2694
