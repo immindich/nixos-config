@@ -5,9 +5,10 @@
 #   vm-up             reuse ./result if it is a VM build
 #   vm-up --rebuild   nixos-rebuild build-vm first (after any Nix change)
 #
-# Run it from the tree you want the guest to see (normally the vm-dev
-# worktree). Only one VM can run at a time: the disk image and port 2222 are
-# shared, so this refuses to start a second one.
+# Run it from the tree you want the guest to see (this session's worktree).
+# Only one VM can run at a time: the disk image and port 2222 are shared, so
+# this refuses to start a second one, or to start at all while another
+# worktree holds the claim (see vm-claim). It takes the claim for this tree.
 . "$(dirname "$0")/lib.sh"
 
 rebuild=false
@@ -19,6 +20,7 @@ esac
 
 tree=$(git rev-parse --show-toplevel 2>/dev/null) || die "run from inside the checkout to share"
 cd "$tree"
+vm_require_claim
 
 if vm_reachable; then
     die "a VM is already running (ssh vm works); vm-down first"
@@ -26,6 +28,8 @@ fi
 if pgrep -f 'qemu-system-x86_64.*laptop' >/dev/null; then
     die "a QEMU process is still running; wait for it to exit or kill it"
 fi
+
+[ -n "$(vm_claim_holder || true)" ] || vm_claim_write "$tree" "vm-up"
 
 if $rebuild || [ ! -x result/bin/run-laptop-vm-vm ]; then
     # ./result may point at a host build from `nixos-rebuild build`

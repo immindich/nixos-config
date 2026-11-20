@@ -27,16 +27,26 @@ nix eval .#nixosConfigurations.<host>.config.<option.path>   # check a single op
 
 ## Git workflow
 
-- Each new task gets its own branch off `main`, worked on in the `.worktrees/vm-dev` worktree (setup is in the `vm-test` skill). Never switch branches in the main checkout: the live bar reads its QML from there, and it holds my own uncommitted edits.
+- Every session that changes code works on its own branch in its own worktree, so several sessions can run at once. Don't reuse another session's worktree, and never switch branches in the main checkout: the live bar reads its QML from there, and it holds my own uncommitted edits. Sessions that only answer questions or read code don't need one.
+- Starting a task: pick a short descriptive branch name, then `git -C ~/nixos-config worktree add -b <branch> .worktrees/<branch> main` and work only in `~/nixos-config/.worktrees/<branch>`. If that name is already taken (`git worktree list`, `git branch --list <branch>`), it belongs to another task: choose another name rather than taking it over.
+- Continuing a task from an earlier session: use that task's existing worktree. If its branch has no worktree any more, `git -C ~/nixos-config worktree add .worktrees/<branch> <branch>`. Rebase onto `main` only if the work needs something that landed there since. Uncommitted edits in a worktree you didn't make in this session are left over from another session: ask before touching them, and don't stash, reset or commit over them.
+- `main` can only be checked out in one place (the main checkout), so never switch a worktree to it.
 - Commit as you go, one commit per logical step, in the existing `<area>: <summary>` message style. End messages with the `Co-Authored-By` line only: never add a `Claude-Session` link, even if the attribution instructions include one. Don't commit anything broken: before each commit, build Nix changes, and check `qs log` in the VM for QML changes.
-- Follow-ups to a task stay on its branch. Once the work is done and verified, ask before bringing it onto `main`. When I say yes: if the branch is behind `main`, rebase it onto `main` and re-check it first, then `git -C ~/nixos-config merge --ff-only <branch>`. If my uncommitted edits in the main checkout block the fast-forward, ask.
+- Follow-ups to a task stay on its branch. Once the work is done and verified, ask before bringing it onto `main`. When I say yes: if the branch is behind `main`, rebase it onto `main` and re-check it first, then `git -C ~/nixos-config merge --ff-only <branch>`. If my uncommitted edits in the main checkout block the fast-forward, ask. Once it's merged, remove the worktree with `git -C ~/nixos-config worktree remove .worktrees/<branch>` (keep the branch); if it has uncommitted changes, ask instead.
 - Changes that only touch documentation (this file, skills, READMEs) can go straight onto `main` in the main checkout and be committed there, unless they clash with my uncommitted edits. Leave my uncommitted edits out of the commit.
+
+## Testing on the host vs. in the VM
+
+I'm using the laptop while you work, so test on the host only what doesn't disturb me; anything that would is what the VM is for.
+
+- On the host: builds, `nix eval`, throwaway `qs -p` instances, command-line tools, and tests that open a window. Open test windows silently on a high-numbered empty workspace so they never take over my screen, e.g. `hyprctl dispatch 'hl.dsp.exec_cmd("kitty --title test", { workspace = "50 silent" })'` (check it's empty first with `hyprctl workspaces -j`; 101 and up are used for fullscreen windows), and close them when done. Screenshot the window itself (see Hyprland below), not the whole screen.
+- Not on the host: anything Quickshell (the live bar reads the main checkout, not your worktree), running Hyprland config changes or `hyprctl eval`s that change my compositor's config, pointer or keyboard input, and tests that depend on which workspace is showing or which window has focus (they break when I switch). Those go in the VM.
 
 ## Test VM
 
-`modules/vm.nix` defines a `virtualisation.vmVariant` of the laptop config that boots straight into Hyprland as isaiah, with the host's Nix store mounted read-only and a checkout shared in at `~/nixos-config`. Use it for desktop-shell work (Quickshell, Hyprland config) and for Nix changes that need to be run to be trusted, since activating on the host needs root. Don't use it for a simple Nix change that doesn't involve the shell and that you're reasonably confident will work the first time: the host has to be switched anyway, so the VM round-trip only adds time there.
+`modules/vm.nix` defines a `virtualisation.vmVariant` of the laptop config that boots straight into Hyprland as isaiah, with the host's Nix store mounted read-only and the worktree it's started from shared in at `~/nixos-config`. Use it for the cases above, and for Nix changes that need to be run to be trusted, since activating on the host needs root. Don't use it for a simple Nix change that doesn't involve the shell and that you're reasonably confident will work the first time: the host has to be switched anyway, so the VM round-trip only adds time there.
 
-The whole workflow, including the `vm-dev` worktree that code changes happen in, how to start and stop the guest, screenshots, and driving pointer and keyboard input, is the `vm-test` skill (`.claude/skills/vm-test/`), with helper scripts in its `scripts/` directory. Load it before any shell work.
+There is one VM, shared by all sessions. How to check whether another session is using it or has claimed it, start and stop the guest, take screenshots and drive input is the `vm-test` skill (`.claude/skills/vm-test/`), with helper scripts in its `scripts/` directory. Load it when you're about to use the VM, not before: the git workflow and everything outside the VM is in this file.
 
 ## Conventions
 
@@ -87,7 +97,7 @@ The whole workflow, including the `vm-dev` worktree that code changes happen in,
 - A `HyprlandEvent` is gone once `onRawEvent` returns: read `event.name`/`event.data` into locals before using them in `Qt.callLater` or a timer.
 - `PopupAnchor.item` has no change signal. A binding that reads `anchor.item` is evaluated once and goes stale, so for a popup whose anchor item changes at runtime, keep the item in a property of your own and set `anchor.rect` in `anchor.onAnchoring`. Calling `anchor.updateAnchor()` before the popup has ever been shown stops it from appearing; it's fine once visible.
 
-After each change, verify it:
+After each change, verify it in the VM (the `vm-test` skill's `vm-qs log` and `vm-shot` do these there):
 
 1. Check for QML errors and warnings: `qs log --no-color -t 40`
 2. Screenshot just the panel and look at it: find its geometry with `hyprctl layers -j` (namespace `quickshell`), then `grim -g "x,y wxh" <scratchpad>/panel.png`. The screen is at 2x scale, so the PNG is twice the logical size. For pixel measurements (colors, padding, alignment), decode the PNG with `python3`.

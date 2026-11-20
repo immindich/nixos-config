@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Power the guest off and wait for QEMU to exit. The qcow2 keeps the guest's
-# home and store overlay, so the next vm-up boots the same guest.
+# home and store overlay, so the next vm-up boots the same guest. Refuses
+# while another worktree holds the claim (see vm-claim); on success it drops
+# this worktree's claim.
 . "$(dirname "$0")/lib.sh"
+
+vm_require_claim
 
 if ! vm_reachable; then
     echo "no guest answering on ssh"
@@ -11,6 +15,7 @@ vm_plain 'echo isaiah | sudo -S systemctl poweroff' 2>&1 | grep -v 'password for
 for _ in $(seq 1 60); do
     if ! vm_reachable && ! pgrep -f 'qemu-system-x86_64.*laptop' >/dev/null; then
         echo "guest is off"
+        rm -f "$VM_CLAIM"
         exit 0
     fi
     sleep 1

@@ -53,3 +53,36 @@ vm_wait_for_bar() {
     done
     return 1
 }
+
+# The claim on the VM (see vm-claim): line 1 is the claiming worktree, then
+# its branch, the note and the time.
+VM_CLAIM=${XDG_RUNTIME_DIR:-/tmp}/vm-test.claim
+
+# Print the claiming worktree, or fail if there is no claim
+vm_claim_holder() {
+    [ -s "$VM_CLAIM" ] && head -1 "$VM_CLAIM"
+}
+
+vm_claim_write() {
+    local tree=$1 note=$2
+    printf '%s\nbranch: %s\nfor: %s\nsince: %s\n' "$tree" \
+        "$(git -C "$tree" branch --show-current)" "$note" "$(date '+%F %T')" >"$VM_CLAIM"
+}
+
+# Refuse to go on if another worktree holds the claim
+vm_require_claim() {
+    local me holder
+    me=$(git rev-parse --show-toplevel 2>/dev/null) || die "run from inside a checkout"
+    if holder=$(vm_claim_holder) && [ "$holder" != "$me" ]; then
+        die "the VM is claimed by $holder ($(sed -n 3p "$VM_CLAIM")); see vm-claim, and ask the user"
+    fi
+}
+
+vm_qemu_pid() {
+    pgrep -f 'qemu-system-x86_64.*laptop' | head -1
+}
+
+# The checkout a running QEMU shares into the guest
+vm_qemu_tree() {
+    tr '\0' '\n' <"/proc/$1/environ" 2>/dev/null | sed -n 's/^NIXOS_CONFIG_SRC=//p' | grep . || echo "$HOME/nixos-config (default)"
+}

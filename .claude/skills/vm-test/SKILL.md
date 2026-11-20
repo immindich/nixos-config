@@ -1,33 +1,34 @@
 ---
 name: vm-test
-description: Build, run and drive the NixOS test VM (modules/vm.nix) to verify changes before they land on the laptop. Covers the vm-dev worktree flow, starting and stopping the guest, restarting Quickshell in it, screenshots, and injecting pointer and keyboard input with the bundled vm-* scripts. Use it for any change under home/quickshell or home/hypr or to home/hyprland.nix, for any Nix change that has to be run to be trusted, and whenever a task involves the VM, the guest, vm-dev, or checking how the bar, a menu, a popup, a tooltip or hover behaves, even if the user doesn't say "VM".
+description: Start, stop and drive the NixOS test VM (modules/vm.nix), and share it safely with other Claude sessions. Covers claiming the VM, booting the guest from this session's worktree, applying Nix and QML changes in it, screenshots, and injecting pointer and keyboard input with the bundled vm-* scripts. Load it only when you are about to use the VM: to check Quickshell changes (how the bar, a menu, a popup, a tooltip or hover looks and behaves), to run Hyprland config changes, or for a Nix change that has to be run to be trusted. Not needed for branches, worktrees or the git workflow (CLAUDE.md has those), for builds, or for tests that can run on the host.
 ---
 
 # Testing in the VM
 
 `modules/vm.nix` defines a `virtualisation.vmVariant` of the laptop config: the same system and home config, booting straight into Hyprland as isaiah. The guest mounts the host's Nix store read-only (nothing is copied) and shares a checkout read-only at `~/nixos-config`, so the Quickshell symlink resolves and QML edits are visible in the guest immediately. The host toplevel is unaffected by anything in that module.
 
-The scripts referred to below live in `.claude/skills/vm-test/scripts/` of whichever checkout you're working in; run them by that path. They talk to the guest through the `vm` entry in `~/.ssh/config` (port 2222, key `~/.ssh/nixos-vm`). Guest sudo password is `isaiah`.
+The scripts referred to below live in `.claude/skills/vm-test/scripts/` of whichever checkout you're working in; run them by that path (`$S` below is short for it). They talk to the guest through the `vm` entry in `~/.ssh/config` (port 2222, key `~/.ssh/nixos-vm`). Guest sudo password is `isaiah`.
 
 ## When to use it
 
-Use it for desktop-shell work (Quickshell, Hyprland config) and for Nix changes that need to be run to be trusted, since activating on the host needs root. Don't use it for a simple Nix change that doesn't involve the shell and that you're reasonably confident will work the first time: the host has to be switched anyway, so the VM round-trip only adds time there.
+Use it for changes that would disrupt the user to test on the host while they're working on it: anything Quickshell (the host's bar reads the main checkout, not your worktree), running Hyprland config changes (activating on the host needs root and a switch), and tests that drive pointer or keyboard input or depend on which workspace is showing. Nix changes that need to be run to be trusted go here too. Don't use it for a simple Nix change that doesn't involve the shell and that you're reasonably confident will work the first time, or for a test that only opens a window: those run on the host (the Checking changes section of CLAUDE.md says how).
 
-## Work in the `vm-dev` worktree
+Run everything from this session's worktree (CLAUDE.md, Git workflow): `vm-up` shares the tree it's run from into the guest.
 
-The live bar reads `~/nixos-config/home/quickshell` through a symlink, so any edit in the main checkout reloads the shell on the host, half-finished or not. Code changes happen in a worktree instead, each task on its own feature branch (the Git workflow section of CLAUDE.md), and reach `main` only once they're verified and the user agrees.
+## Sharing the VM between sessions
 
-- `~/nixos-config/.worktrees/vm-dev` is a worktree of this repo. If it's missing: `git worktree add --detach .worktrees/vm-dev main`.
-- Starting a new task: first check `git -C ~/nixos-config/.worktrees/vm-dev status`. Uncommitted edits there are left over from an earlier session; stop and ask what to do with them, and don't stash, reset or commit over them. Then branch off `main`: `git -C ~/nixos-config/.worktrees/vm-dev switch -c <branch> main`, with a short descriptive name. The previous task's branch stays as it is, merged or not.
-- Continuing a task: switch the worktree back to its branch. Rebase onto `main` only if the work needs something that landed there since.
-- Edit in the worktree only, and run the VM from it, so the guest sees the worktree at `/home/isaiah/nixos-config`. Commit on the branch as each logical step is verified.
-- Landing a branch, once it's done and verified and the user has said yes: if it's behind `main`, rebase it onto `main` and re-check it, then `git -C ~/nixos-config merge --ff-only <branch>`. That updates the main checkout, so the live bar reloads at that moment; if it renders the old layout, `touch` the changed file. Nix changes still need a switch on the host, which the user does.
-- `main` can only be checked out in one place, so don't switch the worktree to it.
+There is one VM (one disk image, one ssh port), and the user may have several Claude sessions running, each in its own worktree. A claim file records which worktree's session is using the VM or is about to; `vm-claim` reads and writes it.
+
+- Before doing anything with the VM, including planning work around it, run `$S/vm-claim`. It shows the claim (worktree, branch, what for, since when), whether QEMU is running and which tree it shares, and the Claude processes on the machine with their working directories.
+- If nobody holds the claim and no QEMU is running, take it straight away with `$S/vm-claim take '<what for>'`, before building, so another session sees it while you build. `vm-up` takes it too if you forget.
+- If another worktree holds the claim, or a QEMU is running that shares another tree, the VM is someone else's: don't `vm-down`, `vm-switch`, `vm-qs restart` or drive input in it. Tell the user who holds it and ask whether to wait, or whether that session is finished and you can take it over. The claim lives in `$XDG_RUNTIME_DIR`, so a reboot clears it, but a session that ended without releasing leaves one behind: the user decides when it's stale. Only on their word, run `$S/vm-claim --force-release` (and `vm-down` if a guest is still up), then claim it yourself. Other local sessions can also show up in the `ListAgents` tool; if the holder is listed there you can ask it directly with `SendMessage` whether it still needs the VM.
+- `vm-up` and `vm-down` refuse to act while another worktree holds the claim. `vm-down` drops your claim once the guest is off. When you're done with the VM for the task, `vm-down` (or `$S/vm-claim release` if you never booted it), so the next session doesn't have to ask.
+- Landing a branch with QML changes updates the main checkout, so the host's live bar reloads at that moment; if it renders the old layout, `touch` the changed file.
 
 ## Running the guest
 
 ```sh
-cd ~/nixos-config/.worktrees/vm-dev
+cd ~/nixos-config/.worktrees/<branch>             # this session's worktree
 .claude/skills/vm-test/scripts/vm-up            # boots and waits until the bar is on screen (12 s warm, ~30 s after a rebuild)
 .claude/skills/vm-test/scripts/vm-switch        # apply a Nix change to the running guest (about 5 s)
 .claude/skills/vm-test/scripts/vm-up --rebuild  # the reboot route: nixos-rebuild build-vm, then boot

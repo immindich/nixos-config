@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Coordinate the one test VM between Claude sessions, each working in its own
+# worktree. A claim names the worktree whose session is using the VM or is
+# about to; it lives in $XDG_RUNTIME_DIR, so a reboot clears it.
+#
+#   vm-claim                 show the claim, the running guest and other sessions
+#   vm-claim take <note>     claim the VM for this worktree (<note>: what for)
+#   vm-claim release         drop this worktree's claim
+#
+# vm-up takes the claim itself, and both vm-up and vm-down refuse to act
+# while another worktree holds it.
+. "$(dirname "$0")/lib.sh"
+
+cmd=${1:-status}
+[ $# -gt 0 ] && shift
+
+me=$(git rev-parse --show-toplevel 2>/dev/null) || die "run from inside a checkout"
+
+case "$cmd" in
+    status)
+        if holder=$(vm_claim_holder); then
+            echo "claimed by: $holder"
+            sed -n '2,$p' "$VM_CLAIM" | sed 's/^/  /'
+            [ "$holder" = "$me" ] && echo "  (that's this worktree)"
+        else
+            echo "claimed by: nobody"
+        fi
+        if pid=$(vm_qemu_pid); then
+            echo "QEMU running (pid $pid), sharing $(vm_qemu_tree "$pid")"
+        else
+            echo "QEMU not running"
+        fi
+        echo "Claude sessions (process cwd; a session may be working in a different worktree):"
+        for p in $(pgrep -x claude); do
+            echo "  pid $p in $(readlink "/proc/$p/cwd" 2>/dev/null || echo '?')"
+        done
+        ;;
+    take)
+        [ $# -gt 0 ] || die "usage: vm-claim take <what it's for>"
+        if holder=$(vm_claim_holder) && [ "$holder" != "$me" ]; then
+            die "already claimed by $holder ($(sed -n 3p "$VM_CLAIM")); ask the user before taking it over"
+        fi
+        vm_claim_write "$me" "$*"
+        echo "claimed for $me"
+        ;;
+    release)
+        if holder=$(vm_claim_holder) && [ "$holder" != "$me" ]; then
+            die "claimed by $holder, not this worktree; leaving it"
+        fi
+        rm -f "$VM_CLAIM"
+        echo "released"
+        ;;
+    --force-release)
+        # Only when the user has said the holder's session is gone
+        rm -f "$VM_CLAIM"
+        echo "released"
+        ;;
+    *) die "usage: vm-claim [status | take <note> | release]" ;;
+esac
